@@ -1,0 +1,70 @@
+site_name: Little-UNIkeEN-Bot
+copyright: Copyright 2022 Little-UNIkeEN-Bot by UNIkeEN. All Rights Reserved
+repo_name: UNIkeEN/Little-UNIkeEN-Bot
+repo_url: https://github.com/UNIkeEN/Little-UNIkeEN-Bot
+nav:
+    - 主页: 
+      - 'index.md'
+      - '关于本项目': 'about.md'
+      - '更新计划': 'update-plan.md'
+      - '授权许可': 'license.md'
+    - 开始:
+      - '安装': 'get-start/installation.md'
+      - '配置驱动器': 'get-start/set-driver.md'
+      - '配置 SQL': 'get-start/set-sql.md'
+      - '部署 Bot': 'get-start/deployment.md'
+      - '遇到问题': 'get-start/question.md'
+    - 插件:
+      - '插件入门': 'plugin/introduction.md'
+      - '标准插件': 'plugin/standard-plugin.md'
+      - '插件组': 'plugin/plugins-group.md'
+      - '定时任务': 'test.md'
+      - '插件与数据库': 'test.md'
+      - '优秀插件示例': 'test.md'
+    - API:
+      - '鉴权与功能配置': 'api/auth-config.md'
+      - '响应卡片绘制': 'api/draw-card.md'
+edit_uri: ""
+theme:
+  name: 'material'
+  palette: 
+    # Palette toggle for light mode
+    - scheme: default
+      primary: light blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tracking
+    - toc.integrate
+    - navigation.indexes
+    - search.suggest
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/UNIkeEN/Little-UNIkeEN-Bot
+  generator: false
+
+plugins:
+    - search:
+        lang:
+            - en
+            - ja
+        separator: '[\s\-\.]+'
+
+
+
+
+
