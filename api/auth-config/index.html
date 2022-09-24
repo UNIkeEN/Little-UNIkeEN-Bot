@@ -65,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -692,9 +697,52 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          鉴权与功能配置
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         鉴权与功能配置
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    鉴权与功能配置模块简介
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    鉴权与功能配置模块示范样例
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    鉴权与功能配置模块代码分析
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -738,7 +786,84 @@
 
   <h1>鉴权与功能配置</h1>
 
+<h2 id="_1">鉴权与功能配置模块简介</h2>
+<table>
+<thead>
+<tr>
+<th>模块名称</th>
+<th>父类</th>
+<th>触发关键词</th>
+<th>触发权限</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetPermission</td>
+<td>StandardPlugin</td>
+<td>'-sudo'</td>
+<td>ROOT_ADMIN_ID</td>
+<td>把本人id添加到群bot管理权限名单</td>
+</tr>
+<tr>
+<td>AddPermission</td>
+<td>StandardPlugin</td>
+<td>'-addadmin @{某人}'</td>
+<td>ROOT_ADMIN_ID</td>
+<td>把@{某人}添加到群bot管理权限名单</td>
+</tr>
+<tr>
+<td>DelPermission</td>
+<td>StandardPlugin</td>
+<td>'-deladmin @{某人}'</td>
+<td>ROOT_ADMIN_ID</td>
+<td>把@{某人}移出群bot管理权限名单</td>
+</tr>
+<tr>
+<td>ShowPermission</td>
+<td>StandardPlugin</td>
+<td>'-showadmin'/'getAdmin'</td>
+<td>None</td>
+<td>查看取群bot管理员权限名单</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">鉴权与功能配置模块示范样例</h2>
+<pre><code>ROOT_ADMIN_ID = [111, # 用户A  
+                 222, # 用户C
+                 444] # 用户D
 
+333&gt;&gt;&gt; -showadmin
+bot&gt;&gt;&gt; 本群管理员列表 [222, 444]
+
+# 111自身获取权限
+111&gt;&gt;&gt; -sudo
+bot&gt;&gt;&gt; OK
+777&gt;&gt;&gt; -getadmin
+bot&gt;&gt;&gt; 本群管理员列表 [222, 444, 111]
+111&gt;&gt;&gt; -sudo
+bot&gt;&gt;&gt; 用户【111】已在管理员列表
+
+# CQ码注入无效
+111&gt;&gt;&gt; -deladmin [CQ:at,qq=444]
+777&gt;&gt;&gt; -getadmin
+bot&gt;&gt;&gt; 本群管理员列表 [222, 444, 111]
+
+# 111删除444权限
+111&gt;&gt;&gt; -deladmin @用户D
+bot&gt;&gt;&gt; OK
+444&gt;&gt;&gt; -getadmin
+bot&gt;&gt;&gt; 本群管理员列表 [111, 222]
+
+# 444删除111权限
+444&gt;&gt;&gt; -deladmin @用户A
+bot&gt;&gt;&gt; OK
+111&gt;&gt;&gt; -showadmin
+bot&gt;&gt;&gt; 本群管理员列表 [222]
+</code></pre>
+<h2 id="_3">鉴权与功能配置模块代码分析</h2>
+<p>代码位于<code>plugins/getPermission.py</code></p>
+<p>TBD</p>
 
 
 
