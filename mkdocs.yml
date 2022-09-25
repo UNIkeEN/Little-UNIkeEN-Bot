@@ -16,8 +16,26 @@ nav:
       - '遇到问题': 'get-start/question.md'
     - 插件:
       - '插件入门': 'plugin/introduction.md'
-      - '标准插件': 'plugin/standard-plugin.md'
-      - '插件组': 'plugin/plugins-group.md'
+      - '插件目录': 'plugin/plugins-menu.md'
+      - 插件列表:
+        - '插件组管理': 'plugin/plugins/groupManagerPlugin.md'
+        - '群权限获取': 'plugin/plugins/getPermissionPlugin.md'
+        - '帮助插件':   'plugin/plugins/helpPlugin.md'
+        - '超级表情':   'plugin/plugins/superEmojiPlugin.md'
+        - '早安晚安':   'plugin/plugins/greetingsPlugin.md'
+        - '寄了检测':   'plugin/plugins/jilePlugin.md'
+        - '新闻':      'plugin/plugins/newsPlugin.md'
+        - '二次元图':   'plugin/plugins/2cyPicPlugin.md'
+        - '签到':      'plugin/plugins/signinPlugin.md'
+        - '答案之书':   'plugin/plugins/chatWithAnswerBookPlugin.md'
+        - '问答库':    'plugin/plugins/faqPlugin.md'
+        - '轮盘赌':    'plugin/plugins/roulettePlugin.md'
+        - '买彩票':    'plugin/plugins/lotteryPlugin.md'
+        - '五子棋':    'plugin/plugins/gobangPlugin.md'
+        - '模拟炒股':  'plugin/plugins/stocksPlugin.md'
+        - 'SJTU教务':  'plugin/plugins/sjtuJwcPlugin.md'
+        - 'SJTU第二课堂': 'plugin/plugins/sjtuDektPlugin.md'
+        - 'canvas日历': 'plugin/plugins/canvasIcsPlugin.md'
       - '定时任务': 'test.md'
       - '插件与数据库': 'test.md'
       - '优秀插件示例': 'test.md'
@@ -63,6 +81,15 @@ plugins:
             - en
             - ja
         separator: '[\s\-\.]+'
+
+markdown_extensions: 
+  - admonition # 彩色提示块
+  - pymdownx.details # 提示块可以折叠
+  - pymdownx.highlight: # 代码高亮
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 
 
