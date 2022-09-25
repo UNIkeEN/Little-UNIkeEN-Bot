@@ -65,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -662,9 +667,52 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          插件组管理
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         插件组管理
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    插件简介
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    示范样例
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    代码分析
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1049,7 +1097,84 @@
 
   <h1>插件组管理</h1>
 
-
+<h2 id="_1">插件简介</h2>
+<table>
+<thead>
+<tr>
+<th>插件名称</th>
+<th>父类</th>
+<th>触发关键词</th>
+<th>触发权限</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetPermission</td>
+<td>StandardPlugin</td>
+<td>'-sudo'</td>
+<td>ROOT_ADMIN_ID</td>
+<td>把本人id添加到群bot管理权限名单</td>
+</tr>
+<tr>
+<td>AddPermission</td>
+<td>StandardPlugin</td>
+<td>'-addadmin @{某人}'</td>
+<td>ROOT_ADMIN_ID</td>
+<td>把@{某人}添加到群bot管理权限名单</td>
+</tr>
+<tr>
+<td>DelPermission</td>
+<td>StandardPlugin</td>
+<td>'-deladmin @{某人}'</td>
+<td>ROOT_ADMIN_ID</td>
+<td>把@{某人}移出群bot管理权限名单</td>
+</tr>
+<tr>
+<td>ShowPermission</td>
+<td>StandardPlugin</td>
+<td>'-showadmin' / 'getAdmin'</td>
+<td>None</td>
+<td>查看群bot管理员权限名单</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">示范样例</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">ROOT_ADMIN_ID</span> <span class="o">=</span> <span class="o">[</span><span class="m">111</span>, <span class="c1"># 用户A  </span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                 <span class="m">222</span>, <span class="c1"># 用户B</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                 <span class="m">444</span><span class="o">]</span> <span class="c1"># 用户D</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="m">333</span>&gt;&gt;&gt; -showadmin
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span>, <span class="m">444</span><span class="o">]</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># 111自身获取权限</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="m">111</span>&gt;&gt;&gt; -sudo
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>bot&gt;&gt;&gt; OK
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="m">777</span>&gt;&gt;&gt; -getadmin
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span>, <span class="m">444</span>, <span class="m">111</span><span class="o">]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="m">111</span>&gt;&gt;&gt; -sudo
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>bot&gt;&gt;&gt; 用户【111】已在管理员列表
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># CQ码注入无效</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="m">111</span>&gt;&gt;&gt; -deladmin <span class="o">[</span>CQ:at,qq<span class="o">=</span><span class="m">444</span><span class="o">]</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="m">777</span>&gt;&gt;&gt; -getadmin
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span>, <span class="m">444</span>, <span class="m">111</span><span class="o">]</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># 111删除444权限</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="m">111</span>&gt;&gt;&gt; -deladmin @用户D
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>bot&gt;&gt;&gt; OK
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="m">444</span>&gt;&gt;&gt; -getadmin
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">111</span>, <span class="m">222</span><span class="o">]</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1"># 444删除111权限</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="m">444</span>&gt;&gt;&gt; -deladmin @用户A
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>bot&gt;&gt;&gt; OK
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="m">111</span>&gt;&gt;&gt; -showadmin
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span><span class="o">]</span>
+</code></pre></div>
+<h2 id="_3">代码分析</h2>
+<p>代码位于<code>plugins/getPermission.py</code></p>
+<p>TBD</p>
 
 
 
