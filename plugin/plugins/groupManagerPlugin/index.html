@@ -698,13 +698,20 @@
       
         <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    示范样例
+    具体介绍
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
+    示范样例
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
     代码分析
   </a>
   
@@ -1110,71 +1117,111 @@
 </thead>
 <tbody>
 <tr>
-<td>GetPermission</td>
+<td>PluginGroupManager</td>
 <td>StandardPlugin</td>
-<td>'-sudo'</td>
-<td>ROOT_ADMIN_ID</td>
-<td>把本人id添加到群bot管理权限名单</td>
-</tr>
-<tr>
-<td>AddPermission</td>
-<td>StandardPlugin</td>
-<td>'-addadmin @{某人}'</td>
-<td>ROOT_ADMIN_ID</td>
-<td>把@{某人}添加到群bot管理权限名单</td>
-</tr>
-<tr>
-<td>DelPermission</td>
-<td>StandardPlugin</td>
-<td>'-deladmin @{某人}'</td>
-<td>ROOT_ADMIN_ID</td>
-<td>把@{某人}移出群bot管理权限名单</td>
-</tr>
-<tr>
-<td>ShowPermission</td>
-<td>StandardPlugin</td>
-<td>'-showadmin' / 'getAdmin'</td>
-<td>None</td>
-<td>查看群bot管理员权限名单</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_2">示范样例</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">ROOT_ADMIN_ID</span> <span class="o">=</span> <span class="o">[</span><span class="m">111</span>, <span class="c1"># 用户A  </span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                 <span class="m">222</span>, <span class="c1"># 用户B</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                 <span class="m">444</span><span class="o">]</span> <span class="c1"># 用户D</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="m">333</span>&gt;&gt;&gt; -showadmin
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span>, <span class="m">444</span><span class="o">]</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># 111自身获取权限</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="m">111</span>&gt;&gt;&gt; -sudo
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>bot&gt;&gt;&gt; OK
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="m">777</span>&gt;&gt;&gt; -getadmin
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span>, <span class="m">444</span>, <span class="m">111</span><span class="o">]</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="m">111</span>&gt;&gt;&gt; -sudo
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>bot&gt;&gt;&gt; 用户【111】已在管理员列表
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># CQ码注入无效</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="m">111</span>&gt;&gt;&gt; -deladmin <span class="o">[</span>CQ:at,qq<span class="o">=</span><span class="m">444</span><span class="o">]</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="m">777</span>&gt;&gt;&gt; -getadmin
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span>, <span class="m">444</span>, <span class="m">111</span><span class="o">]</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># 111删除444权限</span>
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="m">111</span>&gt;&gt;&gt; -deladmin @用户D
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>bot&gt;&gt;&gt; OK
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="m">444</span>&gt;&gt;&gt; -getadmin
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">111</span>, <span class="m">222</span><span class="o">]</span>
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1"># 444删除111权限</span>
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="m">444</span>&gt;&gt;&gt; -deladmin @用户A
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>bot&gt;&gt;&gt; OK
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="m">111</span>&gt;&gt;&gt; -showadmin
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>bot&gt;&gt;&gt; 本群管理员列表 <span class="o">[</span><span class="m">222</span><span class="o">]</span>
+<h2 id="_2">具体介绍</h2>
+<p>PluginGroupManager具有两个功能：</p>
+<ol>
+<li>作为插件管理者，接收 <code>re.compile('-grpcfg (enable|disable) %s'%groupName)</code> 型参数，作为开启或关闭插件组的指令，此功能需要群bot管理权限</li>
+<li>作为中间平台，接收输入传给被管理对象，检测被管理对象是否能接收参数并运行</li>
+</ol>
+<p>您可以把数个插件类对象放进列表，然后传给PluginGroupManager作为构造函数的第一个参数，groupName作为第二个参数传给构造函数，如下面示范样例</p>
+<h2 id="_3">示范样例</h2>
+<p>代码部分：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ROOT_ADMIN_ID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">111</span><span class="p">,</span> <span class="c1"># 用户A  </span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                 <span class="mi">222</span><span class="p">,</span> <span class="c1"># 用户B</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                 <span class="mi">444</span><span class="p">]</span> <span class="c1"># 用户D</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span> <span class="nn">plugins.superEmoji</span> <span class="kn">import</span> <span class="n">FireworksFace</span><span class="p">,</span> <span class="n">FirecrackersFace</span><span class="p">,</span> <span class="n">BasketballFace</span><span class="p">,</span> <span class="n">HotFace</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">GroupPluginList</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># .....</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">PluginGroupManager</span><span class="p">([</span><span class="n">FireworksFace</span><span class="p">(),</span> <span class="n">FirecrackersFace</span><span class="p">(),</span> <span class="n">BasketballFace</span><span class="p">(),</span> <span class="n">HotFace</span><span class="p">()],</span> <span class="s1">&#39;superemoji&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="c1"># .....</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">]</span>
 </code></pre></div>
-<h2 id="_3">代码分析</h2>
-<p>代码位于<code>plugins/getPermission.py</code></p>
-<p>TBD</p>
+<p>群聊部分：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 群内尚未开启super emoji功能</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="m">111</span>&gt; 热死了
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># bot不予理会</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># 111开启群super emoji功能</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="m">111</span>&gt; -sudo
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>bot&gt; OK
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="m">111</span>&gt; -grpcfg <span class="nb">enable</span> superemoji
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>bot&gt; OK
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># 开始互动</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="m">222</span>&gt; 篮球
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>bot&gt; 【超级表情：篮球】
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># 111关闭群super emoji功能</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="m">111</span>&gt; -grpcfg disable superemoji
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>bot&gt; OK
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># 444尝试互动</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="m">444</span>&gt; 篮球
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># bot不予理会</span>
+</code></pre></div>
+<h2 id="_4">代码分析</h2>
+<p>代码位于<code>utils/standardPlugin.py</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">utils.basicEvent</span> <span class="kn">import</span> <span class="n">send</span><span class="p">,</span> <span class="n">warning</span><span class="p">,</span> <span class="n">readGlobalConfig</span><span class="p">,</span> <span class="n">writeGlobalConfig</span><span class="p">,</span> <span class="n">getGroupAdmins</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">class</span> <span class="nc">PluginGroupManager</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugins</span><span class="p">:</span><span class="n">List</span><span class="p">[</span><span class="n">StandardPlugin</span><span class="p">],</span> <span class="n">groupName</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span> <span class="o">=</span> <span class="n">plugins</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">groupName</span> <span class="o">=</span> <span class="n">groupName</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">enabledDict</span> <span class="o">=</span> <span class="n">readGlobalConfig</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">groupName</span><span class="o">+</span><span class="s1">&#39;.enable&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">defaultEnabled</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="n">userId</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">groupId</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;-grpcfg enable </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">groupName</span> <span class="ow">and</span> <span class="n">userId</span> <span class="ow">in</span> <span class="n">getGroupAdmins</span><span class="p">(</span><span class="n">groupId</span><span class="p">):</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">=</span> <span class="s1">&#39;enable&#39;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="k">return</span> <span class="kc">True</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;-grpcfg disable </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">groupName</span> <span class="ow">and</span> <span class="n">userId</span> <span class="ow">in</span> <span class="n">getGroupAdmins</span><span class="p">(</span><span class="n">groupId</span><span class="p">):</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">=</span> <span class="s1">&#39;disable&#39;</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            <span class="k">return</span> <span class="kc">True</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryEnabled</span><span class="p">(</span><span class="n">groupId</span><span class="p">):</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>            <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>        <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">:</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>            <span class="k">if</span> <span class="n">plugin</span><span class="o">.</span><span class="n">judgeTrigger</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">=</span> <span class="n">plugin</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>                <span class="k">return</span> <span class="kc">True</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>        <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>            <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;logic error in PluginGroupManager: executeEvent self.readyPlugin == None&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;enable&#39;</span><span class="p">,</span> <span class="s1">&#39;disable&#39;</span><span class="p">]:</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>            <span class="n">enabled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">==</span> <span class="s1">&#39;enable&#39;</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>            <span class="n">groupId</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryEnabled</span><span class="p">(</span><span class="n">groupId</span><span class="p">)</span> <span class="o">!=</span> <span class="n">enabled</span><span class="p">:</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>                <span class="n">writeGlobalConfig</span><span class="p">(</span><span class="n">groupId</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupName</span> <span class="o">+</span> <span class="s1">&#39;.enable&#39;</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">enabledDict</span><span class="p">[</span><span class="n">groupId</span><span class="p">]</span> <span class="o">=</span> <span class="n">enabled</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>            <span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">],</span> <span class="s2">&quot;OK&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>            <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span><span class="o">.</span><span class="n">executeEvent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">readyPlugin</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>                <span class="k">return</span> <span class="n">result</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>                <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;logic error in PluginGroupManager: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>                <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>    <span class="k">def</span> <span class="nf">queryEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">groupId</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>        <span class="k">if</span> <span class="n">groupId</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabledDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>            <span class="n">writeGlobalConfig</span><span class="p">(</span><span class="n">groupId</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupName</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">groupName</span><span class="p">,</span> <span class="s1">&#39;enable&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultEnabled</span><span class="p">})</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">enabledDict</span><span class="p">[</span><span class="n">groupId</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultEnabled</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabledDict</span><span class="p">[</span><span class="n">groupId</span><span class="p">]</span>
+</code></pre></div>
 
 
 
