@@ -83,6 +83,7 @@ plugins:
         separator: '[\s\-\.]+'
 
 markdown_extensions: 
+  - meta
   - admonition # 彩色提示块
   - pymdownx.details # 提示块可以折叠
   - pymdownx.highlight: # 代码高亮
