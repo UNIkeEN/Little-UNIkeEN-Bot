@@ -1066,8 +1066,62 @@
         
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    添加卡片
+    添加前景卡片
   </a>
+  
+    <nav class="md-nav" aria-label="添加前景卡片">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#responseimageaddcard" class="md-nav__link">
+    ResponseImage.addCard()
+  </a>
+  
+    <nav class="md-nav" aria-label="ResponseImage.addCard()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#responseimagenormalcard" class="md-nav__link">
+    ResponseImage.NormalCard
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responseimagenoticecard" class="md-nav__link">
+    ResponseImage.NoticeCard
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responseimagerichcontentcard" class="md-nav__link">
+    ResponseImage.RichContentCard
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responseimageblankcard" class="md-nav__link">
+    ResponseImage.BlankCard
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responseimageaddcardlist" class="md-nav__link">
+    ResponseImage.addCardList()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1109,7 +1163,7 @@
   <h1>响应卡片绘制</h1>
 
 <p>部分功能场景下，Bot的回答包含较多文字和插图（如"每日新闻"，"功能列表"），为避免发送大量文字的风控风险、美化回复信息的展示形式，可以将这些内容转化为一张图片发送。Little-UNIkeEN-Bot 基于 pillow 封装了 responseImage 库，方便开发者快速构建此类图片，以下是两个示例。</p>
-<p><img alt="" src="../../images/contrastTextImage.jpg" /> </p>
+<p><img alt="" src="../../images/responseImage/contrastTextImage.jpg" /> </p>
 <h2 id="responseimage">导入 responseImage 库</h2>
 <p>responseImage 库位于<code>./utils/</code>目录下。在插件代码中使用如下代码导入此库：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">utils.responseImage</span> <span class="kn">import</span> <span class="o">*</span>
@@ -1237,7 +1291,307 @@
  </tr>
 </table>
 
-<h3 id="_2">添加卡片</h3>
+<h3 id="_2">添加前景卡片</h3>
+<p>ResponseImage 实例相当于一个容器。如要让图片展示各类信息，你需要向实例添加一个或多个"前景卡片"。</p>
+<p>"前景卡片"机制可以帮助你将各类信息分组展示。</p>
+<h4 id="responseimageaddcard"><code>ResponseImage.addCard()</code></h4>
+<p>向 ResponseImage 实例添加前景卡片。卡片在图片中按添加卡片的顺序显示。</p>
+<p>示例代码：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">ResponseImage</span><span class="o">.</span><span class="n">NormalCard</span><span class="p">(</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="n">title</span> <span class="o">=</span><span class="s1">&#39;原神2.1版本&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="n">subtitle</span> <span class="o">=</span> <span class="s1">&#39;「韶光抚月，天下人间」PV台词&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="n">body</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;风雨犹祝，山海同欢，是承天地之佑；</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s2">星移斗转，沧海桑田，烟火人间依旧；</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="s2">功名在我，百岁千秋，毋忘秉烛夜游；</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="s2">古今诸事，激荡中流，宏图待看新秀。&quot;&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="n">icon</span> <span class="o">=</span> <span class="s1">&#39;http://q2.qlogo.cn/headimg_dl?dst_uin=2641712741&amp;spec=100&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">subtitleFontColor</span><span class="o">=</span><span class="n">PALETTE_GREEN</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="n">backColor</span><span class="o">=</span><span class="n">PALETTE_LIGHTGREEN</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">)</span>
+</code></pre></div>
+<p>库预设了多种卡片类型可供添加：</p>
+<h5 id="responseimagenormalcard"><code>ResponseImage.NormalCard</code></h5>
+<p>标准类型前景卡片，内容左对齐。</p>
+<p>可供编辑的参数如下：</p>
+<table>
+     <tr>
+          <th>属性名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+     <tr>
+          <td>title</td>
+          <td>标题</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的标题</td>
+          <td>可选</td>
+     </tr>
+     <tr>
+          <td>subtitle</td>
+          <td>副标题</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的副标题</td>
+          <td>可选</td>
+     </tr>
+    <tr>
+          <td>keyword</td>
+          <td>关键句</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的关键句</td>
+          <td>可选，关键句字体同副标题，颜色同图片主题色</td>
+     </tr>
+    <tr>
+          <td>body</td>
+          <td>正文</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的正文</td>
+          <td>可选</td>
+     </tr>
+    <tr>
+          <td>icon</td>
+          <td>图标</td>
+          <td>str型变量或Image对象</td>
+          <td>表示前景卡片靠左显示的图标</td>
+          <td>可选，支持本地图片/网络图片地址，base64编码串或PIL.Image对象。将自动缩放为90x90大小显示</td>
+     </tr>
+    <tr>
+          <td>titleFontColor</td>
+          <td>标题字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片标题的字体颜色</td>
+          <td>可选，默认为黑色</td>
+     </tr>
+    <tr>
+          <td>subtitleFontColor</td>
+          <td>副标题字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片副标题的字体颜色</td>
+          <td>可选，默认为深灰</td>
+     </tr>
+    <tr>
+          <td>bodyFontColor</td>
+          <td>正文字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片正文部分的字体颜色</td>
+          <td>可选，默认为浅灰</td>
+     </tr>
+    <tr>
+          <td>backColor</td>
+          <td>卡片背景颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片的背景颜色</td>
+          <td>可选，默认为白色</td>
+     </tr>
+</table>
+
+<p>示例代码及效果：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">ResponseImage</span><span class="o">.</span><span class="n">NormalCard</span><span class="p">(</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="n">title</span> <span class="o">=</span><span class="s1">&#39;[title 标题] 可选，支持自动换行/多行文本&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="n">subtitle</span> <span class="o">=</span> <span class="s1">&#39;[subtitle 副标题] 可选，支持自动换行/多行文本&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="n">keyword</span> <span class="o">=</span> <span class="s1">&#39;[keyword 关键句] 可选，支持自动换行/多行文本，字体同副标题，颜色同关键色&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="n">body</span> <span class="o">=</span> <span class="s1">&#39;[body 正文] 可选，支持自动换行/多行文本，</span><span class="se">\n</span><span class="s1">左对齐显示&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="n">icon</span> <span class="o">=</span> <span class="s1">&#39;http://q2.qlogo.cn/headimg_dl?dst_uin=2641712741&amp;spec=100&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
+</code></pre></div>
+<p><img alt="" src="../../images/responseImage/normalCard.jpg" /></p>
+<h5 id="responseimagenoticecard"><code>ResponseImage.NoticeCard</code></h5>
+<p>通知类型前景卡片，内容居中显示。</p>
+<p>可供编辑的参数如下：</p>
+<table>
+     <tr>
+          <th>属性名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+     <tr>
+          <td>title</td>
+          <td>标题</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的标题</td>
+          <td>可选</td>
+     </tr>
+     <tr>
+          <td>subtitle</td>
+          <td>副标题</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的副标题</td>
+          <td>可选</td>
+     </tr>
+    <tr>
+          <td>keyword</td>
+          <td>关键句</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的关键句</td>
+          <td>可选，关键句字体同副标题，颜色同图片主题色</td>
+     </tr>
+    <tr>
+          <td>body</td>
+          <td>正文</td>
+          <td>str型变量</td>
+          <td>表示前景卡片显示的正文</td>
+          <td>可选</td>
+     </tr>
+    <tr>
+          <td>illustration</td>
+          <td>配图</td>
+          <td>str型变量或Image对象</td>
+          <td>表示前景卡片底部显示的配图</td>
+          <td>可选，支持本地图片/网络图片地址，base64编码串或PIL.Image对象。若图片过大，将自动缩放以适配卡片宽度</td>
+     </tr>
+    <tr>
+          <td>titleFontColor</td>
+          <td>标题字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片标题的字体颜色</td>
+          <td>可选，默认为黑色</td>
+     </tr>
+    <tr>
+          <td>subtitleFontColor</td>
+          <td>副标题字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片副标题的字体颜色</td>
+          <td>可选，默认为深灰</td>
+     </tr>
+    <tr>
+          <td>bodyFontColor</td>
+          <td>正文字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片正文部分的字体颜色</td>
+          <td>可选，默认为浅灰</td>
+     </tr>
+    <tr>
+          <td>backColor</td>
+          <td>卡片背景颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片的背景颜色</td>
+          <td>可选，默认为白色</td>
+     </tr>
+</table>
+
+<p>示例代码及效果：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">ResponseImage</span><span class="o">.</span><span class="n">NoticeCard</span><span class="p">(</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="n">title</span> <span class="o">=</span><span class="s1">&#39;[title 标题] 可选，支持自动换行/多行文本&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="n">subtitle</span> <span class="o">=</span> <span class="s1">&#39;[subtitle 副标题] 可选，支持自动换行/多行文本&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">keyword</span> <span class="o">=</span> <span class="s1">&#39;[keyword 关键句] 可选，支持自动换行/多行文本，字体同副标题，颜色同关键色&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">body</span> <span class="o">=</span> <span class="s1">&#39;[body 正文] 可选，支持自动换行/多行文本，</span><span class="se">\n</span><span class="s1">居中显示&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">icon</span> <span class="o">=</span> <span class="s1">&#39;http://q2.qlogo.cn/headimg_dl?dst_uin=2641712741&amp;spec=100&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="p">)</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
+</code></pre></div>
+<p><img alt="" src="../../images/responseImage/noticeCard.jpg" /></p>
+<h5 id="responseimagerichcontentcard"><code>ResponseImage.RichContentCard</code></h5>
+<p>富内容复合类型卡片，可以在一个前景卡片中显示复合格式的多行文本。</p>
+<p>文本内容以列表的形式输入，列表中每项为一个形如 <code>(格式，内容)</code> 的元组，其中"格式"字段可选：<code>title</code>，<code>subtitle</code>，<code>keyword</code>，<code>body</code>，<code>separator</code>。具体应用参见下方示例代码。</p>
+<table>
+     <tr>
+          <th>属性名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+     <tr>
+          <td>raw_content</td>
+          <td>内容</td>
+          <td>list型变量</td>
+          <td>表示前景卡片显示的内容</td>
+          <td>可选，以列表嵌套元组形式输入</td>
+     </tr>
+    <tr>
+          <td>icon</td>
+          <td>图标</td>
+          <td>str型变量或Image对象</td>
+          <td>表示前景卡片靠左显示的图标</td>
+          <td>可选，支持本地图片/网络图片地址，base64编码串或PIL.Image对象。将自动缩放为90x90大小显示</td>
+     </tr>
+    <tr>
+          <td>titleFontColor</td>
+          <td>标题字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片标题的字体颜色</td>
+          <td>可选，默认为黑色</td>
+     </tr>
+    <tr>
+          <td>subtitleFontColor</td>
+          <td>副标题字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片副标题的字体颜色</td>
+          <td>可选，默认为深灰</td>
+     </tr>
+    <tr>
+          <td>bodyFontColor</td>
+          <td>正文字体颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片正文部分的字体颜色</td>
+          <td>可选，默认为浅灰</td>
+     </tr>
+    <tr>
+          <td>backColor</td>
+          <td>卡片背景颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片的背景颜色</td>
+          <td>可选，默认为白色</td>
+     </tr>
+</table>
+
+<p>示例代码及效果：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">ResponseImage</span><span class="o">.</span><span class="n">RichContentCard</span><span class="p">(</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="n">raw_content</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>            <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;RichContentCard&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>            <span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">,</span> <span class="s1">&#39;弦月舞步&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>            <span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="s1">&#39;普通攻击：可以进行至多三段的连续剑击；重击消耗一定体力进行一次旋转斩击；下落攻击，从空中下坠冲击地面，攻击下落路径上的敌人，并在落地时造成范围伤害。&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>            <span class="p">(</span><span class="s1">&#39;separator&#39;</span><span class="p">,),</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>            <span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">,</span> <span class="s1">&#39;七域舞步&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>            <span class="p">(</span><span class="s1">&#39;subtitle&#39;</span><span class="p">,</span> <span class="s1">&#39;E技能&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>            <span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="s1">&#39;展开”翩转”状态，基于妮露的生命值上限对身边的敌人造成水元素伤害。&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>            <span class="p">(</span><span class="s1">&#39;separator&#39;</span><span class="p">,),</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>            <span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">,</span> <span class="s1">&#39;浮莲舞步 远梦聆泉&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>            <span class="p">(</span><span class="s1">&#39;subtitle&#39;</span><span class="p">,</span> <span class="s1">&#39;Q技能&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>            <span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="s1">&#39;基于妮露的生命值上限，造成水元素范围伤害，并为命中的敌人施加“水世流沔”状态，短暂间隔后，处于“永世注沔”状态下的敌人将受到水元素伤害。&#39;</span><span class="p">),</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="p">],</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="n">icon</span> <span class="o">=</span> <span class="s1">&#39;https://gimg2.baidu.com/image_search/src=http%3A</span><span class="si">%2F%2F</span><span class="s1">imgo.hackhome.com</span><span class="si">%2F</span><span class="s1">img2022</span><span class="si">%2F</span><span class="s1">7</span><span class="si">%2F</span><span class="s1">5</span><span class="si">%2F</span><span class="s1">11</span><span class="si">%2F</span><span class="s1">23040603.jpg&amp;refer=http%3A</span><span class="si">%2F%2F</span><span class="s1">imgo.hackhome.com&amp;app=2002&amp;size=f9999,10000&amp;q=a80&amp;n=0&amp;g=0n&amp;fmt=auto?sec=1667132746&amp;t=a133591be6a3a16de33e20c8989f424c&#39;</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="p">)</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="p">)</span>
+</code></pre></div>
+<p><img alt="" src="../../images/responseImage/richContentCard.jpg" /></p>
+<h5 id="responseimageblankcard"><code>ResponseImage.BlankCard</code></h5>
+<p>空白卡片，参数如下：</p>
+<table>
+     <tr>
+          <th>属性名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+     <tr>
+          <td>size</td>
+          <td>高度</td>
+          <td>int型变量</td>
+          <td>表示前景卡片的高度 (不含边框)</td>
+          <td>可选，默认为0</td>
+     </tr>
+    <tr>
+          <td>backColor</td>
+          <td>卡片背景颜色</td>
+          <td>tuple型变量</td>
+          <td>表示前景卡片的背景颜色</td>
+          <td>可选，默认为白色</td>
+     </tr>
+</table>
+
+<h4 id="responseimageaddcardlist"><code>ResponseImage.addCardList()</code></h4>
+<p>以列表形式一次添加多个前景卡片，卡片类型同上。</p>
 
 
 
