@@ -1621,15 +1621,24 @@
 <p>使用字典类型作为参数添加卡片，好处是方便修改卡片类型，缺点是没有代码提示、容易打错字段名称，所以，请小心检查字典中的键！</p>
 </div>
 <h3 id="generateimage">generateImage() 生成保存图片</h3>
-<p>使用<code>ResponseImage.generateImage(savePath)</code>函数生成图片并保存图片。</p>
-<ul>
-<li>
-<p>参数<code>savePath</code>可选，作为图片的保存路径，默认为空（不保存）。</p>
-</li>
-<li>
+<p>使用<code>ResponseImage.generateImage(savePath)</code>函数生成图片并保存图片到硬盘。</p>
 <p>函数返回值是一个PIL.Imgae对象，您可以在此基础上使用pillow库继续编辑。</p>
-</li>
-</ul>
+<p>函数参数如下：</p>
+<table>
+    <tr>
+          <th>属性名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+    <tr>
+          <td>savePath</td>
+          <td>保存地址</td>
+          <td>str型变量</td>
+          <td>表示图片的保存地址</td>
+          <td>可选，默认为空 (不保存)</td>
+    </tr>
 
 
 
