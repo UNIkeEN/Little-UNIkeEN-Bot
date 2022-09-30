@@ -1114,7 +1114,14 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    使用字典格式添加卡片
+    使用字典类型添加卡片
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generateimage" class="md-nav__link">
+    generateImage() 生成保存图片
   </a>
   
 </li>
@@ -1585,7 +1592,7 @@
 
 <h3 id="addcardlist">addCardList() 添加卡片列表</h3>
 <p>使用<code>ResponseImage.addCardList()</code>函数，可以以列表形式一次添加多个前景卡片，卡片类型同上。</p>
-<h3 id="_3">使用字典格式添加卡片</h3>
+<h3 id="_3">使用字典类型添加卡片</h3>
 <p>除使用形如<code>NormalCard</code>等类外，你也可以使用字典形式添加卡片数据，字典的style键值必选表示卡片类型。以下两端代码的效果相同：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">ResponseImage</span><span class="o">.</span><span class="n">NormalCard</span><span class="p">(</span>
@@ -1613,6 +1620,16 @@
 <p class="admonition-title">注意</p>
 <p>使用字典类型作为参数添加卡片，好处是方便修改卡片类型，缺点是没有代码提示、容易打错字段名称，所以，请小心检查字典中的键！</p>
 </div>
+<h3 id="generateimage">generateImage() 生成保存图片</h3>
+<p>使用<code>ResponseImage.generateImage(savePath)</code>函数生成图片并保存图片。</p>
+<ul>
+<li>
+<p>参数<code>savePath</code>可选，作为图片的保存路径，默认为空（不保存）。</p>
+</li>
+<li>
+<p>函数返回值是一个PIL.Imgae对象，您可以在此基础上使用pillow库继续编辑。</p>
+</li>
+</ul>
 
 
 
