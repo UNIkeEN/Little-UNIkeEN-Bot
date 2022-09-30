@@ -1126,7 +1126,7 @@
       
         <li class="md-nav__item">
   <a href="#generateimage" class="md-nav__link">
-    generateImage() 生成并保存图片
+    generateImage() 生成并保存
   </a>
   
 </li>
@@ -1142,6 +1142,26 @@
   <a href="#_4" class="md-nav__link">
     常量列表
   </a>
+  
+    <nav class="md-nav" aria-label="常量列表">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    标准颜色常量
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sjtu" class="md-nav__link">
+    SJTU视觉标准色常量
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1634,7 +1654,7 @@
 <p class="admonition-title">注意</p>
 <p>使用字典类型作为参数添加卡片，好处是方便修改卡片类型，缺点是没有代码提示、容易打错字段名称，所以，请小心检查字典中的键！</p>
 </div>
-<h2 id="generateimage">generateImage() 生成并保存图片</h2>
+<h2 id="generateimage">generateImage() 生成并保存</h2>
 <p>使用<code>ResponseImage.generateImage(savePath)</code>函数生成图片并保存图片到硬盘。</p>
 <p>函数返回值是一个PIL.Imgae对象，你可以对此对象使用pillow库继续编辑。</p>
 <p>函数参数如下：</p>
@@ -1660,6 +1680,7 @@
 <p>函数返回值是一个列表，列表每项是一BlankCard类型卡片四角的坐标。使用此坐标，你可以对添加的空白卡片位置绘制个性化内容。</p>
 <h2 id="_4">常量列表</h2>
 <p>库中预设了一些颜色常量，方便开发者统一颜色</p>
+<h3 id="_5">标准颜色常量</h3>
 <table>
     <tr>
           <th>常量名称</th>
@@ -1684,6 +1705,149 @@
           <td>灰色</td>
           <td>(158, 158, 158, 255)</td>
           <td style="color:#9E9E9E">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_GREY_SUBTITLE</td>
+          <td>灰色(副标题)</td>
+          <td>(95, 95, 95, 255)</td>
+          <td style="color:#5F5F5F">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_GREY_CONTENT</td>
+          <td>灰色(正文)</td>
+          <td>(125, 125, 125, 255)</td>
+          <td style="color:#7D7D7D">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_GERY_BORDER</td>
+          <td>灰色(边框)</td>
+          <td>(213, 213, 213, 255)</td>
+          <td style="color:#D5D5D5">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_GERY_BACK</td>
+          <td>灰色(背景)</td>
+          <td>(240, 240, 240, 255)</td>
+          <td style="color:#F0F0F0">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_RED</td>
+          <td>红色</td>
+          <td>(221, 0, 38, 255)</td>
+          <td style="color:#DD0026">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_LIGHTRED</td>
+          <td>浅红色</td>
+          <td>(255, 232, 236, 255)</td>
+          <td style="color:#FFE8EC">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_GREEN</td>
+          <td>绿色</td>
+          <td>(0, 191, 48, 255)</td>
+          <td style="color:#00BF30">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_LIGHTGREEN</td>
+          <td>浅绿色</td>
+          <td>(219, 255, 228, 255)</td>
+          <td style="color:#DBFFE4">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_ORANGE</td>
+          <td>橙色</td>
+          <td>(244, 149, 4, 255)</td>
+          <td style="color:#F49504">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_LIGHTORANGE</td>
+          <td>浅橙色</td>
+          <td>(254, 232, 199, 255)</td>
+          <td style="color:#FEE8C7">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_BLUE</td>
+          <td>蓝色</td>
+          <td>(32, 131, 197, 255)</td>
+          <td style="color:#2083C5">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_LIGHTBLUE</td>
+          <td>浅蓝色</td>
+          <td>(9, 188, 211, 255)</td>
+          <td style="color:#09BCD3">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_CYAN</td>
+          <td>青色</td>
+          <td>(0, 150, 136, 255)</td>
+          <td style="color:#009688">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_INDIGO</td>
+          <td>靛蓝色</td>
+          <td>(69, 84, 164, 255)</td>
+          <td style="color:#4554A4">示例文字</td>
+    </tr>
+</table>
+
+<h3 id="sjtu">SJTU视觉标准色常量</h3>
+<p>以下颜色满足上海交通大学视觉识别系统的颜色标准</p>
+<table>
+    <tr>
+          <th>常量名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>示例</th>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_RED</td>
+          <td>交大红</td>
+          <td>(200, 22, 30, 255)</td>
+          <td style="color:#C8161E">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_DARKRED</td>
+          <td>交大暗红</td>
+          <td>(167, 32, 56, 255)</td>
+          <td style="color:#A72038">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_ORANGE</td>
+          <td>交大橙</td>
+          <td>(240, 131, 0, 255)</td>
+          <td style="color:#F08300">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_YELLOW</td>
+          <td>交大黄</td>
+          <td>(253, 208, 0, 255)</td>
+          <td style="color:#FDD000">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_BLUE</td>
+          <td>交大蓝</td>
+          <td>(0, 134, 209, 255)</td>
+          <td style="color:#0086D1">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_DARKBLUE</td>
+          <td>交大暗蓝</td>
+          <td>(0, 64, 152, 255)</td>
+          <td style="color:#004098">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_GREEN</td>
+          <td>交大绿</td>
+          <td>(51, 141, 39, 255)</td>
+          <td style="color:#338D27">示例文字</td>
+    </tr>
+    <tr>
+          <td>PALETTE_SJTU_CYAN</td>
+          <td>交大青</td>
+          <td>(0, 81, 78, 255)</td>
+          <td style="color:#00514E">示例文字</td>
     </tr>
 </table>
 
