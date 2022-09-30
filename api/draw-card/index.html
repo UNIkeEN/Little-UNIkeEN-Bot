@@ -1119,15 +1119,29 @@
   
 </li>
         
-          <li class="md-nav__item">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#generateimage" class="md-nav__link">
     generateImage() 生成并保存图片
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#getblankcoord" class="md-nav__link">
+    getBlankCoord() 获取空白卡片坐标
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    常量列表
+  </a>
   
 </li>
       
@@ -1620,7 +1634,7 @@
 <p class="admonition-title">注意</p>
 <p>使用字典类型作为参数添加卡片，好处是方便修改卡片类型，缺点是没有代码提示、容易打错字段名称，所以，请小心检查字典中的键！</p>
 </div>
-<h3 id="generateimage">generateImage() 生成并保存图片</h3>
+<h2 id="generateimage">generateImage() 生成并保存图片</h2>
 <p>使用<code>ResponseImage.generateImage(savePath)</code>函数生成图片并保存图片到硬盘。</p>
 <p>函数返回值是一个PIL.Imgae对象，你可以对此对象使用pillow库继续编辑。</p>
 <p>函数参数如下：</p>
@@ -1639,12 +1653,27 @@
           <td>表示图片的保存地址</td>
           <td>可选，默认为空 (不保存)</td>
     </tr>
+</table>
 
-### getBlankCoord() 获取
-
-使用`ResponseImage.getBlankCoord()`获得BlankCard类型卡片的位置。
-
-函数返回值是一个列表，列表每项是一BlankCard类型卡片四角的坐标。使用此坐标，你可以对添加的空白卡片位置绘制个性化内容。
+<h2 id="getblankcoord">getBlankCoord() 获取空白卡片坐标</h2>
+<p>使用<code>ResponseImage.getBlankCoord()</code>获得BlankCard类型卡片的位置。</p>
+<p>函数返回值是一个列表，列表每项是一BlankCard类型卡片四角的坐标。使用此坐标，你可以对添加的空白卡片位置绘制个性化内容。</p>
+<h2 id="_4">常量列表</h2>
+<p>库中预设了一些颜色常量，方便开发者统一颜色</p>
+<table>
+    <tr>
+          <th>常量名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>示例</th>
+    </tr>
+    <tr>
+          <td>PALETTE_BLACK</td>
+          <td>黑色</td>
+          <td>(0, 0, 0, 255)</td>
+          <td style="color:#000000">示例文字</td>
+    </tr>
+</table>
 
 
 
