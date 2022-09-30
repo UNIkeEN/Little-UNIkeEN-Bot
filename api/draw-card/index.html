@@ -1050,21 +1050,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#responseimage_1" class="md-nav__link">
-    ResponseImage 类
-  </a>
-  
-    <nav class="md-nav" aria-label="ResponseImage 类">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     创建图片
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     添加前景卡片
   </a>
@@ -1131,11 +1123,6 @@
     </nav>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
     </ul>
   
@@ -1180,9 +1167,8 @@
 <p>在使用本库前，请确保 <code>./resources/fonts/</code> 目录下 <code>汉仪文黑.ttf</code> 和 <code>SourceHanSansCN-Medium.otf</code> 字体文件存放完整，否则您将无法使用默认字体。
 如要更换默认字体或字体存放地址，请修改库中全局常量代码。</p>
 </div>
-<h2 id="responseimage_1">ResponseImage 类</h2>
-<h3 id="_1">创建图片</h3>
-<p>绘制图片的操作均基于 ResponseImage 类完成，新建一个 Response 实例以创建一张图片。</p>
+<h2 id="_1">创建图片</h2>
+<p>本库的所有操作均基于 ResponseImage 类完成，新建一个 ResponseImage 类的实例以创建一张图片。</p>
 <p>示例代码：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">img</span> <span class="o">=</span> <span class="n">ResponseImage</span><span class="p">(</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">theme</span> <span class="o">=</span> <span class="s1">&#39;unicorn&#39;</span><span class="p">,</span>
@@ -1298,10 +1284,10 @@
  </tr>
 </table>
 
-<h3 id="_2">添加前景卡片</h3>
+<h2 id="_2">添加前景卡片</h2>
 <p>ResponseImage 实例相当于一个容器。如要让图片展示各类信息，你需要向实例添加一个或多个"前景卡片"。</p>
 <p>"前景卡片"机制可以帮助你将各类信息分组展示。</p>
-<h4 id="addcard">addCard() 添加卡片</h4>
+<h3 id="addcard">addCard() 添加卡片</h3>
 <p>使用<code>ResponseImage.addCard()</code>函数，向 ResponseImage 实例添加单个前景卡片。卡片在图片中按添加卡片的顺序显示。</p>
 <p>示例代码：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
@@ -1319,7 +1305,7 @@
 <a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">)</span>
 </code></pre></div>
 <p>库预设了多种卡片类型可供添加：</p>
-<h5 id="normalcard">NormalCard</h5>
+<h4 id="normalcard">NormalCard</h4>
 <p>标准类型前景卡片，内容左对齐。</p>
 <p>可供编辑的参数如下：</p>
 <table>
@@ -1407,7 +1393,7 @@
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
 </code></pre></div>
 <p><img alt="" src="../../images/responseImage/normalCard.jpg" /> </p>
-<h5 id="noticecard">NoticeCard</h5>
+<h4 id="noticecard">NoticeCard</h4>
 <p>通知类型前景卡片，内容居中显示。</p>
 <p>可供编辑的参数如下：</p>
 <table>
@@ -1495,7 +1481,7 @@
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
 </code></pre></div>
 <p><img alt="" src="../../images/responseImage/noticeCard.jpg" /> </p>
-<h5 id="richcontentcard">RichContentCard</h5>
+<h4 id="richcontentcard">RichContentCard</h4>
 <p>富内容复合类型卡片，可以在一个前景卡片中显示复合格式的多行文本。</p>
 <p>文本内容以列表的形式输入，列表中每项为一个形如 <code>(格式，内容)</code> 的元组，其中"格式"字段可选：<code>title</code>，<code>subtitle</code>，<code>keyword</code>，<code>body</code>，<code>separator</code>。具体应用参见下方示例代码。</p>
 <table>
@@ -1571,7 +1557,7 @@
 <a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="p">)</span>
 </code></pre></div>
 <p><img alt="" src="../../images/responseImage/richContentCard.jpg" /> </p>
-<h5 id="blankcard">BlankCard</h5>
+<h4 id="blankcard">BlankCard</h4>
 <p>空白卡片，参数如下：</p>
 <table>
      <tr>
@@ -1597,9 +1583,9 @@
      </tr>
 </table>
 
-<h4 id="addcardlist">addCardList() 添加卡片列表</h4>
+<h3 id="addcardlist">addCardList() 添加卡片列表</h3>
 <p>使用<code>ResponseImage.addCardList()</code>函数，可以以列表形式一次添加多个前景卡片，卡片类型同上。</p>
-<h4 id="_3">使用字典格式添加卡片</h4>
+<h3 id="_3">使用字典格式添加卡片</h3>
 <p>除使用形如<code>NormalCard</code>等类外，你也可以使用字典形式添加卡片数据，字典的style键值必选表示卡片类型。以下两端代码的效果相同：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">ResponseImage</span><span class="o">.</span><span class="n">NormalCard</span><span class="p">(</span>
