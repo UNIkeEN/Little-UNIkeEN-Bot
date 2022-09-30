@@ -65,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#responseimage" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -1015,9 +1020,65 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          响应卡片绘制
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         响应卡片绘制
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#responseimage" class="md-nav__link">
+    导入 responseImage 库
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responseimage_1" class="md-nav__link">
+    ResponseImage 类
+  </a>
+  
+    <nav class="md-nav" aria-label="ResponseImage 类">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    创建图片
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    添加卡片
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1047,7 +1108,134 @@
 
   <h1>响应卡片绘制</h1>
 
+<p>部分功能场景下，Bot的回答包含较多文字和插图（如”每日新闻“，”功能列表“），为避免发送长文字的风控风险、美化回复信息的展示形式，可以将这些内容转化为一张图片发送。Little-UNIkeEN-Bot 基于 pillow 封装了 responseImage 库，方便开发者快速构建此类图片。</p>
+<h2 id="responseimage">导入 responseImage 库</h2>
+<p>responseImage 库位于<code>./utils/</code>目录下。在插件代码中使用如下代码导入此库：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">utils.responseImage</span> <span class="kn">import</span> <span class="o">*</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">提示</p>
+<p>在使用 responseImage 库前，请确保在 <code>./resources/fonts/</code> 目录下 <code>汉仪文黑.ttf</code> 和 <code>SourceHanSansCN-Medium.otf</code> 字体文件存放完整，否则您将无法使用默认字体。</p>
+</div>
+<h2 id="responseimage_1">ResponseImage 类</h2>
+<h3 id="_1">创建图片</h3>
+<p>绘制图片的操作均基于 ResponseImage 类完成，新建一个 Response 实例以创建一张图片。</p>
+<p>示例代码：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">img</span> <span class="o">=</span> <span class="n">ResponseImage</span><span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">theme</span> <span class="o">=</span> <span class="s1">&#39;unicorn&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;帮助列表&#39;</span><span class="p">,</span> 
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">titleColor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">165</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> 
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">primaryColor</span> <span class="o">=</span> <span class="n">PALETTE_SJTU_RED</span><span class="p">,</span> 
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">footer</span> <span class="o">=</span> <span class="s1">&#39;更新日期 2022/08/30&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">layout</span> <span class="o">=</span> <span class="s1">&#39;two-column&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>可选的参数如下：</p>
+<table>
+     <tr>
+          <th>属性名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+     <tr>
+          <td>theme</td>
+          <td>主题</td>
+          <td>unicorn</td>
+          <td>表示使用默认主题</td>
+          <td>可选，默认为'unicorn'</td>
+     </tr>
+     <tr>
+          <td>autoSize</td>
+          <td>自动调整大小</td>
+          <td>bool型变量</td>
+          <td>表示是否根据信息内容调整大小</td>
+          <td>可选默认为True</td>
+ </tr>
+ <tr>
+  <td rowspan=2>layout</td>
+  <td rowspan=2>布局方式</td>
+  <td>normal</td>
+  <td>表示单栏布局</td>
+  <td rowspan=2>可选，默认为单栏</td>
+ </tr>
+ <tr>
+  <td>two-column</td>
+  <td>表示双栏布局</td>
+ </tr>
+ <tr>
+  <td>height</td>
+  <td>图片高度</td>
+  <td>int型变量</td>
+  <td>表示图片高度</td>
+  <td>可选，默认为800，autoSize为True时无效</td>
+ </tr>
+ <tr>
+  <td>width</td>
+  <td>图片宽度</td>
+  <td>int型变量</td>
+  <td>表示图片宽度</td>
+  <td>可选，默认为880，autoSize为True时，将固定width自动调整高度</td>
+ </tr>
+ <tr>
+  <td>title</td>
+  <td>标题</td>
+  <td>str型变量</td>
+  <td>表示显示在图片顶部的标题</td>
+  <td>可选，不支持换行，默认为'响应卡片'</td>
+ </tr>
+ <tr>
+  <td>titleColor</td>
+  <td>标题框颜色</td>
+  <td >tuple型变量</td>
+  <td>表示标题框颜色的RGBA值</td>
+  <td>可选，若缺省，则与primaryColor一致</td>
+ </tr>
+ <tr>
+  <td>primaryColor</td>
+  <td>主题色</td>
+  <td>tuple型变量</td>
+  <td>表示主题色的RGBA值，将应用于前景卡片关键句颜色</td>
+  <td>可选，默认为蓝色</td>
+ </tr>
+ <tr>
+  <td>backColor</td>
+  <td>背景色</td>
+  <td>tuple型变量</td>
+  <td>表示图片背景颜色的RGBA值</td>
+  <td>可选，默认为(240,240,240,255)</td>
+ </tr>
+ <tr>
+  <td>footer</td>
+  <td>页脚</td>
+  <td>str型变量</td>
+  <td>表示显示在图片底部的页脚</td>
+  <td >可选，不支持换行，默认为空</td>
+ </tr>
+ <tr>
+  <td>cardTitleFont</td>
+  <td>前景卡片标题字体</td>
+  <td>ImageFont.FreeTypeFont型变量</td>
+  <td>表示前景卡片标题使用的字体及大小</td>
+  <td>可选</td>
+ </tr>
+ <tr>
+  <td>cardSubtitleFont</td>
+  <td>前景卡片副标题字体</td>
+  <td>ImageFont.FreeTypeFont型变量</td>
+  <td>表示前景卡片副标题和关键句使用的字体及大小</td>
+  <td>可选</td>
+ </tr>
+ <tr>
+  <td>cardBodyFont</td>
+  <td>前景卡片正文字体</td>
+  <td>ImageFont.FreeTypeFont型变量</td>
+  <td>表示前景卡片正文使用的字体及大小</td>
+  <td>可选</td>
+ </tr>
+</table>
 
+<h3 id="_2">添加卡片</h3>
 
 
 
