@@ -65,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -568,9 +573,45 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          插件入门
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         插件入门
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    插件示范
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    代码分析
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1047,7 +1088,167 @@
 
   <h1>插件入门</h1>
 
-
+<p>插件系统是基于class继承的一套系统，所有插件都必须继承<code>StandardPlugin</code>，并实现以下三个接口：</p>
+<table>
+<thead>
+<tr>
+<th>接口名称</th>
+<th>参数</th>
+<th>返回值类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>judgeTrigger</td>
+<td><code>@msg</code>: 消息文本，<code>str</code>类型<br><code>@data</code>: 消息所包括的所有信息，<code>dict</code>类型</td>
+<td><code>bool</code></td>
+<td>判断此插件是否会触发</td>
+</tr>
+<tr>
+<td>executeEvent</td>
+<td><code>@msg</code>: 消息文本，<code>str</code>类型<br><code>@data</code>: 消息所包括的所有信息，<code>dict</code>类型</td>
+<td><code>str</code> 或者 <code>None</code></td>
+<td>执行插件逻辑</td>
+</tr>
+<tr>
+<td>getPluginInfo</td>
+<td><code>None</code></td>
+<td><code>dict</code></td>
+<td>返回插件信息</td>
+</tr>
+</tbody>
+</table>
+<p>这里还要特别强调一下getPluginInfo的返回值格式：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Faq&#39;</span><span class="p">,</span>                      <span class="c1"># require</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;问答库&#39;</span><span class="p">,</span>             <span class="c1"># require</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="s1">&#39;commandDescription&#39;</span><span class="p">:</span> <span class="s1">&#39;问 [title]&#39;</span><span class="p">,</span> <span class="c1"># require</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="s1">&#39;usePlace&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="p">],</span> <span class="c1"># require</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="s1">&#39;pluginConfigTableNames&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Faq&#39;</span><span class="p">,],</span> <span class="c1"># require, must be unique among plugins</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>                 <span class="c1"># suggest</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="s1">&#39;Unicorn&#39;</span><span class="p">,</span>                <span class="c1"># suggest</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="o">...</span>                                 <span class="c1"># any other information you want</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
+</code></pre></div></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>类型</th>
+<th>作用</th>
+<th>是否必须</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>'name'</td>
+<td><code>str</code></td>
+<td>提示这个插件的class名称</td>
+<td>是</td>
+</tr>
+<tr>
+<td>'description'</td>
+<td><code>str</code></td>
+<td>简要描述这个插件</td>
+<td>是</td>
+</tr>
+<tr>
+<td>'commandDescription'</td>
+<td><code>str</code></td>
+<td>概括触发这个插件的关键词</td>
+<td>是</td>
+</tr>
+<tr>
+<td>'usePlace'</td>
+<td><code>list</code></td>
+<td>描述这个插件的作用域<br>'private': 这个插件可以在私聊开启<br>'group': 这个插件可以在群聊开启</td>
+<td>是</td>
+</tr>
+<tr>
+<td>'pluginConfigTableNames'</td>
+<td><code>list</code></td>
+<td>这个插件所需要占用的数据库表名。注意，插件开发者开的sql表尽量挂在<code>BOT_DATA</code>这个库下面，因此需要避免表重名。</td>
+<td>是</td>
+</tr>
+<tr>
+<td>'version'</td>
+<td><code>str</code></td>
+<td>插件版本</td>
+<td>否</td>
+</tr>
+<tr>
+<td>'author'</td>
+<td><code>str</code></td>
+<td>插件作者</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_1">插件示范</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span> <span class="nc">FireworksFace</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="k">return</span> <span class="n">msg</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;放个烟花&#39;</span><span class="p">,</span><span class="s1">&#39;烟花&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;[CQ:face,id=333,type=sticker]&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;FireworksFace&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;烟花&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>            <span class="s1">&#39;commandDescription&#39;</span><span class="p">:</span> <span class="s1">&#39;放个烟花/烟花&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="s1">&#39;usePlace&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">],</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="s1">&#39;pluginConfigTableNames&#39;</span><span class="p">:</span> <span class="p">[],</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="s1">&#39;Unicorn&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="p">}</span>
+</code></pre></div>
+<h2 id="_2">代码分析</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># parts of utils/standardPlugin.py</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">class</span> <span class="nc">StandardPlugin</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="nd">@abstractmethod</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="sd">        @msg: message text</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="sd">        @data: all the message data, including group_id or user_id</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="sd">        @return: whether trigger this class</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="nd">@abstractmethod</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="sd">        @msg: message text</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="sd">        @data: all the message data, including group_id or user_id</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="sd">        @return:</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="sd">            if None, then continue tranversing following plugins</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="sd">            if &quot;OK&quot;, then stop tranversing</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>    <span class="nd">@abstractmethod</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>        <span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="sd">        @return:</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="sd">            None if you do not want to show help</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="sd">            or a dict object like:</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="sd">            {</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a><span class="sd">                &#39;name&#39;: &#39;Faq&#39;,                      # require</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="sd">                &#39;description&#39;: &#39;问答库&#39;,             # require</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="sd">                &#39;commandDescription&#39;: &#39;问 [title]&#39;, # require</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span class="sd">                &#39;usePlace&#39;: [&#39;group&#39;, &#39;private&#39;, ], # require</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="sd">                &#39;pluginConfigTableNames&#39;: [&#39;Faq&#39;,], # require, must be unique among plugins</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a><span class="sd">                &#39;version&#39;: &#39;1.0.0&#39;,                 # suggest</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a><span class="sd">                &#39;author&#39;: &#39;Unicorn&#39;,                # suggest</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="sd">                ...                                 # any other information you want</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a><span class="sd">            }</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</code></pre></div>
 
 
 
