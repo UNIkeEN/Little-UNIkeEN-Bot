@@ -37,7 +37,7 @@ PrivatePluginList=[ # 私聊启用插件
 111> -grpcfg enable greeting
 bot> OK
 
-222> 早安
+222> 早安群友
 bot> 一万个美丽的未来，抵不上一个温暖的现在。早安！
 666> 晚安
 bot> 我的小脑袋已经忙了一天了，好累啊，也该休息了。晚安！
