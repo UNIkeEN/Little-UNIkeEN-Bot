@@ -7,13 +7,15 @@
 | getPluginInfo |  `None` | `dict` | 返回插件信息 |
 
 这里还要特别强调一下getPluginInfo的返回值格式：
+
 ```python
 {
     'name': 'Faq',                      # require
     'description': '问答库',             # require
     'commandDescription': '问 [title]', # require
     'usePlace': ['group', 'private', ], # require
-    'pluginConfigTableNames': ['Faq',], # require, must be unique among plugins
+    'showInHelp': True,                 # suggest, default True
+    'pluginConfigTableNames': ['Faq',], # suggest, must be unique among plugins
     'version': '1.0.0',                 # suggest
     'author': 'Unicorn',                # suggest
     ...                                 # any other information you want
@@ -26,7 +28,8 @@
 | 'description' | `str` | 简要描述这个插件 | 是 |
 | 'commandDescription' | `str` | 概括触发这个插件的关键词 | 是 |
 | 'usePlace' | `list` | 描述这个插件的作用域<br>'private': 这个插件可以在私聊开启<br>'group': 这个插件可以在群聊开启 | 是 |
-| 'pluginConfigTableNames' | `list` | 这个插件所需要占用的数据库表名。注意，插件开发者开的sql表尽量挂在`BOT_DATA`这个库下面，因此需要避免表重名。 | 是 |
+| 'showInHelp' | `bool` | 是否在help时展示 | 否，默认`True` |
+| 'pluginConfigTableNames' | `list` | 这个插件所需要占用的数据库表名。注意，插件开发者开的sql表尽量挂在`BOT_DATA`这个库下面，因此需要避免表重名。 | 否 |
 | 'version' | `str` | 插件版本 | 否 |
 | 'author' | `str` | 插件作者 | 否 |
 
@@ -46,6 +49,7 @@ class FireworksFace(StandardPlugin):
             'description': '烟花',
             'commandDescription': '放个烟花/烟花',
             'usePlace': ['group', 'private'],
+            'showInHelp': True,
             'pluginConfigTableNames': [],
             'version': '1.0.0',
             'author': 'Unicorn',
@@ -81,17 +85,17 @@ class StandardPlugin(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def getPluginInfo(self)->Union[None, dict]:
+    def getPluginInfo(self)->dict:
         """
         @return:
-            None if you do not want to show help
-            or a dict object like:
+            a dict object like:
             {
                 'name': 'Faq',                      # require
                 'description': '问答库',             # require
                 'commandDescription': '问 [title]', # require
                 'usePlace': ['group', 'private', ], # require
-                'pluginConfigTableNames': ['Faq',], # require, must be unique among plugins
+                'showInHelp': True,                 # suggest, default True
+                'pluginConfigTableNames': ['Faq',], # suggest, must be unique among plugins
                 'version': '1.0.0',                 # suggest
                 'author': 'Unicorn',                # suggest
                 ...                                 # any other information you want
