@@ -58,6 +58,10 @@ bot>    查询失败
         ${url}可在 canvas - 日历📅 - 日历馈送 中获取
 ```
 
+图片展示：
+
+![](../../images/plugins/canvas.png)
+
 ## 3. 代码分析
 
 由于历史原因，canvasIcsPlugin的绘图函数没有调用LittleUnicorn的推荐绘图API。
