@@ -1127,7 +1127,7 @@
 <p>接收端口号为 5700 ，反向 POST 端口号为 5701 。对应修改 <code>utils/basicConfig.py</code> 如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">HTTP_URL</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:5700&quot;</span>
 </code></pre></div>
-<p>对应修改 <code>main.py</code> 中最后一行如下：</p>
+<p>修改 <code>main.py</code> 中最后一行如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5701</span><span class="p">)</span>
 </code></pre></div>
