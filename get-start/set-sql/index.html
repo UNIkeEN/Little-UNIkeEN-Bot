@@ -1069,7 +1069,7 @@
 
 
 <h1 id="sql">配置SQL</h1>
-<p>Little-UNIkeEN-Bot 关于用户数据、功能配置等数据存储均是基于 MySQL 实现的。在运行机器人之前，你需要为您的服务器安装 MySQL 环境。</p>
+<p>Little-UNIkeEN-Bot 关于用户数据、功能配置等数据存储均是基于 MySQL 实现的。在运行 Bot 之前，你需要为服务器安装 MySQL 环境。</p>
 <p>关于 MySQL 的安装，可以参见如下教程 <a href="https://cloud.tencent.com/developer/article/1863236">eg1</a> ，<a href="https://www.runoob.com/mysql/mysql-install.html">eg2</a>。</p>
 <p>具体来说，首先到 <a href="https://downloads.mysql.com/archives/community/">MySQL官网</a> 下载对应操作系统的包，搜索条件如下（ProductVersion 选择最新，OsVersion 选择相应系统版本）：</p>
 <p><img alt="" src="../../images/mysqlSearch.png" /></p>
@@ -1086,7 +1086,7 @@
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>mysqld --initialize
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>systemctl start mysqld
 </code></pre></div>
-<p>完成安装后，修改配置和密码，此处不再赘述，您可以参考上述网站教程。</p>
+<p>完成安装后，修改配置和密码，此处不再赘述，你可以参考上述网站教程。</p>
 <p>直到你输入以下命令后可以显示 MySQL 命令行，你的 MySQL 安装过程就算大功告成了：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>mysql -u root -p
 </code></pre></div>
@@ -1096,7 +1096,7 @@
 </div>
 <div class="admonition warning">
 <p class="admonition-title">注意：旧的数据存储格式</p>
-<p>一些内侧时期的旧版功能插件可能使用 JSON 文件存储用户数据，您可以自行选择修改为 SQL 存储。处于性能与统一化考量，我们推荐您使用 SQL 存储。</p>
+<p>一些内侧时期的旧版功能插件可能使用 JSON 文件存储用户数据，你可以自行选择修改为 SQL 存储。出于性能与统一化考量，我们推荐您使用 SQL 存储。</p>
 </div>
 
 
