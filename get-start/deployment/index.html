@@ -251,7 +251,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../api/auth-config/" class="md-tabs__link">
+      <a href="../../api/send/" class="md-tabs__link">
         API
       </a>
     </li>
@@ -1071,6 +1071,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -1091,8 +1095,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/send/" class="md-nav__link">
+        发送消息
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/warning/" class="md-nav__link">
+        运行时警告
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/auth-config/" class="md-nav__link">
-        鉴权与功能配置
+        鉴权与插件配置
       </a>
     </li>
   
@@ -1182,11 +1214,11 @@
           <td>如 Bot 加入某群但列表中无此群群号，则 Bot 对该群所有信息均不做响应</td>
      </tr>
      <tr>
-          <td>APPLY_GROUP_ID</td>
-          <td>响应群列表</td>
+          <td>ROOT_ADMIN_ID</td>
+          <td>超级管理员列表</td>
           <td>list型变量</td>
-          <td>表示指定 Bot 响应的群聊号码</td>
-          <td>如 Bot 加入某群但列表中无此群群号，则 Bot 对该群所有信息均不做响应</td>
+          <td>表示超级管理员的 QQ 号码</td>
+          <td>超级管理员可以接收运行时警告，并通过命令配置各个群聊的启用插件、为各个群聊添加 Bot 管理员</td>
      </tr>
     <tr>
           <td>BOT_SELF_QQ</td>

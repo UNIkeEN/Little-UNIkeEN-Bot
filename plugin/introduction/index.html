@@ -251,7 +251,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../api/auth-config/" class="md-tabs__link">
+      <a href="../../api/send/" class="md-tabs__link">
         API
       </a>
     </li>
@@ -1067,6 +1067,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -1087,8 +1091,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/send/" class="md-nav__link">
+        发送消息
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/warning/" class="md-nav__link">
+        运行时警告
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/auth-config/" class="md-nav__link">
-        鉴权与功能配置
+        鉴权与插件配置
       </a>
     </li>
   
@@ -1165,7 +1197,7 @@
 </tr>
 </tbody>
 </table>
-<p>开发者在 <code>main.py</code> 中 <code>import</code> 功能插件，并维护 <code>main.py</code> 中的插件列表以增减插件，关于插件的具体实例请见下一节。</p>
+<p>开发者在 <code>main.py</code> 中 <code>import</code> 功能插件，并维护 <code>main.py</code> 中的插件列表以增减插件，关于插件的具体示例请见下一节。</p>
 <p>Bot 运行收到群聊/私聊消息时，将遍历群聊/私聊插件列表，逐一调用各插件的 <code>judgeTrigger()</code> 函数，若返回值为真则触发，调用该插件的 <code>executeEvent()</code> 函数进行响应。插件的 <code>getPluginInfo()</code> 函数则在用户获取帮助信息时被逐一调用。</p>
 <p>特别强调，关于 <code>getPluginInfo()</code> 的返回值格式，要求如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
@@ -1245,15 +1277,15 @@
 <p><code>plugins/superEmoji.py</code> 中实现插件功能代码：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">utils.basicEvent</span> <span class="kn">import</span> <span class="o">*</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="hll"><span class="kn">from</span> <span class="nn">utils.standardPlugin</span> <span class="kn">import</span> <span class="n">StandardPlugin</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="hll"><span class="kn">from</span> <span class="nn">utils.standardPlugin</span> <span class="kn">import</span> <span class="n">StandardPlugin</span> <span class="c1"># 引入StandardPlugin</span>
 </span><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">class</span> <span class="nc">FireworksFace</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="k">return</span> <span class="n">msg</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;放个烟花&#39;</span><span class="p">,</span><span class="s1">&#39;烟花&#39;</span><span class="p">]</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;[CQ:face,id=333,type=sticker]&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="hll">        <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;[CQ:face,id=333,type=sticker]&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span> <span class="c1"># 发送消息</span>
+</span><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">return</span> <span class="p">{</span>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;FireworksFace&#39;</span><span class="p">,</span>
@@ -1266,6 +1298,7 @@
 <a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>            <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="s1">&#39;Unicorn&#39;</span><span class="p">,</span>
 <a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="p">}</span>
 </code></pre></div>
+<p>发送消息函数 <code>send()</code> 的具体参数与功能请见 API。</p>
 <p>在 <code>main.py</code> 的插件列表中启用插件：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">plugins.superEmoji</span> <span class="kn">import</span> <span class="o">*</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="o">...</span>
@@ -1282,7 +1315,8 @@
 </div>
 <div class="admonition warning">
 <p class="admonition-title">注意：触发条件冲突</p>
-<p>Bot 在设计时默认一句指令只能触发一个插件，开发者请尽量确保触发条件不冲突，或考虑插件列表中各插件的先后顺序。</p>
+<p>Bot 在设计时默认一句指令只能进行一次响应，开发者请尽量确保触发条件不冲突，或考虑插件列表中各插件的先后顺序。
+如某一插件触发但不提供响应，可以返回 None 以继续执行列表中的后续插件。</p>
 </div>
 <h2 id="_3">代码分析</h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># parts of utils/standardPlugin.py</span>
