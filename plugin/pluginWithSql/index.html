@@ -1125,13 +1125,13 @@
 <p>第二种方式能够自定义进行sql交互，实现更加丰富的功能。例如</p>
 <div class="admonition warning">
 <p class="admonition-title">注意：数据库交互必须防止外部数据注入</p>
-<p>sql防注入是开发者必须遵守的安全准则，插件程序员可以通过字符串转义（例如escape_string）或正则字符串匹配（例如re.match）来规避数据库注入风险。任何来自外部的数据都必须做到防注入，比如昵称、聊天记录、头像url等。</p>
+<p>sql 防注入是开发者必须遵守的安全准则，插件程序员可以通过字符串转义（例如 escape_string ）或正则字符串匹配（例如 re.match ）来规避数据库注入风险。任何来自外部的数据都必须做到防注入，比如昵称、聊天记录、头像 url 等。</p>
 </div>
 <p>关于 mysql 交互插件编写的样例，可以参考：</p>
 <ul>
-<li>groupConfig 插件（读写群bot管理员、插件开启信息）</li>
-<li>SJTU canvas 插件（ics url的存取）</li>
-<li>聊天记录存档插件（聊天记录的存储）</li>
+<li><a href="../plugins/groupManagerPlugin/">PluginGroupManager 插件</a>（读写群bot管理员、插件开启信息）</li>
+<li><a href="../plugins/canvasIcsPlugin/">SJTU canvas 插件</a> （ics url的存取）</li>
+<li><a href="../plugins/messageRecorderPlugin/">聊天记录存档插件</a>（聊天记录的存储）</li>
 <li>utils.accountOperation 金币系统</li>
 </ul>
 
