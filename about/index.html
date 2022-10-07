@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#1" class="md-skip">
+        <a href="#_1" class="md-skip">
           Skip to content
         </a>
       
@@ -390,30 +390,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    1. 作者介绍
+  <a href="#_1" class="md-nav__link">
+    作者介绍
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    2. 项目历程
+  <a href="#_2" class="md-nav__link">
+    开发历程
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 免责声明
+  <a href="#_3" class="md-nav__link">
+    我们的优势和不足
+  </a>
+  
+    <nav class="md-nav" aria-label="我们的优势和不足">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    免责声明
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    4. 开源社区建设
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    开源社区建设
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1137,9 +1150,7 @@
                   
 
 
-  <h1>关于本项目</h1>
-
-<h2 id="1">1. 作者介绍</h2>
+<h2 id="_1">作者介绍</h2>
 <ul>
 <li><a href="https://github.com/UNIkeEN">UNIkeEN</a></li>
 <li>身份：SJTU 21级本科生，电院</li>
@@ -1148,11 +1159,40 @@
 <li>身份：SJTU 19级本科生，电院</li>
 <li>职务：主架构师、技术顾问</li>
 </ul>
-<h2 id="2">2. 项目历程</h2>
-<p>本项目的闭源版本从2022年7月就开始开发了。UNIkeEN与qqBot缘起于nonebot，但是nonebot封装严密、接口晦涩、学习成本高，无法快速优雅地在其基础上生产内容，因此UNIkeEN决定自己基于go-cqhttp开发一款机器人前端。</p>
-<p>半月以后，Little-UNIkeEN闭源第一版诞生，其</p>
-<h2 id="3">3. 免责声明</h2>
-<h2 id="4">4. 开源社区建设</h2>
+<h2 id="_2">开发历程</h2>
+<p>2022年暑假，周围的朋友受某种风气影响，纷纷跑去开发QQ聊天机器人，其中大部分人选择nonebot作为基础框架。作为后来者，我观察到：他们在使用nonebot后，还纷纷跑去看go-cqhttp文档，甚至有几个抱怨nonebot封装太深。受此影响，我便打算只基于go-cqhttp开发一套qq机器人出来。</p>
+<p>一个月后，Little-UNIkeEN-Bot大致成型。我作为后来者，开发出的功能比那几个先到者的还要多。因此，我便考虑将这个项目继续做大。接下来一个月，我打磨架构、引进技术、开发新插件，顺利地把bot修到更进一步的高度。同时，我也开始思考一个哲学问题：</p>
+<blockquote>
+<p>onebot是一个好方案吗？</p>
+</blockquote>
+<p>我思考了好久，最后认定这并不是一个好方案。原因如下：</p>
+<p>onebot协议主打跨平台，目前nonebot也确实实现了，但是平台之间的内容异质性是中间层软件无法抹平的。比如qq的表情、at、戳一戳，形状如<code>[cq:xxx,id=xxx]</code>；钉钉的富文本，格式更不好描述。如果需要开发者自己抹除内容异质性，那么扛起跨平台大旗的中间层也没有生存的的必要了；如果中间层抹除了内容异质性，那么就需要自己制定大量标准、编写大量函数、频繁修改代码对接底层，这样做既丧失了版本稳定性，更需要消耗开发者大量精力去学习你自己制定的接口，有种“自己玩自己的”的感觉。更失望的是，阿里腾讯可不听我们这些bot开发人员的呼声，异质性内容还会更多更频繁地在未来出现。</p>
+<p>nonebot是遵守onebot协议的，自然能看出其缺点：封装深要求多、开发成本过高、版本不稳定、QQ独特的内容不能完美表达(比如精华消息等)....</p>
+<p>因此，我更加坚定了推出一套完整项目的决心。我开始召集小伙伴写插件、写文档、深度打磨架构....</p>
+<p>直到，我们隆重推出本项目的<code>1.0.0</code>版本！</p>
+<h1 id="_3">我们的优势和不足</h1>
+<p>nonebot是Little-UNIkeEN-Bot的主要竞品之一，相比nonebot，我们的优势有：</p>
+<ol>
+<li>核心代码小于1000行，架构简单、逻辑清晰</li>
+<li>在编程层面屏蔽多线程，极大地减少开发难度</li>
+<li>建议用户直接与qq驱动对话，底层丰富功能即学即用</li>
+<li>不用跨过中间层，能直接接受gocq的dict格式消息、使用python库定时等，减少学习、开发成本</li>
+<li>消息封装简单，插件示例丰富，功能轻松编写</li>
+<li>给内容生产者提供sql存储、PIL光栅化服务，大大增加生产效率</li>
+</ol>
+<p>我们的不足有：</p>
+<ol>
+<li>非跨平台，目前官方库仅支持qq(不过已经有其他作者开发了微信版本)</li>
+<li>在开发进阶插件时，需要开发者额外学习mysql、阅读go-cqhttp文档</li>
+<li>我们刚刚开源，社区建设并不完善</li>
+</ol>
+<p>我们和nonebot的差异：</p>
+<ol>
+<li>我们的定位是qq机器人前端，nonebot的定位是多聊天软件中间层&amp;前端</li>
+</ol>
+<p>nonebot2友情链接：<a href="https://nb2.baka.icu/">文档</a>，<a href="https://github.com/nonebot/nonebot2">代码</a></p>
+<h2 id="_4">免责声明</h2>
+<h2 id="_5">开源社区建设</h2>
 
 
 
