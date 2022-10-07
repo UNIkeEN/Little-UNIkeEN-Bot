@@ -1116,7 +1116,24 @@
 
   <h1>插件与数据库</h1>
 
-
+<p>插件程序员有两种方法可以与mysql交互：</p>
+<ol>
+<li>通过现有 API 间接交互，例如 group config</li>
+<li>自己 import mysql.connector 直接交互</li>
+</ol>
+<p>第一种方式比较简单，但是实现的功能有限。在 utils.basicEvent 中有 readGlobalConfig 等函数，它们能够读写 <code>BOT_DATA.globalConfig</code> 表中存储的数据。但是这种方式只能读取插件是否在某群中开启、某群的 bot管理员 有哪几个，无法进行更多数据的存取。</p>
+<p>第二种方式能够自定义进行sql交互，实现更加丰富的功能。例如</p>
+<div class="admonition warning">
+<p class="admonition-title">注意：数据库交互必须防止外部数据注入</p>
+<p>sql防注入是开发者必须遵守的安全准则，插件程序员可以通过字符串转义（例如escape_string）或正则字符串匹配（例如re.match）来规避数据库注入风险。任何来自外部的数据都必须做到防注入，比如昵称、聊天记录、头像url等。</p>
+</div>
+<p>关于 mysql 交互插件编写的样例，可以参考：</p>
+<ul>
+<li>groupConfig 插件（读写群bot管理员、插件开启信息）</li>
+<li>SJTU canvas 插件（ics url的存取）</li>
+<li>聊天记录存档插件（聊天记录的存储）</li>
+<li>utils.accountOperation 金币系统</li>
+</ul>
 
 
 
