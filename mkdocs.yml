@@ -16,11 +16,14 @@ nav:
       - '遇到问题': 'get-start/question.md'
     - 插件:
       - '插件入门': 'plugin/introduction.md'
-      - '插件目录': 'plugin/plugins-menu.md'
-      - 插件列表:
+      - '插件与数据库': 'plugin/pluginWithSql.md'
+      - '定时任务': 'plugin/pluginWithTimer.md'
+      - 基本插件:
         - '插件组管理': 'plugin/plugins/groupManagerPlugin.md'
         - '群权限获取': 'plugin/plugins/getPermissionPlugin.md'
         - '帮助插件':   'plugin/plugins/helpPlugin.md'
+        - '群消息记录': 'plugin/plugins/messageRecorderPlugin.md'
+      - 功能插件:
         - '超级表情':   'plugin/plugins/superEmojiPlugin.md'
         - '早安晚安':   'plugin/plugins/greetingsPlugin.md'
         - '寄了检测':   'plugin/plugins/jilePlugin.md'
@@ -34,13 +37,13 @@ nav:
         - '五子棋':    'plugin/plugins/gobangPlugin.md'
         - '模拟炒股':  'plugin/plugins/stocksPlugin.md'
         - 'SJTU教务':  'plugin/plugins/sjtuJwcPlugin.md'
+        - 'SJTU新闻':  'plugin/plugins/sjtuNewsPlugin.md'
         - 'SJTU第二课堂': 'plugin/plugins/sjtuDektPlugin.md'
-        - 'canvas日历': 'plugin/plugins/canvasIcsPlugin.md'
-      - '定时任务': 'test.md'
-      - '插件与数据库': 'test.md'
-      - '优秀插件示例': 'test.md'
+        - 'SJTU canvas日历': 'plugin/plugins/canvasIcsPlugin.md'
     - API:
-      - '鉴权与功能配置': 'api/auth-config.md'
+      - '发送消息': 'api/send.md'
+      - '运行时警告': 'api/warning.md'
+      - '鉴权与插件配置': 'api/auth-config.md'
       - '响应卡片绘制': 'api/draw-card.md'
 edit_uri: ""
 theme:
@@ -68,7 +71,9 @@ theme:
     - navigation.tracking
     - toc.integrate
     - navigation.indexes
+    - navigation.top
     - search.suggest
+
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -91,6 +96,10 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
 
 
 

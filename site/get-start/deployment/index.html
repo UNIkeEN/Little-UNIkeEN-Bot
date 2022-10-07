@@ -65,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#bot" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -246,7 +251,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../api/auth-config/" class="md-tabs__link">
+      <a href="../../api/send/" class="md-tabs__link">
         API
       </a>
     </li>
@@ -491,10 +496,57 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          部署 Bot
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         部署 Bot
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    对接驱动器
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    账号相关配置
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bot_1" class="md-nav__link">
+    启动 Bot
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -547,8 +599,6 @@
         
           
         
-          
-        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -583,8 +633,22 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plugin/plugins-menu/" class="md-nav__link">
-        插件目录
+      <a href="../../plugin/pluginWithSql/" class="md-nav__link">
+        插件与数据库
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plugin/pluginWithTimer/" class="md-nav__link">
+        定时任务
       </a>
     </li>
   
@@ -600,7 +664,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
       
       
       
@@ -613,45 +677,17 @@
         
           
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
       
       
-        <label class="md-nav__link" for="__nav_3_3">
-          插件列表
+        <label class="md-nav__link" for="__nav_3_4">
+          基本插件
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="插件列表" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_3">
+      <nav class="md-nav" aria-label="基本插件" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_4">
           <span class="md-nav__icon md-icon"></span>
-          插件列表
+          基本插件
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -696,6 +732,87 @@
   
 
             
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plugin/plugins/messageRecorderPlugin/" class="md-nav__link">
+        群消息记录
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_5" type="checkbox" id="__nav_3_5" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_5">
+          功能插件
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="功能插件" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_5">
+          <span class="md-nav__icon md-icon"></span>
+          功能插件
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
           
             
               
@@ -885,6 +1002,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../plugin/plugins/sjtuNewsPlugin/" class="md-nav__link">
+        SJTU新闻
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../plugin/plugins/sjtuDektPlugin/" class="md-nav__link">
         SJTU第二课堂
       </a>
@@ -900,7 +1031,7 @@
   
     <li class="md-nav__item">
       <a href="../../plugin/plugins/canvasIcsPlugin/" class="md-nav__link">
-        canvas日历
+        SJTU canvas日历
       </a>
     </li>
   
@@ -909,48 +1040,6 @@
           
         </ul>
       </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../test/" class="md-nav__link">
-        定时任务
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../test/" class="md-nav__link">
-        插件与数据库
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../test/" class="md-nav__link">
-        优秀插件示例
-      </a>
     </li>
   
 
@@ -982,6 +1071,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -1002,8 +1095,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/send/" class="md-nav__link">
+        发送消息
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/warning/" class="md-nav__link">
+        运行时警告
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/auth-config/" class="md-nav__link">
-        鉴权与功能配置
+        鉴权与插件配置
       </a>
     </li>
   
@@ -1045,9 +1166,99 @@
                   
 
 
-  <h1>部署 Bot</h1>
+<h1 id="bot">部署 Bot</h1>
+<p>完成上述的一系列环境安装，终于到了 Bot 的部署环节！</p>
+<h2 id="_1">对接驱动器</h2>
+<p>首先，你需要修改代码文件中的端口号，使 Bot 与之前所配置的驱动器（go-cqhttp）相对接。</p>
+<p>假设在 go-cqhttp 目录下的 config.yml 中配置如下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">http</span><span class="p">:</span><span class="w"></span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:5700</span><span class="w"></span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">post</span><span class="p">:</span><span class="w">  </span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://127.0.0.1:5701/</span><span class="w"> </span>
+</code></pre></div>
+<p>接收端口号为 5700 ，反向 POST 端口号为 5701 。对应修改 <code>utils/basicConfig.py</code> 如下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">HTTP_URL</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:5700&quot;</span>
+</code></pre></div>
+<p>修改 <code>main.py</code> 中最后一行如下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5701</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="_2">账号相关配置</h2>
+<p>完成对接后，请继续修改 <code>utils/basicConfig.py</code> 。示例如下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">APPLY_GROUP_ID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">111</span><span class="p">,</span> <span class="mi">222</span><span class="p">]</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">ROOT_ADMIN_ID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">333</span><span class="p">,</span> <span class="mi">444</span><span class="p">]</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">BOT_SELF_QQ</span> <span class="o">=</span> <span class="mi">555</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">VERSION_TXT</span> <span class="o">=</span> <span class="s1">&#39;版本号1.0&#39;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">sqlConfig</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="s1">&#39;passwd&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">YOUR_SQL_PASSWORD</span><span class="p">}</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">TXT_PERMISSION_DENIED</span> <span class="o">=</span> <span class="s2">&quot;该功能尚未打开哦&quot;</span>
+</code></pre></div>
+<p>以上各常量的具体解释如下：</p>
+<table>
+     <tr>
+          <th>常量名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+    </tr>
+     <tr>
+          <td>APPLY_GROUP_ID</td>
+          <td>响应群列表</td>
+          <td>list型变量</td>
+          <td>表示指定 Bot 响应的群聊号码</td>
+          <td>如 Bot 加入某群但列表中无此群群号，则 Bot 对该群所有信息均不做响应</td>
+     </tr>
+     <tr>
+          <td>ROOT_ADMIN_ID</td>
+          <td>超级管理员列表</td>
+          <td>list型变量</td>
+          <td>表示超级管理员的 QQ 号码</td>
+          <td>超级管理员可以接收运行时警告，并通过命令配置各个群聊的启用插件、为各个群聊添加 Bot 管理员</td>
+     </tr>
+    <tr>
+          <td>BOT_SELF_QQ</td>
+          <td>Bot 自身账号</td>
+          <td>int型变量</td>
+          <td>表示 Bot 自身 QQ 号</td>
+          <td></td>
+     </tr>
+     <tr>
+          <td>VERSION_TXT</td>
+          <td>版本信息</td>
+          <td>str型变量</td>
+          <td>表示当前 Bot 的版本号和更新描述等</td>
+          <td>该信息将在收到 -test status 信息时回复</td>
+     </tr>
+     <tr>
+          <td>sqlConfig</td>
+          <td>SQL 凭证</td>
+          <td>dict型变量</td>
+          <td>表示连接 MySQL 的凭证</td>
+          <td>连接 MySQL 所需的地址、账号（通常是root）、密码</td>
+     </tr>
+     <tr>
+          <td>TXT_PERMISSION_DENIED</td>
+          <td>无权限信息</td>
+          <td>str型变量</td>
+          <td>表示 Bot 功能未开启时的回复</td>
+          <td>该信息将在用户试图使用 Bot 未开启功能时回复（设置为空，可适当减少刷屏）</td>
+     </tr>
+</table>
 
-
+<h2 id="bot_1">启动 Bot</h2>
+<p>完成上述配置后，恭喜你，你可以启动 Bot 了！输入以下命令启动 Bot ：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python main.py
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">提示：后台运行与多终端管理</p>
+<p>Linux环境下，推荐使用 tmux 管理终端，并在 tmux 中新建一个 session 以后台运行 bot</p>
+</div>
+<p>若 <code>main.py</code> 所在终端在启用 Bot 的群有新信息时有输出且切换至 go-cqhttp 所在终端不再输出“上报错误”，则说明 Bot 与驱动器连接成功。你可以在启用 Bot 的群发送 <code>-test status</code> 命令，观察 Bot 是否回应以进一步测试。</p>
 
 
 
@@ -1059,6 +1270,11 @@
           
           
         </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
         
       </main>
       
@@ -1133,7 +1349,7 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tracking", "toc.integrate", "navigation.indexes", "search.suggest"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tracking", "toc.integrate", "navigation.indexes", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.37e9125f.min.js"></script>

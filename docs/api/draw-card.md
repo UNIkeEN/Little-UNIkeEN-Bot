@@ -4,7 +4,7 @@
 
 ## 导入 responseImage 库
 
-responseImage 库位于`./utils/`目录下。在插件代码中使用如下代码导入此库：
+responseImage 库位于 `./utils/` 目录下。在插件代码中使用如下代码导入此库：
 
 ```python
 from utils.responseImage import *
@@ -146,7 +146,7 @@ ResponseImage 实例相当于一个容器。如要让图片展示各类信息，
 
 ### addCard() 添加卡片
 
-使用`ResponseImage.addCard()`函数，向 ResponseImage 实例添加单个前景卡片。卡片在图片中按添加卡片的顺序显示。
+使用 `ResponseImage.addCard()` 函数，向 ResponseImage 实例添加单个前景卡片。卡片在图片中按添加卡片的顺序显示。
 
 示例代码：
 
@@ -482,11 +482,11 @@ img.addCard(
 
 ### addCardList() 添加卡片列表
 
-使用`ResponseImage.addCardList()`函数，可以以列表形式一次添加多个前景卡片，卡片类型同上。
+使用 `ResponseImage.addCardList()` 函数，可以以列表形式一次添加多个前景卡片，卡片类型同上。
 
 ### 使用字典类型添加卡片
 
-除使用形如`NormalCard`等类外，你也可以使用字典形式添加卡片数据，字典的style键值必选，表示卡片类型。以下两段代码的效果相同：
+除使用形如 `NormalCard` 等类外，你也可以使用字典形式添加卡片数据，字典的 style 键值必选，表示卡片类型。以下两段代码的效果相同：
 
 ```python
 img.addCard(
@@ -519,9 +519,9 @@ img.addCard(
 
 ## generateImage() 生成并保存
 
-使用`ResponseImage.generateImage(savePath)`函数生成图片并保存图片到硬盘。
+使用 `ResponseImage.generateImage(savePath)` 函数生成图片并保存图片到硬盘。
 
-函数返回值是一个PIL.Image对象，你可以对此对象使用pillow库继续编辑。
+函数返回值是一个 PIL.Image 对象，你可以对此对象使用 pillow 库继续编辑。
 
 函数参数如下：
 
@@ -544,9 +544,9 @@ img.addCard(
 
 ## getBlankCoord() 获取空白卡片坐标
 
-使用`ResponseImage.getBlankCoord()`获得BlankCard类型卡片的位置。
+使用 `ResponseImage.getBlankCoord()` 获得 BlankCard 类型卡片的位置。
 
-函数返回值是一个列表，列表每项是一BlankCard类型卡片四角的坐标。使用此坐标，你可以在添加的空白卡片处绘制。
+函数返回值是一个列表，列表每项是一 BlankCard 类型卡片四角的坐标。使用此坐标，你可以在添加的空白卡片处绘制。
 
 ## 常量列表
 

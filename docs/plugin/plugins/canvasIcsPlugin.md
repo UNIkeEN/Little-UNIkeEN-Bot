@@ -4,7 +4,7 @@
 | ---- | ---- | ---- | ---- | ---- |
 | CanvasiCalBind | StandardPlugin | '-ics bind ${url}' | None | 绑定canvas ics链接 |
 | CanvasiCalUnbind | StandardPlugin | '-ics unbind' | None | 解绑canvas ics链接 |
-| GetCanvas | StandardPlugin | '-ddl'/'-canvas' | None | 获取canvas日历馈送 |
+| GetCanvas | StandardPlugin | '-ddl' / '-canvas' | None | 获取canvas日历馈送 |
 
 ## 2. 示范样例
 
