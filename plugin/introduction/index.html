@@ -1165,7 +1165,7 @@
 </tr>
 </tbody>
 </table>
-<p>开发者在 <code>main.py</code> 中 <code>import</code> 功能插件，并维护 <code>main.py</code> 中的插件列表以增减插件。</p>
+<p>开发者在 <code>main.py</code> 中 <code>import</code> 功能插件，并维护 <code>main.py</code> 中的插件列表以增减插件，关于插件的具体实例请见下一节。</p>
 <p>Bot 运行收到群聊/私聊消息时，将遍历群聊/私聊插件列表，逐一调用各插件的 <code>judgeTrigger()</code> 函数，若返回值为真则触发，调用该插件的 <code>executeEvent()</code> 函数进行响应。插件的 <code>getPluginInfo()</code> 函数则在用户获取帮助信息时被逐一调用。</p>
 <p>特别强调，关于getPluginInfo的返回值格式，要求如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
@@ -1254,7 +1254,7 @@
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;[CQ:face,id=333,type=sticker]&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">return</span> <span class="p">{</span>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;FireworksFace&#39;</span><span class="p">,</span>
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;烟花&#39;</span><span class="p">,</span>
