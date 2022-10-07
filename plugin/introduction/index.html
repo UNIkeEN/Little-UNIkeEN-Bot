@@ -1167,7 +1167,7 @@
 </table>
 <p>开发者在 <code>main.py</code> 中 <code>import</code> 功能插件，并维护 <code>main.py</code> 中的插件列表以增减插件，关于插件的具体实例请见下一节。</p>
 <p>Bot 运行收到群聊/私聊消息时，将遍历群聊/私聊插件列表，逐一调用各插件的 <code>judgeTrigger()</code> 函数，若返回值为真则触发，调用该插件的 <code>executeEvent()</code> 函数进行响应。插件的 <code>getPluginInfo()</code> 函数则在用户获取帮助信息时被逐一调用。</p>
-<p>特别强调，关于getPluginInfo的返回值格式，要求如下：</p>
+<p>特别强调，关于 <code>getPluginInfo()</code> 的返回值格式，要求如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Faq&#39;</span><span class="p">,</span>                      <span class="c1"># require</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;问答库&#39;</span><span class="p">,</span>             <span class="c1"># require</span>
@@ -1279,6 +1279,10 @@
 <div class="admonition tip">
 <p class="admonition-title">提示：代码结构</p>
 <p>为便于管理，我们推荐将功能插件的代码文件放在 <code>plugins/</code> 目录下，并在 <code>main.py</code> 中 <code>import</code> 。如果有需要，你可以随意更改此代码结构。</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">注意：触发条件冲突</p>
+<p>Bot 在设计时默认一句指令只能触发一个插件，开发者请尽量确保触发条件不冲突，或考虑插件列表中各插件的先后顺序。</p>
 </div>
 <h2 id="_3">代码分析</h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># parts of utils/standardPlugin.py</span>
