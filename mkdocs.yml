@@ -45,6 +45,7 @@ nav:
       - '运行时警告': 'api/warning.md'
       - '鉴权与插件配置': 'api/auth-config.md'
       - '响应卡片绘制': 'api/draw-card.md'
+      - '金币系统': 'api/account-operation.md'
 edit_uri: ""
 theme:
   name: 'material'
