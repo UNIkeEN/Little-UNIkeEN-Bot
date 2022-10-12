@@ -185,3 +185,13 @@ def get_user_transactions(id: int)->list:
         warning("sql error in get_user_transactions: {}".format(e))
         return []
 ```
+
+## 应用场景
+
+1. 轮盘赌
+
+    ![](../images/plugins/roulette.png)
+
+2. 消费记录查询
+
+    ![](../images/plugins/coin_trans.png)
