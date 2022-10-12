@@ -12,7 +12,7 @@
 
 关于 mysql 交互插件编写的样例，可以参考：
 
-- [PluginGroupManager 插件](./plugins/groupManagerPlugin.md)（读写群bot管理员、插件开启信息）
-- [SJTU canvas 插件](./plugins/canvasIcsPlugin.md) （ics url的存取）
+- [群 bot 权限管理 API](../api/auth-config.md)（读写群 bot 管理员、插件开启信息）
+- [SJTU canvas 插件](./plugins/canvasIcsPlugin.md) （ics url 的存取）
 - [聊天记录存档插件](./plugins/messageRecorderPlugin.md)（聊天记录的存储）
 - [accountOperation API](../api/account-operation.md) 金币系统
