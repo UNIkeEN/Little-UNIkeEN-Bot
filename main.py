@@ -1,3 +1,4 @@
+from genericpath import isdir
 import os
 from flask import Flask, request
 from enum import IntEnum
@@ -21,7 +22,7 @@ from plugins.roulette import *
 # from plugins.lottery import *
 from plugins.show2cyPic import *
 from plugins.help import *
-from plugins.chatWithNLP import *
+# from plugins.chatWithNLP import *
 from plugins.chatWithAnswerbook import *
 from plugins.getDekt import DektGroup, GetDektNewActivity
 from plugins.getJwc import JwcGroup, GetJwc
@@ -52,13 +53,17 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo()],'sjtuinfo'),
-    ShowSjmcStatus(),DektGroup(),JwcGroup(), # 校园服务,MC社服务,dekt服务,jwc服务
+    ShowSjmcStatus(),
+    # DektGroup(),
+    JwcGroup(), # 校园服务,MC社服务,dekt服务,jwc服务
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     # LotteryPlugin(), # 彩票 TODO
     PluginGroupManager([GoBangPlugin()],'gobang'),
     Show2cyPIC(), #ShowSePIC, # 来点图图
-    PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
+    PluginGroupManager([ChatWithAnswerbook(), 
+        # ChatWithNLP()
+        ], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
@@ -69,7 +74,9 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MorningGreet(), NightGreet(),
     SignIn(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetDektNewActivity(),GetJwc(),
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),
+    # GetDektNewActivity(),
+    GetJwc(),
     GenshinCookieBind(), GenshinDailyNote(),
     # LotteryPlugin(),
     Show2cyPIC(), ShowSePIC(),
@@ -77,22 +84,6 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
 ]
 
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
-
-# do some check
-for p in GroupPluginList:
-    infoDict = p.getPluginInfo()
-    assert 'name' in infoDict.keys() and 'description' in infoDict.keys() \
-        and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
-    if 'group' not in infoDict['usePlace']:
-        print("plugin [{}] can not be used in group talk!".format(infoDict['name']))
-        exit(1)
-for p in PrivatePluginList:
-    infoDict = p.getPluginInfo()
-    assert 'name' in infoDict.keys() and 'description' in infoDict.keys() \
-        and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
-    if 'private' not in infoDict['usePlace']:
-        print("plugin [{}] can not be used in private talk!".format(infoDict['name']))
-        exit(1)
 
 app = Flask(__name__)
 class NoticeType(IntEnum):
@@ -171,5 +162,25 @@ def post_data():
         set_friend_add_request(data['flag'], True)
     return "OK"
 
+def initialize():
+    if not os.path.isdir('./data/tmp'):
+        os.makedirs('./data/tmp')
+    createGlobalConfig()
+    # do some check
+    for p in GroupPluginList:
+        infoDict = p.getPluginInfo()
+        assert 'name' in infoDict.keys() and 'description' in infoDict.keys() \
+            and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
+        if 'group' not in infoDict['usePlace']:
+            print("plugin [{}] can not be used in group talk!".format(infoDict['name']))
+            exit(1)
+    for p in PrivatePluginList:
+        infoDict = p.getPluginInfo()
+        assert 'name' in infoDict.keys() and 'description' in infoDict.keys() \
+            and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
+        if 'private' not in infoDict['usePlace']:
+            print("plugin [{}] can not be used in private talk!".format(infoDict['name']))
+            exit(1)
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=5001)
+    initialize()
+    app.run(host="127.0.0.1", port=50012)

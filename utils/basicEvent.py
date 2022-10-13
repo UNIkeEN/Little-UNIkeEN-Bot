@@ -183,6 +183,9 @@ def createGlobalConfig():
     mycursor = mydb.cursor()
     mydb.autocommit = True
     mycursor.execute("""
+    create database if not exists `BOT_DATA`
+    """)
+    mycursor.execute("""
     create table if not exists `BOT_DATA`.`globalConfig` (
         `groupId` bigint not null,
         `groupConfig` json,
