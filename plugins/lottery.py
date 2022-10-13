@@ -10,7 +10,6 @@ from pymysql.converters import escape_string
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import check_config
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
 from utils.accountOperation import get_user_coins, update_user_coins
 

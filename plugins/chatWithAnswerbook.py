@@ -1,7 +1,6 @@
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import check_config, check_config_mode
 from utils.standardPlugin import StandardPlugin
 import json
 import random
@@ -13,10 +12,8 @@ with open(book_path, "r") as f:
 
 class ChatWithAnswerbook(StandardPlugin): # 答案之书
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['小🦄，','小马，','小🦄,','小马,']) and check_config_mode(data['group_id'],'Auto_Answer')=='answerbook'
+        return startswith_in(msg, ['小🦄，','小🦄,'])
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]: 
-        if data['message_type']=='group' and not check_config(data['group_id'],'Auto_Answer'):
-            send(data['group_id'],TXT_PERMISSION_DENIED)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         msg_inp = msg[2:]
         ran = random.sample(BOOK_DICT.keys(),1)[0]
@@ -31,7 +28,7 @@ class ChatWithAnswerbook(StandardPlugin): # 答案之书
         return {
             'name': 'ChatWithAnswerbook',
             'description': '答案之书',
-            'commandDescription': '小马，',
+            'commandDescription': '小 :unicorn: ，',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

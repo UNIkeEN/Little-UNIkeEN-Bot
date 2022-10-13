@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import *
 from utils.standardPlugin import StandardPlugin
 
 FAQ_DATA_PATH="data"

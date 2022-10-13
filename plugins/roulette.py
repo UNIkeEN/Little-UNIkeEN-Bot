@@ -5,7 +5,6 @@ from io import BytesIO
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import check_config
 from utils.standardPlugin import StandardPlugin
 from utils.accountOperation import get_user_coins, update_user_coins
 import re
@@ -240,18 +239,15 @@ class RoulettePlugin(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return startswith_in(msg, CMD_ROULETTE) or (startswith_in(msg, CMD_ROULETTE_ONGOING) and roulette_dict[data['group_id']].status=='ongoing')
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        if not check_config(data['group_id'],'Roulette'):
-            send(data['group_id'], TXT_PERMISSION_DENIED)
-        else:
-            ret = roulette_dict[data['group_id']].get_cmd(data['user_id'],msg)
-            try:
-                if ret[-3:]=='png':
-                    pic_path=(f'file:///{ROOT_PATH}/'+ret)
-                    send(data['group_id'], f'[CQ:image,file={pic_path}]')
-                else:
-                    send(data['group_id'], ret)
-            except:
-                pass
+        ret = roulette_dict[data['group_id']].get_cmd(data['user_id'],msg)
+        try:
+            if ret[-3:]=='png':
+                pic_path=(f'file:///{ROOT_PATH}/'+ret)
+                send(data['group_id'], f'[CQ:image,file={pic_path}]')
+            else:
+                send(data['group_id'], ret)
+        except:
+            pass
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

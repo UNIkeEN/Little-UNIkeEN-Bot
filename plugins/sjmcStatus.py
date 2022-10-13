@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import check_config
 from utils.standardPlugin import StandardPlugin
 from PIL import Image, ImageDraw, ImageFont
 import requests
@@ -15,13 +14,9 @@ class ShowSjmcStatus(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-sjmc'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        if data['message_type']=='group' and not check_config(data['group_id'],'Sjtu_Info'):
-            send(data['group_id'],TXT_PERMISSION_DENIED)
-            return "OK"
-        else:
-            target = data['group_id'] if data['message_type']=='group' else data['user_id']
-            send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+get_sjmc_info()+',id=40000]', data['message_type'])
-            return "OK"
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+get_sjmc_info()+',id=40000]', data['message_type'])
+        return "OK"
     def getPluginInfo(self, )->Any:
         return {
             'name': 'ShowSjmcStatus',

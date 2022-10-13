@@ -11,7 +11,6 @@ import torch.nn.utils as utils
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import check_config, check_config_mode
 from utils.standardPlugin import StandardPlugin
 jieba.setLogLevel(logging.INFO) #关闭jieba输出信息
 
@@ -347,10 +346,8 @@ NLP_model = EvalModel()
 
 class ChatWithNLP(StandardPlugin): # NLP对话插件
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['小🦄，','小马，','小🦄,','小马,']) and check_config_mode(data['group_id'],'Auto_Answer')=='nlp'
+        return startswith_in(msg, ['小马，','小马,'])
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        if data['message_type']=='group' and not check_config(data['group_id'],'Auto_Answer'):
-            send(data['group_id'],TXT_PERMISSION_DENIED)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         msg_inp = msg[3:]
         ret = NLP_model.eval(msg_inp)

@@ -2,7 +2,6 @@ from typing import Union, Any
 import requests
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import *
 from utils.standardPlugin import StandardPlugin
 import urllib.parse
 class Show2cyPIC(StandardPlugin): 

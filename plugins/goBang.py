@@ -3,7 +3,6 @@ from typing import Tuple, Union, Any
 from threading import Timer
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.functionConfigs import *
 from utils.standardPlugin import StandardPlugin
 from utils.accountOperation import get_user_coins, update_user_coins
 from utils.goBangGame import NCOLS, NROWS, GoBangGame, drawGoBangPIC
