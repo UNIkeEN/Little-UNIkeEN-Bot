@@ -87,10 +87,10 @@ def getGroupMessageThread(latestResultSeq):
 class GroupMessageRecorder(StandardPlugin, RecallMessagePlugin):
     def __init__(self) -> None:
         # 首先获取群聊列表，看看数据库是否开了这些表
-        self.mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        self.mydb.autocommit = True
-        self.mycursor = self.mydb.cursor()
-        self.mycursor.execute("""
+        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+        mydb.autocommit = True
+        mycursor = mydb.cursor()
+        mycursor.execute("""
         create table if not exists `BOT_DATA`.`messageRecord`(
             `message_id` int not null,
             `message_seq` bigint not null,
@@ -109,7 +109,10 @@ class GroupMessageRecorder(StandardPlugin, RecallMessagePlugin):
         self._getGroupMessageThread.start()
     def recallMessage(self, data: Any):
         try:
-            self.mycursor.execute("""
+            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+            mydb.autocommit = True
+            mycursor = mydb.cursor()
+            mycursor.execute("""
                 update `BOT_DATA`.`messageRecord` set recall=true where 
                 group_id = %d and message_id = %d
             """%(
@@ -127,7 +130,10 @@ class GroupMessageRecorder(StandardPlugin, RecallMessagePlugin):
 
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         try:
-            self.mycursor.execute("""
+            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+            mydb.autocommit = True
+            mycursor = mydb.cursor()
+            mycursor.execute("""
                 insert into `BOT_DATA`.`messageRecord`
                 (`message_id`, `message_seq`, `time`, `user_id`,
                 `message`, `group_id`, `nickname`, `card`) 

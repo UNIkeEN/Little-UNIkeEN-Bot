@@ -1,5 +1,5 @@
-from genericpath import isdir
 import os
+import traceback
 from flask import Flask, request
 from enum import IntEnum
 
@@ -22,7 +22,7 @@ from plugins.roulette import *
 # from plugins.lottery import *
 from plugins.show2cyPic import *
 from plugins.help import *
-# from plugins.chatWithNLP import *
+from plugins.chatWithNLP import *
 from plugins.chatWithAnswerbook import *
 from plugins.getDekt import DektGroup, GetDektNewActivity
 from plugins.getJwc import JwcGroup, GetJwc
@@ -41,7 +41,7 @@ groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
 
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder,
-    helper,ShowStatus(), # 帮助
+    helper,ShowStatus(),ServerMonitor(), # 帮助
     GetPermission(), 
     PluginGroupManager([AddPermission(), DelPermission(), ShowPermission()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ()],'faq'), # 问答库与维护
@@ -53,30 +53,24 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo()],'sjtuinfo'),
-    ShowSjmcStatus(),
-    # DektGroup(),
-    JwcGroup(), # 校园服务,MC社服务,dekt服务,jwc服务
+    ShowSjmcStatus(),DektGroup(),JwcGroup(), # 校园服务,MC社服务,dekt服务,jwc服务
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     # LotteryPlugin(), # 彩票 TODO
     PluginGroupManager([GoBangPlugin()],'gobang'),
-    Show2cyPIC(), #ShowSePIC, # 来点图图
-    PluginGroupManager([ChatWithAnswerbook(), 
-        # ChatWithNLP()
-        ], 'chat'), # 答案之书/NLP
+    Show2cyPIC(), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
+    PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
-    #ShowHelp(),
-    ShowStatus(),
+    helper,
+    ShowStatus(),ServerMonitor(),
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
     ShowNews(),
     MorningGreet(), NightGreet(),
     SignIn(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),
-    # GetDektNewActivity(),
-    GetJwc(),
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetDektNewActivity(),GetJwc(),
     GenshinCookieBind(), GenshinDailyNote(),
     # LotteryPlugin(),
     Show2cyPIC(), ShowSePIC(),
@@ -161,7 +155,6 @@ def post_data():
     elif flag==NoticeType.AddPrivate:
         set_friend_add_request(data['flag'], True)
     return "OK"
-
 def initialize():
     if not os.path.isdir('./data/tmp'):
         os.makedirs('./data/tmp')
@@ -183,4 +176,4 @@ def initialize():
             exit(1)
 if __name__ == '__main__':
     initialize()
-    app.run(host="127.0.0.1", port=50012)
+    app.run(host="127.0.0.1", port=5986)

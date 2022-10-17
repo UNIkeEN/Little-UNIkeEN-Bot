@@ -119,7 +119,7 @@ def edit_bind_ics(qq_id: Union[int, str], ics_url: str)->bool:
         warning("error in canvasSync, error: {}".format(e))
         return False
 
-FAIL_REASON_1="请群聊或私聊使用-ics bind ${url} 绑定您的Canvas iCal馈送链接\n ${url}可在 canvas - 日历📅 - 日历馈送 中获取"
+FAIL_REASON_1="请群聊或私聊使用-ics bind url 绑定您的Canvas iCal馈送链接\n url可在 canvas - 日历📅 - 日历馈送 中获取"
 FAIL_REASON_2="无法获取或解析日历文件"
 
 def getCanvas(qq_id) -> Tuple[bool, str]:

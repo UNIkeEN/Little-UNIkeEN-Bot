@@ -1,4 +1,5 @@
 from typing import Union, Any
+import psutil
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
@@ -100,6 +101,42 @@ class ShowStatus(StandardPlugin):
             'commandDescription': '-test status',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class ServerMonitor(StandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg == '-monitor' and data['user_id'] in ROOT_ADMIN_ID
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        statusCards = ResponseImage(
+            title = 'Bot 服务器状态', 
+            titleColor = PALETTE_CYAN,
+        )
+        mem = psutil.virtual_memory().percent
+        cpu = psutil.cpu_percent()
+        statusCards.addCard(
+            ResponseImage.RichContentCard(
+                raw_content=[
+                ('subtitle', '内存占用: '+str(mem)+'%'),
+                ('progressBar', mem/100, 'auto'),
+                ('subtitle', 'CPU占用: '+str(cpu)+'%'),
+                ('progressBar', cpu/100, 'auto'),
+            ])
+        )
+        save_path = (os.path.join(SAVE_TMP_PATH, f'server_monitor.png'))
+        statusCards.generateImage(save_path)
+        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+save_path+',id=40000]' ,data['message_type'])
+        return "OK"
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'ServerMonitor',
+            'description': '展示服务器状态',
+            'commandDescription': '-monitor',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': False,
             'pluginConfigTableNames': [],
             'version': '1.0.0',
             'author': 'Unicorn',

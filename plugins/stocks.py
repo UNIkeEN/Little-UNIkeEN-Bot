@@ -8,11 +8,11 @@ from utils.basicConfigs import sqlConfig
 import mysql.connector
 from pymysql.converters import escape_string
 from utils.ashareAPI import get_price
-mydb = mysql.connector.connect(**sqlConfig)
-mycursor = mydb.cursor()
+
 def queryStocks(stock: str)->str:
     stock = escape_string(stock)
-    global mydb, mycursor
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
     mycursor.execute("""select ashareCode, name, fullName, industry from STOCKS.stockCode where regexp_like(name, '%s') or regexp_like(fullName, '%s') or regexp_like(ashareCode, '%s')"""%(stock, stock, stock))
     results = list(mycursor)
     resultText = ""
@@ -23,12 +23,14 @@ def queryStocks(stock: str)->str:
     return resultText
 def verifyStocksCode(stockCode: str)->bool:
     stockCode = escape_string(stockCode)
-    global mydb, mycursor
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
     mycursor.execute("""select count(*) from STOCKS.stockCode where ashareCode='%s'"""%(stockCode))
     result = list(mycursor)
     if len(result) < 1:
         return False
     return result[0][0] == 1
+    
 class QueryStocksHelper(StandardPlugin): # 查询股票的帮助
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg =='查股票帮助' or msg == "帮助查股票"
@@ -162,12 +164,12 @@ class BuyStocks(StandardPlugin): # 买股票
         return msg.startswith("买股票") or msg.startswith("购买股票") or msg.startswith("股票购买") or msg.startswith("-buystocks")
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        text = f'[CQ:reply,id={str(data["message_id"])}]'
+        text = f'[CQ:reply,id={data["message_id"]}]'
         msg = msg.split(' ')
         if len(msg) < 3:
             text += '参数错误,请输入`买股票帮助`获取格式信息'
         else:
-            pass
+            text += '目前买股票功能尚未做好'
         send(target, text, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:

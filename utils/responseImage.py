@@ -184,8 +184,11 @@ class ResponseImage():
             super().__init__('rich-content', params)
 
     # 画圆角矩形
-    def drawRoundedRectangle(self, x1, y1, x2, y2, fill, r = 8, border=False, borderColor = PALETTE_GREY_BORDER, borderWidth = 1): 
-        draw = self.draw
+    def drawRoundedRectangle(self, x1, y1, x2, y2, fill, r = 8, border=False, borderColor = PALETTE_GREY_BORDER, borderWidth = 1, target = None): 
+        if target == None:
+            draw = self.draw
+        else:
+            draw = ImageDraw.Draw(target)
         draw.ellipse((x1, y1, x1+2*r, y1+2*r), fill = fill)
         draw.ellipse((x2-2*r, y1, x2, y1+2*r), fill = fill)
         draw.ellipse((x1, y2-2*r, x1+2*r, y2), fill = fill)
@@ -201,6 +204,7 @@ class ResponseImage():
             draw.line((x2, y1+r, x2, y2-r), borderColor, borderWidth)
             draw.line((x1+r, y1, x2-r, y1), borderColor, borderWidth)
             draw.line((x1+r, y2, x2-r, y2), borderColor, borderWidth)
+        return target
 
     # 增加卡片 (允许使用Card类或字典形式输入)
     def addCard(self, card):
@@ -274,6 +278,10 @@ class ResponseImage():
                         if cnt[0]=='separator':
                             h_card += 3*SPACE_ROW+1
                             cardList[i]['content'].extend([(cnt[0],)])
+                            continue
+                        if cnt[0]=='progressBar':
+                            h_card += 4*SPACE_ROW
+                            cardList[i]['content'].append(cnt)
                             continue
                         if cnt[0]=='title':
                             font = self.cardTitleFont
@@ -424,6 +432,27 @@ class ResponseImage():
                         y_top += SPACE_ROW
                         draw.line((x_l, y_top, cardRight-SPACE_NORMAL, y_top), PALETTE_GREY_BORDER, 1)
                         y_top += (2*SPACE_ROW+1)
+                        continue
+                    if line[0] in ['progressBar']:
+                        x_l = x_left
+                        y_top += SPACE_ROW
+                        x_r = cardRight-SPACE_NORMAL
+                        clrfront = PALETTE_GREEN
+                        clrback = PALETTE_LIGHTGREEN
+                        if len(line)==4:
+                            clrfront = line[2]
+                            clrback = line[3]
+                        if len(line)==3 and line[2]=='auto':
+                            if line[1]>=0.6:
+                                clrfront = PALETTE_ORANGE
+                                clrback = PALETTE_LIGHTORANGE
+                            if line[1]>=0.9:
+                                clrfront = PALETTE_RED
+                                clrback = PALETTE_LIGHTRED
+                        self.drawRoundedRectangle(x_l, y_top, x_r, y_top+SPACE_ROW, fill=clrback, r=3.5)
+                        if line[1]>0:
+                            self.drawRoundedRectangle(x_l, y_top, x_l+(x_r-x_l)*line[1], y_top+SPACE_ROW, fill=clrfront, r=3.5)
+                        y_top += (3*SPACE_ROW)
                         continue
                     if line[0]=='title':
                         font = self.cardTitleFont
