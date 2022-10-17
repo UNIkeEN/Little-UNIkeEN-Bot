@@ -72,7 +72,7 @@ class FireworksFace(StandardPlugin):
         }
 ```
 
-发送消息函数 `send()` 的具体参数与功能请见 API。
+发送消息函数 `send()` 的具体参数与功能请见 [API - 驱动器对接](https://unikeen.github.io/Little-UNIkeEN-Bot/api/send/)。
 
 在 `main.py` 的插件列表中启用插件：
 

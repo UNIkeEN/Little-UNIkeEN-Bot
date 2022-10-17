@@ -41,7 +41,7 @@ nav:
         - 'SJTU第二课堂': 'plugin/plugins/sjtuDektPlugin.md'
         - 'SJTU canvas日历': 'plugin/plugins/canvasIcsPlugin.md'
     - API:
-      - 'go-cqhttp对接': 'api/send.md'
+      - '驱动器对接': 'api/send.md'
       - '运行时警告': 'api/warning.md'
       - '鉴权与插件配置': 'api/auth-config.md'
       - '响应卡片绘制': 'api/draw-card.md'

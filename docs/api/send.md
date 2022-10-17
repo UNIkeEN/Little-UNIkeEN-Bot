@@ -1,4 +1,39 @@
+驱动器对接包含各类与go-cqhttp交互的函数。
 
+其中最重要的即发送信息的函数 `send` ，参数信息如下：
+
+<table>
+    <tr>
+          <th>参数名称</th>
+          <th>描述</th>
+          <th>取值</th>
+          <th>取值说明</th>
+          <th>备注</th>
+	</tr>
+    <tr>
+          <td>id</td>
+          <td>保存地址</td>
+          <td>int型变量</td>
+          <td>表示要发送的群号或者对象qq号</td>
+          <td></td>
+    </tr>
+    <tr>
+          <td>message</td>
+          <td>消息</td>
+          <td>str型变量</td>
+          <td>表示要发送的消息</td>
+          <td>如要发送图片、音频、表情、文件等，请使用<a href="https://docs.go-cqhttp.org/cqcode/#%E8%BD%AC%E4%B9%89">cq码转义</a></td>
+    </tr>
+    <tr>
+          <td>type</td>
+          <td>类型</td>
+          <td>str型变量</td>
+          <td>表示要发送的消息类型</td>
+          <td>群聊-'group'；私聊-'private'</td>
+    </tr>
+</table>
+
+关于其他对接函数即功能（如获取群聊列表，获取群聊历史记录），请参见下方代码分析：
 
 ## 代码分析
 

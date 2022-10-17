@@ -249,6 +249,9 @@ img.addCard(
      </tr>
 </table>
 
+!!! tip "提示：空行"
+      在同一项中试图添加空行时，请尽量确保空行至少含有一个空格
+
 示例代码及效果：
 
 ```python
@@ -368,8 +371,6 @@ img.addCard(
 
 富内容复合类型卡片，可以在一个前景卡片中显示复合格式的多行文本。
 
-文本内容以列表的形式输入，列表中每项为一个形如 `(格式，内容)` 的元组，其中"格式"字段可选：`title`，`subtitle`，`keyword`，`body`，`separator`。具体应用参见下方示例代码。
-
 <table>
      <tr>
           <th>属性名称</th>
@@ -383,7 +384,7 @@ img.addCard(
           <td>内容</td>
           <td>list型变量</td>
           <td>表示前景卡片显示的内容</td>
-          <td>可选，以列表嵌套元组形式输入</td>
+          <td>可选，以列表嵌套元组形式输入，元组示例：（格式，内容）</td>
      </tr>
     <tr>
           <td>icon</td>
@@ -420,6 +421,53 @@ img.addCard(
           <td>表示前景卡片背景颜色的RGBA值</td>
           <td>可选，默认为白色</td>
      </tr>
+</table>
+
+内容以列表的形式输入'raw_content'参数，列表中每项为一个形如 `(类型，内容)` 的元组，其中可选项如下。
+
+<table>
+      <tr>
+          <th>类型名称</th>
+          <th>描述</th>
+          <th>内容类型</th>
+          <th>备注</th>
+	</tr>
+      <tr>
+          <th>title</th>
+          <th>标题</th>
+          <th>str型变量</th>
+          <th></th>
+	</tr>
+      <tr>
+          <th>keyword</th>
+          <th>关键句</th>
+          <th>str型变量</th>
+          <th></th>
+	</tr>
+      <tr>
+          <th>subtitle</th>
+          <th>副标题</th>
+          <th>str型变量</th>
+          <th></th>
+	</tr>
+      <tr>
+          <th>body</th>
+          <th>正文</th>
+          <th>str型变量</th>
+          <th></th>
+	</tr>
+      <tr>
+          <th>separator</th>
+          <th>分割线</th>
+          <th></th>
+          <th>分割线类型无需提供内容项</th>
+	</tr>
+      <tr>
+          <th>progressBar</th>
+          <th>进度条</th>
+          <th>float型变量(0-1)</th>
+          <th>内容项第一项即进度条进度，如在进度项后加'auto'项，则会自动根据进度更改颜色；如在进度项后加两项颜色变量，则可分别指定进度条前景色和背景色</th>
+	</tr>
 </table>
 
 示例代码及效果：
@@ -527,7 +575,7 @@ img.addCard(
 
 <table>
     <tr>
-          <th>属性名称</th>
+          <th>参数名称</th>
           <th>描述</th>
           <th>取值</th>
           <th>取值说明</th>
