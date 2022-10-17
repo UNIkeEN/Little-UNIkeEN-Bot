@@ -22,14 +22,14 @@
           <td>消息</td>
           <td>str型变量</td>
           <td>表示要发送的消息</td>
-          <td>如要发送图片、音频、表情、文件等，请使用<a href="https://docs.go-cqhttp.org/cqcode/#%E8%BD%AC%E4%B9%89">cq码转义</a></td>
+          <td>如要发送图片、音频、表情、文件等，请使用 <a href="https://docs.go-cqhttp.org/cqcode/#%E8%BD%AC%E4%B9%89">cq码转义</a></td>
     </tr>
     <tr>
           <td>type</td>
           <td>类型</td>
           <td>str型变量</td>
           <td>表示要发送的消息类型</td>
-          <td>群聊-'group'；私聊-'private'</td>
+          <td>群聊：'group'；私聊：'private'</td>
     </tr>
 </table>
 
