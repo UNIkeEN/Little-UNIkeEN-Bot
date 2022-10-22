@@ -16,10 +16,10 @@ class SignIn(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg in ['签到','每日签到','打卡']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        ret = sign_in(data['user_id'])
-        pic_path=(f'file:///{ROOT_PATH}/'+ret)
+        picPath = sign_in(data['user_id'])
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file={pic_path}]',data['message_type'])
+        send(target, f'[CQ:image,file=files://{picPath}]',data['message_type'])
     def getPluginInfo(self,)->Any:
         return {
             'name': 'SignIn',

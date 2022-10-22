@@ -11,6 +11,7 @@ import json
 from datetime import datetime
 from urllib.parse import urljoin
 import qrcode
+import os, os.path
 def getSjtuGk():
     """交大信息公开网"""
     pageUrl = 'https://gk.sjtu.edu.cn'
@@ -155,9 +156,10 @@ class GetSjtuNews(StandardPlugin):
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         pic_path = os.path.join(SAVE_TMP_PATH, 'sjtu_news.png')
+        pic_path = pic_path if os.path.isabs(pic_path) else os.path.join(ROOT_PATH, pic_path)
         if not Path(pic_path).is_file():
             drawSjtuNews()
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/{pic_path},id=40000]', data['message_type'])
+        send(target, '[CQ:image,file=files://%s,id=40000]'%pic_path, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -192,8 +194,9 @@ class JwcGroup(PluginGroupManager):
                 for group_id in APPLY_GROUP_ID:
                     if self.queryEnabled(group_id):
                         pic = DrawNoticePIC(j)
+                        pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
                         send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
-                        send(group_id, f'[CQ:image,file=files:///{ROOT_PATH}/{pic},id=40000]')
+                        send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
         with open(exact_path, 'w') as f:
             json.dump(url_list, f, indent=4)
 

@@ -5,6 +5,7 @@ from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
 from utils.accountOperation import get_user_coins, get_user_transactions, update_user_coins
 from PIL import Image, ImageDraw, ImageFont
+import os.path
 
 class CheckCoins(StandardPlugin): # 查询当前金币
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -55,9 +56,9 @@ class CheckTransactions(StandardPlugin): # 查询近期交易记录
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         #print(data['user_id'])
-        ret = draw_trans_cards(data['user_id'])
-        pic_path=(f'file:///{ROOT_PATH}/'+ret)
-        send(target, '[CQ:reply,id='+str(data['message_id'])+f'][CQ:image,file={pic_path}]',data['message_type'])
+        picPath = draw_trans_cards(data['user_id'])
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+        send(target, '[CQ:reply,id=%d][CQ:image,file=files://%s]'%(data['message_id'], picPath),data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -70,7 +71,8 @@ class CheckTransactions(StandardPlugin): # 查询近期交易记录
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-def draw_trans_cards(id):
+def draw_trans_cards(id: int):
+    id = id if isinstance(id, int) else int(id)
     trans_list = get_user_transactions(id)
     qqid=id
     height=270+110*len(trans_list)
@@ -93,7 +95,7 @@ def draw_trans_cards(id):
     if len(trans_list)==0:
         txt_size = draw.textsize("暂无交易记录", font=font_hywh_85w_ms)
         draw.text((90, 150),"暂无交易记录",fill=(175,175,175,255), font=font_hywh_85w_s)
-    save_path=(f'{SAVE_TMP_PATH}/{qqid}_trans.png')
+    save_path=os.path.join(SAVE_TMP_PATH, f'{qqid}_trans.png')
     img.save(save_path)
     return (save_path)
 

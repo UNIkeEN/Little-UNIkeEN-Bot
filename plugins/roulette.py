@@ -27,8 +27,8 @@ class _roulette():
         self.cur_index=0
         try:
             self.timer.cancel()
-        except:
-            pass
+        except BaseException as e:
+            warning("base excption in roulette __init__ self.timer.cancel(): {}".format(e))
         self.timer=Timer
 
     def get_cmd(self, id, msg):
@@ -242,12 +242,12 @@ class RoulettePlugin(StandardPlugin):
         ret = roulette_dict[data['group_id']].get_cmd(data['user_id'],msg)
         try:
             if ret[-3:]=='png':
-                pic_path=(f'file:///{ROOT_PATH}/'+ret)
-                send(data['group_id'], f'[CQ:image,file={pic_path}]')
+                picPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
+                send(data['group_id'], f'[CQ:image,file=files://{picPath}]')
             else:
                 send(data['group_id'], ret)
-        except:
-            pass
+        except BaseException as e:
+            warning("base exception in RoulettePlugin.executeEvent: {}".format(e))
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

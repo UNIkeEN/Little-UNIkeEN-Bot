@@ -1,4 +1,4 @@
-import re
+import re, os, os.path
 from typing import Tuple, Union, Any
 from threading import Timer
 from utils.basicEvent import *
@@ -54,11 +54,11 @@ class GoBangGroupInterface():
                 self.player[1] = userId
                 self.round_index = 0
                 picPath = drawGoBangPIC([], [], groupId)
-                picPath = f'file:///{ROOT_PATH}/'+picPath
+                picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 send(groupId, '开始游戏，由发起挑战者执黑先行！', 'group')
                 self.timer = Timer(60, self.ongoing_timeout)
                 self.timer.start()
-                return f'[CQ:image,file={picPath}]'
+                return f'[CQ:image,file=files://{picPath}]'
         elif self.status == GameStatus.GAMING:
             if userId != self.player[self.round_index]:
                 return None
@@ -85,10 +85,10 @@ class GoBangGroupInterface():
                 self.round_index ^= 1
                 black, white = self.game.getPieceLocs()
                 picPath = drawGoBangPIC(black, white, groupId)
-                picPath = f'file:///{ROOT_PATH}/'+picPath
+                picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 self.timer = Timer(60, self.ongoing_timeout)
                 self.timer.start()
-                return f'[CQ:image,file={picPath}]'
+                return f'[CQ:image,file=files://{picPath}]'
         else:
             warning("unexpected gobang status")
             return None

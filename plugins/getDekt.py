@@ -1,4 +1,4 @@
-import os
+import os, os.path
 import json
 import time
 from datetime import datetime
@@ -67,7 +67,9 @@ class GetDektNewActivity(StandardPlugin):
         return msg == '-dekt'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/{NewActlistPic()},id=40000]', data['message_type'])
+        picPath = NewActlistPic()
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+        send(target, '[CQ:image,file=files://%s,id=40000]'%(picPath), data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -119,8 +121,10 @@ def getNewestDektJSON():
     try:
         data = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName), 'r'))
         return data['data'], fileName[5:22]
-    except json.JSONDecodeError:
-        pass
+    except json.JSONDecodeError as e:
+        warning("dekt json decode error: {}".format(e))
+    except BaseException as e:
+        warning("exception in dekt getNewestDektJSON: {}".format(e))
 
 def NewActlistPic():
     nowtime = time.time()*1000

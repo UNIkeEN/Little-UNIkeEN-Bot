@@ -15,7 +15,9 @@ class ShowSjmcStatus(StandardPlugin):
         return msg == '-sjmc'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+get_sjmc_info()+',id=40000]', data['message_type'])
+        imgPath = get_sjmc_info()
+        imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+        send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -30,13 +32,6 @@ class ShowSjmcStatus(StandardPlugin):
         }
 def get_sjmc_info():
     url="https://mc.sjtu.cn/wp-admin/admin-ajax.php"
-#         ans+=(f"""
-# 【{new_title}】
-#  - {res['hostname']}
-#  - {res['version']} | {res['ping']}ms | {res['players']}/{res['max_players']} players""")
-#         # except:
-#         #     pass
-#     ans+="\n\n🔈欢迎加入SJTU-MC交流群！群号712514518"
     dat = []
     j, j1=0, 0
     for t in range(7):
@@ -46,11 +41,20 @@ def get_sjmc_info():
             "action": "fetch_mcserver_status",
             "i": str(t)
         }
-        res = requests.get(url, params=params).json()
-        if res['online'] and res['players']['online']!=0:
-            j+=1
-        dat.append(res)
-
+        try:
+            res = requests.get(url, params=params)
+            if res.status_code!= requests.codes.ok:
+                continue
+            res = res.json()
+            if res['online'] and res['players']['online']!=0:
+                j+=1
+            dat.append(res)
+        except requests.JSONDecodeError as e:
+            warning("sjmc json decode error: {}".format(e))
+        except KeyError as e:
+            warning("key error in sjmc: {}".format(e))
+        except BaseException as e:
+            warning("sjmc basic exception: {}".format(e))
     FONTS_PATH = 'resources/fonts'
     font_mc_l = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 30)
     font_mc_m = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 20)
@@ -64,7 +68,7 @@ def get_sjmc_info():
     draw.text((width-460,42), "SJMC服务器状态", fill=(255,255,255,255), font=font_mc_xl)
     draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
     
-    for i in range(7):
+    for i in range(len(dat)):
         fy = 160+i*140+j1*31
         res = dat[i]
         # 处理title非法字符
@@ -133,7 +137,7 @@ def get_sjmc_info():
             txt_size = draw.textsize("服务器离线", font=font_mc_m)
             draw.text((width-60-txt_size[0], fy+32), "服务器离线", fill=grey, font=font_mc_m)
     draw.text((60,height-50),"欢迎加入SJTU-Minecraft交流群！群号 712514518",fill=white,font=font_mc_m)
-    save_path=(f'{SAVE_TMP_PATH}/sjmc_status.png')
+    save_path=os.path.join(SAVE_TMP_PATH,'sjmc_status.png')
     img.save(save_path)
     return save_path
 
@@ -161,7 +165,7 @@ def decode_image(src):
     # 2、base64解码
     img = base64.urlsafe_b64decode(data)
     # 3、二进制文件保存
-    filename = "{}/{}.{}".format(SAVE_TMP_PATH,uuid.uuid4(), ext)
+    filename = os.path.join(SAVE_TMP_PATH, "{}.{}".format(uuid.uuid4(), ext))
     with open(filename, "wb") as f:
         f.write(img)
     return filename

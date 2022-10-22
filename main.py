@@ -92,7 +92,7 @@ class NoticeType(IntEnum):
     AddGroup = 31
     AddPrivate = 32
 
-def eventClassify(json_data)->NoticeType: 
+def eventClassify(json_data: dict)->NoticeType: 
     """事件分类"""
     if json_data['post_type'] == 'message' and json_data['message_type'] == 'group':
         if json_data['group_id'] in APPLY_GROUP_ID:
@@ -102,11 +102,8 @@ def eventClassify(json_data)->NoticeType:
     if json_data['post_type'] == 'message' and json_data['message_type'] == 'private':
         return NoticeType.PrivateMessage
     if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'notify' and json_data['sub_type'] == "poke":
-        try: # 使用try避免私聊戳一戳使下列语句报错
-            if json_data['group_id'] in APPLY_GROUP_ID:
-                return NoticeType.GroupPoke
-        except:
-            pass
+        if 'group_id' in json_data.keys() and json_data['group_id'] in APPLY_GROUP_ID:
+            return NoticeType.GroupPoke
     if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'group_recall':
         return NoticeType.GroupRecall
     if json_data['post_type'] == 'request' and json_data['request_type'] == 'friend':

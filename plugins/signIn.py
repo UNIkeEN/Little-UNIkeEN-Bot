@@ -10,16 +10,16 @@ from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
 from utils.accountOperation import get_user_coins, update_user_coins
 
-FORTUNE_TXT = [['r',"大吉"],['r',"中吉"],['r',"小吉"],['g',"中平"],['h',"小凶"],['h',"中凶"],['h',"大凶"],['r',"奆🐔"],['h','奆🐻']]
+FORTUNE_TXT = [['r',"大吉"],['r',"中吉"],['r',"小吉"],['g',"中平"],['h',"小赢"],['h',"中赢"],['h',"大赢"],['r',"奆🐔"],['h','奆🐻']]
 
 class SignIn(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg in ['签到','每日签到','打卡']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        ret = sign_in(data['user_id'])
-        pic_path=(f'file:///{ROOT_PATH}/'+ret)
+        picPath = sign_in(data['user_id'])
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file={pic_path}]',data['message_type'])
+        send(target, f'[CQ:image,file=files://{picPath}]',data['message_type'])
     def getPluginInfo(self,)->Any:
         return {
             'name': 'SignIn',
@@ -32,7 +32,7 @@ class SignIn(StandardPlugin):
             'author': 'Unicorn',
         }
 # 绘制签到图
-def draw_signinbanner(qq_id, add_coins, now_coins, fortune):
+def draw_signinbanner(qq_id:int, add_coins, now_coins, fortune):
     img = Image.new('RGBA', (720, 480), (random.randint(50,200),random.randint(50,200),random.randint(50,200),255))
     draw = ImageDraw.Draw(img)
     draw.rectangle((0, 120, 720, 480), fill=(255, 255, 255, 255))
@@ -66,22 +66,24 @@ def draw_signinbanner(qq_id, add_coins, now_coins, fortune):
     else:
         draw.text((525,340), FORTUNE_TXT[fortune][1], fill=FONT_CLR[f_type], font=font_hywh_85w_l)
     
-    save_path=(f'{SAVE_TMP_PATH}/{qq_id}_sign.png')
+    save_path=os.path.join(SAVE_TMP_PATH, "%d_sign.png"%qq_id)
+    # (f'{SAVE_TMP_PATH}/{qq_id}_sign.png')
     img.save(save_path)
     return save_path
 
 # 签到
-def sign_in(qq_id):
-    id=str(qq_id)
+def sign_in(qq_id:int):
+    id= qq_id if isinstance(qq_id, int) else int(qq_id)
     today_str=str(datetime.date.today())
     #first_sign = False
     mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
     mycursor = mydb.cursor()
-    mycursor.execute(f"SELECT lastSign FROM BOT_DATA.accounts where id={str(id)}")
+    mycursor.execute("SELECT lastSign FROM BOT_DATA.accounts where id=%d"%id)
     result=list(mycursor)
     if len(result)==0:
-        mycursor.execute(f"INSERT INTO BOT_DATA.accounts (id, coin, lastSign) VALUES ('{str(id)}', '0', '1980-01-01')")
-        mydb.commit()
+        mycursor.execute("""INSERT INTO BOT_DATA.accounts (id, coin, lastSign) 
+            VALUES (%d, '0', '1980-01-01')"""%id)
         last_sign_date = '1980-01-01'
     else:
         last_sign_date = str(result[0][0])
@@ -90,13 +92,12 @@ def sign_in(qq_id):
         fortune = random.randint(0,6)
         update_user_coins(id, add_coins, '签到奖励')
         try:
-            mycursor.execute(f"UPDATE BOT_DATA.accounts SET lastSign='{today_str}', fortune='{str(fortune)}' WHERE id='{str(id)}';")
-            mydb.commit()
-            print("[LOG] Update Sign_Info: Done!")
+            mycursor.execute("UPDATE BOT_DATA.accounts SET lastSign='%s', fortune=%d WHERE id=%d;"
+                %(escape_string(today_str), fortune, id))
         except mysql.connector.errors.DatabaseError as e:
-            print(e)
-        return draw_signinbanner(qq_id, add_coins, get_user_coins(id), fortune)
+            warning("sql error in signin: {}".format(e))
+        return draw_signinbanner(id, add_coins, get_user_coins(id), fortune)
     else:
-        mycursor.execute(f"SELECT fortune FROM BOT_DATA.accounts where id={str(id)}")
+        mycursor.execute("SELECT fortune FROM BOT_DATA.accounts where id=%d"%id)
         fortune=list(mycursor)[0][0]
-        return draw_signinbanner(qq_id, -1, get_user_coins(id), fortune)
+        return draw_signinbanner(id, -1, get_user_coins(id), fortune)

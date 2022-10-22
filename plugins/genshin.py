@@ -4,7 +4,7 @@ import json
 import random
 import time
 import hashlib
-import os
+import os, os.path
 from pathlib import Path
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
@@ -25,7 +25,8 @@ class GenshinDailyNote(StandardPlugin):
         if startswith_in(ret, ['查询失败']):
             send(target ,ret, data['message_type'])
         else:
-            send(target,f'[CQ:image,file=files:///{ROOT_PATH}/'+ ret +',id=40000]', data['message_type'])
+            picPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
+            send(target,'[CQ:image,file=files://%s,id=40000]'%picPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -184,13 +185,13 @@ def get_YSdailynote(qq_id):
             img.alpha_composite(img_role_avatar, (60+i*177, 670))
             i+=1
 
-        save_path=(f'{SAVE_TMP_PATH}/{qq_id}_genshin.png')
+        save_path=os.path.join(SAVE_TMP_PATH, f'{qq_id}_genshin.png')
         img.save(save_path)
         return save_path
 
 def edit_bind_uid(qq_id, uid, cookie):
     qq_id=str(qq_id)
-    data_path=(f'data/genshin.json')
+    data_path='data/genshin.json'
     if not Path(data_path).is_file():
         Path(data_path).write_text(r'{}')
     with open(data_path, "r") as f:

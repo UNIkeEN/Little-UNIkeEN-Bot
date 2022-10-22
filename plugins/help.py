@@ -4,7 +4,7 @@ from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
 from utils.responseImage import *
-
+import os.path
 class ShowHelp(StandardPlugin): 
     def __init__(self) -> None:
         self.pluginList = []
@@ -14,7 +14,9 @@ class ShowHelp(StandardPlugin):
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         flag_id = data['group_id'] if data['message_type']=='group' else 0
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+self.drawHelpCard(flag_id)+',id=40000]',data['message_type'])
+        imgPath = self.drawHelpCard(flag_id)
+        imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+        send(target, f'[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -115,8 +117,8 @@ class ServerMonitor(StandardPlugin):
             title = 'Bot 服务器状态', 
             titleColor = PALETTE_CYAN,
         )
-        mem = psutil.virtual_memory().percent
-        cpu = psutil.cpu_percent()
+        mem:float = psutil.virtual_memory().percent
+        cpu:float = psutil.cpu_percent()
         statusCards.addCard(
             ResponseImage.RichContentCard(
                 raw_content=[
@@ -126,9 +128,10 @@ class ServerMonitor(StandardPlugin):
                 ('progressBar', cpu/100, 'auto'),
             ])
         )
-        save_path = (os.path.join(SAVE_TMP_PATH, f'server_monitor.png'))
+        save_path = os.path.join(SAVE_TMP_PATH, 'server_monitor.png')
         statusCards.generateImage(save_path)
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+save_path+',id=40000]' ,data['message_type'])
+        save_path = save_path if os.path.isabs(save_path) else os.path.join(ROOT_PATH, save_path)
+        send(target, '[CQ:image,file=files://%s,id=40000]'%save_path ,data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

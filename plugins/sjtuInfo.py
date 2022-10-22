@@ -6,13 +6,16 @@ from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
+import os.path
 
 class SjtuCanteenInfo(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-st'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+get_canteen_info()+',id=40000]',data['message_type'])
+        picPath = get_canteen_info()
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+        send(target, f'[CQ:image,file=files://{picPath},id=40000]',data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -30,7 +33,9 @@ class SjtuLibInfo(StandardPlugin):
         return msg == '-lib'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/'+get_lib_info()+',id=40000]', data['message_type'])
+        picPath = get_lib_info()
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+        send(target, f'[CQ:image,file=files://{picPath},id=40000]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
