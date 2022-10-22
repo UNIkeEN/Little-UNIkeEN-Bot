@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#1" class="md-skip">
           Skip to content
         </a>
       
@@ -825,15 +825,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    插件简介
+  <a href="#1" class="md-nav__link">
+    1. 插件简介
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    代码分析
+  <a href="#2" class="md-nav__link">
+    2. 代码分析
   </a>
   
 </li>
@@ -1175,9 +1175,36 @@
 
   <h1>寄了检测</h1>
 
-<h2 id="_1">插件简介</h2>
+<h2 id="1">1. 插件简介</h2>
 <p>这个插件是特别针对作者的两个好朋友 —— 柴神和元神所开发的，以纪念他们对卖弱事业所作出的贡献。</p>
-<h2 id="_2">代码分析</h2>
+<table>
+<thead>
+<tr>
+<th>插件名称</th>
+<th>父类</th>
+<th>触发关键词</th>
+<th>触发权限</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chai_Jile</td>
+<td>StandardPlugin</td>
+<td>'寄了' / '我寄'</td>
+<td>user_id = ${柴QQ}</td>
+<td>patpat柴[CQ:face,id=49], 不要伤心😘</td>
+</tr>
+<tr>
+<td>Yuan_Jile</td>
+<td>StandardPlugin</td>
+<td>'真弱' / '寄了' / '好菜'</td>
+<td>user_id = ${元QQ}</td>
+<td>😅😅😅😅😅😅😅😅😅😅</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 代码分析</h2>
 <p>此代码位于 <code>jile.py</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span> <span class="nc">Chai_Jile</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
