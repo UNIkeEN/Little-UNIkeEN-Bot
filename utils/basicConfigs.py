@@ -14,7 +14,7 @@ ROOT_ADMIN_ID=[] # root admins
 
 BOT_SELF_QQ=0 # TODO:
 
-VERSION_TXT="""version：开源1.0.0版本
+VERSION_TXT="""version：开源1.0.1版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
 sqlConfig = { # configs for connecting to mysql server

@@ -309,7 +309,7 @@ class ResponseImage():
             for i in range(len(cardList)):
                 t += cardList[i]['height']
                 # print(i, ' ', abs(cardTotHeight - 2*t))
-                if abs(cardTotHeight - 2*t) < min:
+                if abs(cardTotHeight - 2*t) <= min:
                     min = abs(cardTotHeight - 2*t)
                 else:
                     self.columnSep = i - 1

@@ -9,10 +9,12 @@ from threading import Timer
 from pathlib import Path
 import json
 from datetime import datetime
+from urllib.parse import urljoin
 import qrcode
 def getSjtuGk():
     """交大信息公开网"""
-    html = requests.get('https://gk.sjtu.edu.cn').text
+    pageUrl = 'https://gk.sjtu.edu.cn'
+    html = requests.get(pageUrl).text
     html = BS(html, 'lxml')
     news = html.find(class_='new-ncon').find_all('li')
     result = []
@@ -20,8 +22,7 @@ def getSjtuGk():
         try:
             category = n.i.contents[0]
             link = n.a.get('href')
-            if link[0] == '/':
-                link = 'https://gk.sjtu.edu.cn'+link
+            link = urljoin(pageUrl, link)
             title = n.a.contents[0]
             result.append({
                 'category': category,
@@ -33,7 +34,8 @@ def getSjtuGk():
     return result
 def getSjtuNews():
     """交大新闻网"""
-    html = requests.get('https://news.sjtu.edu.cn/jdyw/index.html').text
+    pageUrl = 'https://news.sjtu.edu.cn/jdyw/index.html'
+    html = requests.get(pageUrl).text
     html = BS(html, 'lxml')
     news = html.find('div', class_='list-card-h').find_all('li', class_='item')
     result = []
@@ -41,14 +43,12 @@ def getSjtuNews():
         card = n.find('a', class_='card')
         try:
             link =  card.get('href')
-            if link[0] == '/':
-                link = 'https://news.sjtu.edu.cn' +link
+            link = urljoin(pageUrl, link)
         except:
             link = None
         try:
             imgLink = card.find('img').get('src')
-            if imgLink[0] == '/':
-                imgLink = 'https://news.sjtu.edu.cn' + imgLink
+            imgLink = urljoin(pageUrl, imgLink)
         except:
             imgLink = None
         try:
@@ -131,7 +131,7 @@ class GetJwc(StandardPlugin):
         jwc = sorted(getJwc(), key=lambda x: '%s-%s-%s'%(x['year'], x['month'], x['day']), reverse=True)
         jwcStr = ""
         idx = 1
-        for j in jwc[:5]:
+        for j in jwc[:7]:
             jwcStr += '【%d】%s-%s-%s %s %s\n'%(idx, j['year'], j['month'], j['day'], j['title'], j['link'])
             idx += 1
         jwcStr = jwcStr[:-1]

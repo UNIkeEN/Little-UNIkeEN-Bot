@@ -13,9 +13,9 @@ from utils.accountOperation import get_user_coins, update_user_coins
 FORTUNE_TXT = [['r',"大吉"],['r',"中吉"],['r',"小吉"],['g',"中平"],['h',"小凶"],['h',"中凶"],['h',"大凶"],['r',"奆🐔"],['h','奆🐻']]
 
 class SignIn(StandardPlugin): 
-    def judgeTrigger(msg:str, data:Any) -> bool:
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg in ['签到','每日签到','打卡']
-    def executeEvent(msg:str, data:Any) -> Union[None, str]:
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         ret = sign_in(data['user_id'])
         pic_path=(f'file:///{ROOT_PATH}/'+ret)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']

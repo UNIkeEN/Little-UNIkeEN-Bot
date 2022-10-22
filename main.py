@@ -12,7 +12,7 @@ from plugins.greetings import *
 from plugins.checkCoins import *
 from plugins.superEmoji import *
 from plugins.news import *
-from plugins.signIn_yiqing import *
+from plugins.signIn import *
 from plugins.stocks import *
 from plugins.jile import *
 from plugins.sjtuInfo import *
