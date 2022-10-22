@@ -137,8 +137,11 @@ def getCanvas(qq_id) -> Tuple[bool, str]:
     except BaseException as e:
         warning("error in canvasSync, error: {}".format(e))
     qq_id=str(qq_id)
+    
     try:
         ret = requests.get(url=url)
+        if ret.status_code != requests.codes.ok:
+            return False, f"查询失败\n{FAIL_REASON_2}"
         data = ret.content
         gcal = Calendar.from_ical(data)
         event_list = []

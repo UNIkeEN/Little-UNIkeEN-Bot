@@ -25,11 +25,8 @@ class _roulette():
         self.num_whole=0
         #self.random_bullet(num_bullet, num_whole)
         self.cur_index=0
-        try:
-            self.timer.cancel()
-        except BaseException as e:
-            warning("base excption in roulette __init__ self.timer.cancel(): {}".format(e))
         self.timer=Timer
+        
 
     def get_cmd(self, id, msg):
         # init阶段，发起决斗申请

@@ -15,7 +15,11 @@ import os, os.path
 def getSjtuGk():
     """交大信息公开网"""
     pageUrl = 'https://gk.sjtu.edu.cn'
-    html = requests.get(pageUrl).text
+    req = requests.get(pageUrl)
+    if req.status_code != requests.codes.ok:
+        warning("gk.sjtu.edu.cn API failed!")
+        return []
+    html = req.text
     html = BS(html, 'lxml')
     news = html.find(class_='new-ncon').find_all('li')
     result = []
@@ -36,7 +40,11 @@ def getSjtuGk():
 def getSjtuNews():
     """交大新闻网"""
     pageUrl = 'https://news.sjtu.edu.cn/jdyw/index.html'
-    html = requests.get(pageUrl).text
+    req = requests.get(pageUrl)
+    if req.status_code != requests.codes.ok:
+        warning("news.sjtu.edu.cn API failed!")
+        return []
+    html = req.text
     html = BS(html, 'lxml')
     news = html.find('div', class_='list-card-h').find_all('li', class_='item')
     result = []
@@ -98,8 +106,13 @@ def drawSjtuNews():
         })
     a.generateImage(os.path.join(SAVE_TMP_PATH, 'sjtu_news.png'))
 
-def getJwc():
-    page = str(requests.get('https://jwc.sjtu.edu.cn/xwtg/tztg.htm').content, 'utf-8')
+def getJwc()->list:
+    pageUrl = 'https://jwc.sjtu.edu.cn/xwtg/tztg.htm'
+    req = requests.get(pageUrl)
+    if req.status_code != requests.codes.ok:
+        warning("jwc.sjtu.edu.cn API failed!")
+        return []
+    page = str(req.content, 'utf-8')
     page = BS(page, 'lxml')
     news = page.find(class_='Newslist').ul.find_all(class_='clearfix')
     newsList = []
@@ -110,7 +123,8 @@ def getJwc():
             day = sj.h2.contents[0]
             content = n.find(class_='wz')
             title:str = content.h2.contents[0]
-            link:str = content.a.get('href').replace('..', 'https://jwc.sjtu.edu.cn')
+            link:str = content.a.get('href')
+            link = urljoin(pageUrl, link)
             detail:str = content.p.contents[0]
             newsList.append({
                 'year': year,

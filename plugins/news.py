@@ -45,8 +45,11 @@ def get_news():
         'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36'
     }
     url = 'https://www.liulinblog.com/kuaixun'
-
-    page_text = requests.get(url=url,headers=headers).text
+    req = requests.get(url=url,headers=headers)
+    if req.status_code != requests.codes.ok:
+        warning("news api failed in news.py")
+        return "err 0"
+    page_text = req.text
     tree = etree.HTML(page_text)
     img_url = tree.xpath('//div[@class="col-lg-12"]//a[@target="_blank"]/@href')[0]
     detail_page_text = requests.get(url=img_url,headers=headers).text

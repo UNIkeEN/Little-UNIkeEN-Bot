@@ -137,7 +137,10 @@ def NewActlistPic():
         img = draw_rounded_rectangle(img, x1=60, y1=h, x2=width-60 ,y2=h+210, fill=(255,255,255,255))
         l = 60
         url_avatar = requests.get(activity['activityPicurl'])
-        img_avatar = Image.open(BytesIO(url_avatar.content)).resize((90,90))
+        if url_avatar.status_code != requests.codes.ok:
+            img_avatar = None
+        else:
+            img_avatar = Image.open(BytesIO(url_avatar.content)).resize((90,90))
         img.paste(img_avatar, (l+30, h+30))
         txt_size = draw.textsize(activity['activityName'], font = font_syhtmed_24)
         act_txt = ""

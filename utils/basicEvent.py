@@ -9,6 +9,18 @@ from typing import List, Union, Tuple, Any
 from pymysql.converters import escape_string
 import traceback
 
+def get_avatar_pic(id: int)->Union[None, bytes]:
+    """获取QQ头像
+    @id: qq号
+    @return:
+        None if QQ头像获取失败
+        bytes if QQ头像获取成功
+    """
+    url_avatar = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={id}&spec=100')
+    if url_avatar.status_code != requests.codes.ok:
+        return None
+    else:
+        return url_avatar.content
 def send(id: int, message: str, type:str='group')->None:
     """发送消息
     id: 群号或者私聊对象qq号
@@ -166,6 +178,8 @@ def send_genshin_voice(sentence):
     for i in range(len(num)):
         sentence = sentence.replace(num[i],zw_num[i])
     response = requests.get(f"http://233366.proxy.nscc-gz.cn:8888/?text={sentence}&speaker={speaker}&length_factor=0.5&noise=0.4&format=mp3")
+    if response.status_code != requests.codes.ok:
+        raise RuntimeError("genshin voice api failed")
     file_path = "data/voice/{}.mp3".format(timeNow)
     with open(file_path, "wb") as code:
         code.write(response.content)

@@ -9,7 +9,18 @@ class Show2cyPIC(StandardPlugin):
         return msg == '来点图图'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        pic_url = requests.get(url='https://tenapi.cn/acg',params={'return': 'json'}).json()['imgurl']
+        req = requests.get(url='https://tenapi.cn/acg',params={'return': 'json'})
+        if req.status_code != requests.codes.ok:
+            warning("tenapi failed in Show2cyPIC")
+            return "OK"
+        try:
+            pic_url = req.json()['imgurl']
+        except requests.JSONDecodeError as e:
+            warning("json decode error in Show2cyPIC: {}".format(e))
+            return "OK"
+        except KeyError as e:
+            warning("key error in Show2cyPIC: {}".format(e))
+            return "OK"
         send(target,'[CQ:image,file=' + pic_url + ']', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
@@ -37,8 +48,12 @@ class ShowSePIC(StandardPlugin):
             for t in tag:
                 tagText += urllib.parse.quote(t) + '|'
             tagText = tagText[:-1]
-            try:  
-                pic_url = requests.get(url=f"https://api.lolicon.app/setu/v2?tag={tagText}&r18=0&size=regular",params={'return': 'json'}).json()['data'][0]['urls']['regular']
+            try:
+                req= requests.get(url=f"https://api.lolicon.app/setu/v2?tag={tagText}&r18=0&size=regular",params={'return': 'json'})
+                if req.status_code != requests.codes.ok:
+                    warning("lolicon API failed in ShowSePIC")
+                    return "OK"
+                pic_url = req.json()['data'][0]['urls']['regular']
                 target = data['group_id'] if data['message_type']=='group' else data['user_id']
                 send(target,'[CQ:image,file=' + pic_url + ',type=flash]',data['message_type'])
             except BaseException as e:
