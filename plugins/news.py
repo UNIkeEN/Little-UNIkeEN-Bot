@@ -21,7 +21,7 @@ class ShowNews(StandardPlugin):
         if ret=="err 0":
             send(target, "获取失败\n新闻源尚未更新本日新闻", data['message_type'])
         else:
-            newsPicPath = newsPicPath if os.path.isabs(newsPicPath) else os.path.join(ROOT_PATH, ret)
+            newsPicPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
             send(target, f'[CQ:image,file=files://{newsPicPath},id=40000]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:

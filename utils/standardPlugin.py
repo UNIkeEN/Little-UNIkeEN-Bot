@@ -41,9 +41,14 @@ class StandardPlugin(ABC):
             }
         """
         raise NotImplementedError
-class RecallMessagePlugin(ABC):
+class RecallMessageStandardPlugin(ABC):
     @abstractmethod
     def recallMessage(self, data:Any)->Union[str, None]:
+        raise NotImplementedError
+
+class GroupUploadStandardPlugin(ABC):
+    @abstractmethod
+    def uploadFile(self, data)->Union[str, None]:
         raise NotImplementedError
 
 class PluginGroupManager(StandardPlugin):

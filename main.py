@@ -30,7 +30,7 @@ from plugins.canvasSync import *
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
-
+from plugins.fileRecorder import GroupFileRecorder
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 
@@ -86,6 +86,7 @@ class NoticeType(IntEnum):
     GroupMessage = 11
     GroupPoke = 12
     GroupRecall = 13
+    GroupUpload = 14
     PrivateMessage = 21
     PrivatePoke = 22
     PrivateRecall = 23
@@ -106,6 +107,8 @@ def eventClassify(json_data: dict)->NoticeType:
             return NoticeType.GroupPoke
     if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'group_recall':
         return NoticeType.GroupRecall
+    if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'group_upload':
+        return NoticeType.GroupUpload
     if json_data['post_type'] == 'request' and json_data['request_type'] == 'friend':
         return NoticeType.AddPrivate
     return NoticeType.NoProcessRequired
@@ -143,6 +146,9 @@ def post_data():
                 ret = event.executeEvent(msg, data)
                 if ret != None:
                     return ret
+    elif flag == NoticeType.GroupUpload:
+        for event in [GroupFileRecorder()]:
+            event.uploadFile(data)
     # 群内拍一拍回拍
     elif flag==NoticeType.GroupPoke: 
         if data['target_id'] == data['self_id']:

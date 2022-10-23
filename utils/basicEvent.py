@@ -1,3 +1,4 @@
+import re
 import mysql.connector
 import requests, json
 from utils.basicConfigs import HTTP_URL
@@ -21,6 +22,7 @@ def get_avatar_pic(id: int)->Union[None, bytes]:
         return None
     else:
         return url_avatar.content
+        
 def send(id: int, message: str, type:str='group')->None:
     """发送消息
     id: 群号或者私聊对象qq号
@@ -89,18 +91,20 @@ def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->li
         if message_seq != None:
             params["message_seq"] = message_seq
             
-        messageHistory = json.loads(requests.get(url, params=params).text)
+        messageHistory = requests.get(url, params=params).json()
         if messageHistory['status'] != 'ok':
-            if messageHistory['msg'] == 'MESSAGES_API_ERROR':
-                print("group {} meet message API error".format(group_id))
+            if messageHistory['msg'] == 'MESSAGES_API_ERROR' or messageHistory['msg'] == 'GROUP_INFO_API_ERROR':
+                print("group {} meet '{}' error".format(group_id, messageHistory['msg']))
             else:
                 warning("get_group_msg_history requests not return ok\nmessages = {}\ngroup_id={}\nmessage_seq={}".format(
                 messageHistory, group_id, message_seq))
             return []
         return messageHistory['data']['messages']
+    except requests.JSONDecodeError as e:
+        warning('json decode error in get_group_msg_history: {}'.format(e))
     except BaseException as e:
         warning('error in get_group_msg_history, error: [}'.format(e))
-        return []
+    return []
 def get_essence_msg_list(group_id: int)->list:
     """获取精华消息列表
     @group_id:  群号
@@ -111,14 +115,16 @@ def get_essence_msg_list(group_id: int)->list:
         params = {
             "group_id": group_id
         }
-        essenceMsgs = json.loads(requests.get(url, params=params).text)
+        essenceMsgs = requests.get(url, params=params).json()
         if essenceMsgs['status'] != 'ok':
             warning("get_essence_msg_list requests not return ok")
             return []
         return essenceMsgs['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_essence_msg_list: {}".format(e))
     except BaseException as e:
         warning("error in get_essence_msg_list, error: {}".format(e))
-        return []
+    return []
 def set_friend_add_request(flag, approve=True)->None:
     """处理加好友"""
     url = HTTP_URL+"/set_friend_add_request"
@@ -126,9 +132,109 @@ def set_friend_add_request(flag, approve=True)->None:
         "flag": flag,
         "approve": approve
     }
-    print(params)
     requests.get(url, params=params)
+    
+def get_group_file_system_info(group_id: int)->dict:
+    """获取群文件系统信息
+    @group_id: 群号
+    @return: {
+        'file_count': 文件总数 int32
+        'limit_count': 文件上限 int32
+        'used_space': 已使用空间 int64
+        'total_space': 空间上限 int64
+    }
+    参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF
+    """
+    url = HTTP_URL+"/get_group_file_system_info"
+    params = {
+        "group_id": group_id,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("get_group_file_system_info requests not return ok")
+            return {}
+        return info['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_file_system_info: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_file_system_info: {}".format(e))
+    return {}
 
+def get_group_root_files(group_id: int)->dict:
+    """获取群根目录文件列表
+    @group_id: 群号
+    @return: {
+        files: [] or None,
+        folders: [] or None
+    }
+    参考链接: https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%A0%B9%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
+    """
+    url = HTTP_URL+"/get_group_root_files"
+    params = {
+        "group_id": group_id,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("get_group_root_files requests not return ok")
+            return {}
+        return info['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_file_system_info: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_root_files: {}".format(e))
+    return {}
+
+def get_group_files_by_folder(group_id: int, folder_id: str)->dict:
+    """获取群子目录文件列表
+    @group_id: 群号
+    @folder_id: 文件夹id
+    @return: {
+        files: [] or None,
+        folders: [] or None
+    }
+    参考链接: https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%AD%90%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
+    """
+    url = HTTP_URL+"/get_group_files_by_folder"
+    params = {
+        "group_id": group_id,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("get_group_files_by_folder requests not return ok")
+            return {}
+        return info['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_files_by_folder: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_files_by_folder: {}".format(e))
+    return {}
+
+def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, None]:
+    """获取群文件资源链接
+    @group_id: 群号
+    @file_id: 文件id
+    @busid: 文件类型
+    参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
+    """
+    url = HTTP_URL+"/get_group_file_url"
+    params = {
+        "group_id": group_id,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("get_group_file_url requests not return ok")
+            return {}
+        return info['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_file_url: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_file_url: {}".format(e))
+    return None
+    
 def warning(what:str)->None:
     """warning to admins"""
     stack = traceback.format_exc()

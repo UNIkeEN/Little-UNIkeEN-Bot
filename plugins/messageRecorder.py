@@ -1,4 +1,4 @@
-from utils.standardPlugin import StandardPlugin, RecallMessagePlugin, Union, Tuple, Any, List
+from utils.standardPlugin import StandardPlugin, RecallMessageStandardPlugin, Union, Tuple, Any, List
 from utils.basicEvent import get_group_list, warning, get_group_list, get_group_msg_history
 from utils.basicConfigs import sqlConfig
 from pymysql.converters import escape_string
@@ -84,7 +84,7 @@ def getGroupMessageThread(latestResultSeq):
                 # with open("getGroupMessageThreadData.json", 'w') as f:
                 #     json.dump(data, f)
 
-class GroupMessageRecorder(StandardPlugin, RecallMessagePlugin):
+class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
     def __init__(self) -> None:
         # 首先获取群聊列表，看看数据库是否开了这些表
         mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)

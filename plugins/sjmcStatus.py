@@ -51,11 +51,14 @@ def get_sjmc_info():
             dat.append(res)
         except requests.JSONDecodeError as e:
             warning("sjmc json decode error: {}".format(e))
+        except requests.Timeout as e:
+            print("connection time out")
         except KeyError as e:
             warning("key error in sjmc: {}".format(e))
         except BaseException as e:
             warning("sjmc basic exception: {}".format(e))
     FONTS_PATH = 'resources/fonts'
+    white, grey, green, red = (255,255,255,255),(128,128,128,255),(0,255,33,255),(255,85,85,255)
     font_mc_l = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 30)
     font_mc_m = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 20)
     font_mc_s = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 16)
@@ -103,7 +106,6 @@ def get_sjmc_info():
                 break
         if res['online']:
             res['hostname'] = res['hostname'].replace('.',' . ')
-        white, grey, green, red = (255,255,255,255),(128,128,128,255),(0,255,33,255),(255,85,85,255)
         draw.text((160, fy), new_title, fill=white, font=font_mc_l)
         if res['online']:
             draw.text((160, fy+45), res['hostname'], fill=grey, font=font_mc_m)
