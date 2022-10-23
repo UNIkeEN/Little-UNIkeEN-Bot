@@ -38,6 +38,19 @@
 ## 代码分析
 
 ```python
+def get_avatar_pic(id: int)->Union[None, bytes]:
+    """获取QQ头像
+    @id: qq号
+    @return:
+        None if QQ头像获取失败
+        bytes if QQ头像获取成功
+    """
+    url_avatar = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={id}&spec=100')
+    if url_avatar.status_code != requests.codes.ok:
+        return None
+    else:
+        return url_avatar.content
+        
 def send(id: int, message: str, type:str='group')->None:
     """发送消息
     id: 群号或者私聊对象qq号
