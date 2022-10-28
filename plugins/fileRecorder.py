@@ -3,8 +3,7 @@ from utils.standardPlugin import GroupUploadStandardPlugin, Union, Tuple, Any, L
 from utils.basicEvent import get_group_list, warning
 from utils.basicEvent import get_group_file_system_info, get_group_files_by_folder, get_group_root_files, get_group_file_url
 from utils.basicConfigs import sqlConfig
-from pymysql.converters import escape_string
-import pymysql, mysql.connector
+import mysql.connector
 import threading, time
 
 class QqGroupFile():
@@ -37,8 +36,8 @@ class GroupFileRecorder(GroupUploadStandardPlugin):
         # select group_id, file_id, file_name, busid, file_size, (file_bin is null) from BOT_DATA.fileRecord;
     def uploadFile(self, data)->Union[str, None]:
         file = data['file']
-        mydb = pymysql.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit(True)
+        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+        mydb.autocommit = True
         mycursor = mydb.cursor()
         try:
             mycursor.execute("""
@@ -50,13 +49,13 @@ class GroupFileRecorder(GroupUploadStandardPlugin):
                 %s,        %s
             )""", (
                 data['group_id'],
-                escape_string(file['id']),
-                escape_string(file['name']),
+                file['id'],
+                file['name'],
                 file['busid'],
                 file['size'],
                 data['time'],
                 data['user_id'],
-                escape_string(file['url']),
+                file['url'],
             ))
             if file['size'] < 1024* 1024* 100: # 100MB
                 req = requests.get(file['url'])
@@ -65,11 +64,11 @@ class GroupFileRecorder(GroupUploadStandardPlugin):
                     return "OK"
                 mycursor.execute("""update `BOT_DATA`.`fileRecord` set `file_bin`= %s
                     where group_id = %s and file_id = %s and busid = %s""",(
-                    req.content, data['group_id'], escape_string(file['id']), file['busid']
+                    req.content, data['group_id'], file['id'], file['busid']
                 ))
         except KeyError as e:
             warning("key error in file recorder: {}".format(e))
-        except pymysql.Error as e:
+        except mysql.connector.Error as e:
             warning("mysql error in file recorder: {}".format(e))
         except BaseException as e:
             warning("base exception in file recorder: {}".format(e))

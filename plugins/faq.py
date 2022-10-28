@@ -1,22 +1,49 @@
 import json
-from pathlib import Path
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
+from typing import Union, Any, List, Tuple
+from utils.basicEvent import send, warning
 from utils.standardPlugin import StandardPlugin
-
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
+from utils.responseImage import ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
+import re, os.path
+from pypinyin import lazy_pinyin
 FAQ_DATA_PATH="data"
-
-class AskFAQ(StandardPlugin): 
+class HelpFAQ(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['问 '])
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        msg=msg.replace('问 ','',1)
-        send(
-            data['group_id'],
-            f"[CQ:reply,id={str(data['message_id'])}]{get_answer(data['group_id'],msg.strip())} 【{msg.strip()}】"
-        )
+        return msg == '问答帮助' and data['message_type']=='group'
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        group_id = data['group_id']
+        send(group_id, "获取问答库： '维护 show q'\n"
+                       "新建答案： '维护 add <key> <original ans>'\n"
+                       "更改答案： '维护 edit <key> <new ans>'\n"
+                       "删除答案： '维护 del <key>'\n"
+                       "附加答案： '维护 append <key> <ans to append>'")
         return "OK"
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'AskFAQ',
+            'description': '问答帮助',
+            'commandDescription': '问答帮助',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.2',
+            'author': 'Unicorn',
+        }
+class AskFAQ(StandardPlugin):
+    def __init__(self):
+        self.pattern = re.compile(r'^问\s+([^\s]+)$')
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return self.pattern.match(msg) != None and data['message_type']=='group'
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        msg = self.pattern.findall(msg)[0]
+        group_id = data['group_id']
+        hasMsg, ans = get_answer(group_id, msg)
+        if hasMsg:
+            ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, msg)
+        else:
+            ans = "[CQ:reply,id=%d]%s"%(data['message_id'], ans)
+        send(group_id, ans)
+
     def getPluginInfo(self)->Any:
         return {
             'name': 'AskFAQ',
@@ -25,14 +52,70 @@ class AskFAQ(StandardPlugin):
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
-            'version': '1.0.0',
+            'version': '1.0.2',
             'author': 'Unicorn',
         }
 class MaintainFAQ(StandardPlugin):
+    def __init__(self):
+        self.patterns = {
+            'show': re.compile(r'^维护\s+show\s+q$'),
+            'add': re.compile(r'^维护\s+add\s+([^\s]+)\s(.*)$'),
+            'edit': re.compile(r'^维护\s+edit\s+([^\s]+)\s(.*)$'),
+            'del': re.compile(r'^维护\s+del\s+([^\s]+)$'),
+            'append': re.compile(r'^维护\s+append\s+([^\s]+)\s(.*)$'),
+        }
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['维护 '])
+        return msg.startswith('维护 ') and data['message_type']=='group'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        send(data['group_id'], maintain(data,msg))
+        group_id = data['group_id']
+        message_id = data['message_id']
+        if self.patterns['show'].match(msg) != None:
+            questions = show_all(group_id)
+            if False:
+                send(group_id,"本群问题列表：\n"+",".join(questions))
+            else:
+                imgPath = drawQuestionCard(questions, group_id)
+                imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+                send(group_id, '[CQ:image,file=files://%s,id=40000]'%imgPath)
+            return "OK"
+        elif self.patterns['edit'].match(msg) != None:
+            key, val = self.patterns['edit'].findall(msg)[0]
+            succ = edit_question(group_id, key, val)
+            if succ:
+                msg = "[CQ:reply,id=%d]问题修改成功：\n%s\n【%s】"%(message_id, val, key)
+            else:
+                msg = "[CQ:reply,id=%d]问题【%s】不存在，请先添加"%(message_id, key)
+            send(group_id, msg)
+            return "OK"
+        elif self.patterns['add'].match(msg)!=None:
+            key, val = self.patterns['add'].findall(msg)[0]
+            succ = add_question(group_id, key, val)
+            if succ:
+                msg = "[CQ:reply,id=%d]问题新建成功：\n%s\n【%s】"%(message_id, val, key)
+            else:
+                msg = "[CQ:reply,id=%d]问题【%s】已存在"%(message_id, key)
+            send(group_id, msg)
+            return "OK"
+        elif self.patterns['del'].match(msg) != None:
+            key = self.patterns['del'].findall(msg)[0]
+            succ = del_question(group_id, key)
+            if succ:
+                msg = "[CQ:reply,id=%d]问题【%s】删除成功"%(message_id, key)
+            else:
+                msg = "[CQ:reply,id=%d]问题【%s】不存在"%(message_id, key)
+            send(group_id, msg)
+            return "OK"
+        elif self.patterns['append'].match(msg) != None:
+            key, val = self.patterns['append'].findall(msg)[0]
+            succ, newAns = append_question(group_id, key, val)
+            if succ:
+                msg = "[CQ:reply,id=%d]问题修改成功\n%s\n【%s】"%(message_id, newAns, key)
+            else:
+                msg = "[CQ:reply,id=%d]问题【%s】不存在，请先添加"%(message_id, key)
+            send(group_id, msg)
+            return "OK"
+        else:
+            send(group_id, '输入格式不对哦，请输入【问答帮助】获取操作指南')
         return "OK"
     def getPluginInfo(self)->Any:
         return {
@@ -42,127 +125,122 @@ class MaintainFAQ(StandardPlugin):
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
-            'version': '1.0.0',
+            'version': '1.0.2',
             'author': 'Unicorn',
         }
-def get_answer(group_id,key):
-    exact_path=(f'{FAQ_DATA_PATH}/{group_id}/faq.json')
-    if not Path(exact_path).is_file():
-        Path(exact_path).write_text(r'[]')
-        return "没有查询到结果喔 qwq"
+def loadQuestions(group_id: int)->dict:
+    """获取问题列表
+    @group_id: 群号
+    @return: 问题列表
+    """
+    exact_path = os.path.join(FAQ_DATA_PATH, str(group_id), 'faq.json')
+    if not os.path.isfile(exact_path):
+        return {}
     else:
-        with open(exact_path, "r") as f:
-            faq_base = json.load(f)
-        for record in faq_base:
-            #print(record)
-            if record["key"] == key:
-                return record["ans"]
-        return "没有查询到结果喔 qwq"
+        with open(exact_path, 'r') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError as e:
+                warning("json decode error in faq: {}".format(e))
+            except BaseException as e:
+                warning("base exception in faq: {}".format(e))
+            return {}
+def dumpQuestions(group_id: int, questions: dict):
+    """存储问题列表
+    @group_id: 群号
+    @questions: 问题列表
+    """
+    save_path = os.path.join(FAQ_DATA_PATH, str(group_id))
+    os.makedirs(save_path, exist_ok=True)
+    exact_path = os.path.join(FAQ_DATA_PATH, str(group_id), 'faq.json')
+    with open(exact_path, 'w') as f:
+        json.dump(questions, f)
+def get_answer(group_id,key)->Tuple[bool, str]:
+    answers = loadQuestions(group_id)
+    if key not in answers.keys():
+        return False, "没有查询到结果喔 qwq"
+    else:
+        return True, answers[key]
         
-def add_question(group_id,key,ans):
-    exact_path=(f'{FAQ_DATA_PATH}/{group_id}/faq.json')
-    if not Path(exact_path).is_file():
-        Path(exact_path).write_text(r'[]')
-        faq_base=[{"key":key,"ans":ans}]
-        with open(exact_path, 'w') as f:
-            json.dump(faq_base, f, indent=4)
+def add_question(group_id,key,ans)->bool:
+    answers = loadQuestions(group_id)
+    if key not in answers.keys():
+        answers[key] = ans
+        dumpQuestions(group_id, answers)
         return True
     else:
-        with open(exact_path, "r") as f:
-            faq_base = json.load(f)
-        for record in faq_base:
-            if record["key"] == key:
-                return False
-        faq_base.append({"key":key,"ans":ans})
-        with open(exact_path, 'w') as f:
-            json.dump(faq_base, f, indent=4)
+        return False
+
+def edit_question(group_id,key,ans)->bool:
+    answers = loadQuestions(group_id)
+    if key not in answers.keys():
+        return False
+    else:
+        answers[key] = ans
+        dumpQuestions(group_id, answers)
         return True
 
-def edit_question(group_id,key,ans):
-    exact_path=(f'{FAQ_DATA_PATH}/{group_id}/faq.json')
-    if not Path(exact_path).is_file():
-        Path(exact_path).write_text(r'[]')
+def del_question(group_id,key)->bool:
+    answers = loadQuestions(group_id)
+    if key not in answers.keys():
         return False
     else:
-        with open(exact_path, "r") as f:
-            faq_base = json.load(f)
-        for record in faq_base:
-            if record["key"] == key:
-                record["ans"] = ans
-                with open(exact_path, 'w') as f:
-                    json.dump(faq_base, f, indent=4)
-                return True
-        return False
-
-def del_question(group_id,key):
-    exact_path=(f'{FAQ_DATA_PATH}/{group_id}/faq.json')
-    if not Path(exact_path).is_file():
-        Path(exact_path).write_text(r'[]')
-        return False
+        del answers[key]
+        dumpQuestions(group_id, answers)
+        return True
+def append_question(group_id, key, val)->Tuple[bool, str]:
+    answers = loadQuestions(group_id)
+    if key not in answers.keys():
+        return False, ""
     else:
-        with open(exact_path, "r") as f:
-            faq_base = json.load(f)
-        for record in faq_base:
-            if record["key"] == key:
-                faq_base.remove(record)
-                with open(exact_path, 'w') as f:
-                    json.dump(faq_base, f, indent=4)
-                return True
-        return False
+        answers[key] = answers[key] + val
+        dumpQuestions(group_id, answers)
+        return True, answers[key]
+def show_all(group_id)->List[str]:
+    answers = loadQuestions(group_id)
+    return answers.keys()
 
-def show_all(group_id):
-    exact_path=(f'{FAQ_DATA_PATH}/{group_id}/faq.json')
-    if not Path(exact_path).is_file():
-        Path(exact_path).write_text(r'[]')
-        return "问题列表为空"
-    else:
-        key_list=""
-        with open(exact_path, "r") as f:
-            faq_base = json.load(f)
-        for record in faq_base:
-            key_list=key_list+record["key"]+"、"
-        if key_list=="":
-            return "问题列表为空"
+def drawQuestionCard(questions: List[str], group_id: int)->str:
+    """绘制问答列表图像
+    @questions: 问题列表
+    """
+    questions = sorted(questions, key=lambda x: lazy_pinyin(x[0])[0].lower())
+    letterGroups = {'abcde': [], 'fghij': [], 'klmno': [], 'pqrst': [], 'uvwxyz': [], '0-9': [], '#': []}
+    for letter in range(ord('a'), 26):
+        letter = chr(letter)
+        letterGroups[letter] = []
+    for q in questions:
+        firstLetter = lazy_pinyin(q[0])[0][0].lower()
+        firstLetter = ord(firstLetter)
+        if firstLetter >= ord('0') and firstLetter <= ord('9'):
+            letterGroups['0-9'].append(q)
+        elif firstLetter >= ord('a') and firstLetter <= ord('e'):
+            letterGroups['abcde'].append(q)
+        elif firstLetter >= ord('f') and firstLetter <= ord('j'):
+            letterGroups['fghij'].append(q)
+        elif firstLetter >= ord('k') and firstLetter <= ord('o'):
+            letterGroups['klmno'].append(q)
+        elif firstLetter >= ord('p') and firstLetter <= ord('t'):
+            letterGroups['pqrst'].append(q)
+        elif firstLetter >= ord('u') and firstLetter <= ord('z'):
+            letterGroups['uvwxyz'].append(q)
         else:
-            return "问题列表：\n"+key_list[:-1]
+            letterGroups['#'].append(q)
 
-def maintain(data,msg):
-    msg=msg.replace('维护 ','',1)
-    msg_split=msg.split()
-    print(msg_split)
-    if msg_split[0]=='list':
-        return show_all(data['group_id'])
-    if msg_split[0]=='add':  # 增加新问题
-        key=msg_split[1]
-        msg=msg.replace('add ','',1)
-        msg=msg.replace(key,'',1)
-        ans=msg.strip()
-        flag=add_question(data['group_id'],key,ans)
-        if flag:
-            return (f"[CQ:reply,id={str(data['message_id'])}]问题添加成功\n{ans} 【{key}】")
-        else:
-            return (f"[CQ:reply,id={str(data['message_id'])}]问题已存在，添加失败")
-    if msg_split[0]=='edit':  # 修改已有问题
-        key=msg_split[1]
-        msg=msg.replace('edit ','',1)
-        msg=msg.replace(key,'',1)
-        ans=msg.strip()
-        flag=edit_question(data['group_id'],key,ans)
-        if flag:
-            return (f"[CQ:reply,id={str(data['message_id'])}]问题修改成功\n{ans} 【{key}】")
-        else:
-            return (f"[CQ:reply,id={str(data['message_id'])}]问题不存在，请先添加")
-    if msg_split[0]=='del':  # 删除已有问题
-        key=msg_split[1]
-        msg=msg.replace('del ','',1)
-        msg=msg.replace(key,'',1)
-        ans=msg.strip()
-        flag=del_question(data['group_id'],key)
-        if flag:
-            return (f"[CQ:reply,id={str(data['message_id'])}]问题删除成功 【{key}】")
-        else:
-            return (f"[CQ:reply,id={str(data['message_id'])}]问题不存在")
-
-
-    return "维护指令错误，输入[维护 help]查询正确格式"
-
+    helpCards = ResponseImage(
+        title = '%d FAQ 问题列表'%group_id, 
+        titleColor = PALETTE_CYAN,
+        layout = 'two-column',
+        width = 1280,
+        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
+    )
+    for k, v in letterGroups.items():
+        cardList = []
+        cardList.append(('title', k))
+        cardList.append(('separator', ))
+        cardList.append(('body', "、".join(v)))
+        helpCards.addCard(ResponseImage.RichContentCard(
+            raw_content=cardList, titleFontColor=PALETTE_CYAN))
+    savePath = os.path.join(SAVE_TMP_PATH, '%d-faq.png'%group_id)
+    helpCards.generateImage(savePath)
+    return savePath

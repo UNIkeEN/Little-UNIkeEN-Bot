@@ -16,7 +16,7 @@ class ShowHelp(StandardPlugin):
         flag_id = data['group_id'] if data['message_type']=='group' else 0
         imgPath = self.drawHelpCard(flag_id)
         imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-        send(target, f'[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
+        send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

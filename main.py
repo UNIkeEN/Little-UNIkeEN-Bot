@@ -44,7 +44,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     helper,ShowStatus(),ServerMonitor(), # 帮助
     GetPermission(), 
     PluginGroupManager([AddPermission(), DelPermission(), ShowPermission()], 'permission'), # 权限
-    PluginGroupManager([AskFAQ(), MaintainFAQ()],'faq'), # 问答库与维护
+    PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
     PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace()], 'superemoji'), # 超级表情
