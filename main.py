@@ -31,6 +31,8 @@ from plugins.getPermission import GetPermission, AddPermission, DelPermission, S
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
+from plugins.getSjtuSwim import SjtuSwim
+swim = SjtuSwim()
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 

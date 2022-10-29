@@ -4,7 +4,7 @@ from utils.basicEvent import send, warning
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
 from utils.responseImage import ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
-import re, os.path
+import re, os.path, os
 from pypinyin import lazy_pinyin
 FAQ_DATA_PATH="data"
 class HelpFAQ(StandardPlugin):
@@ -77,7 +77,6 @@ class MaintainFAQ(StandardPlugin):
                 imgPath = drawQuestionCard(questions, group_id)
                 imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
                 send(group_id, '[CQ:image,file=files://%s,id=40000]'%imgPath)
-            return "OK"
         elif self.patterns['edit'].match(msg) != None:
             key, val = self.patterns['edit'].findall(msg)[0]
             succ = edit_question(group_id, key, val)
@@ -86,7 +85,6 @@ class MaintainFAQ(StandardPlugin):
             else:
                 msg = "[CQ:reply,id=%d]问题【%s】不存在，请先添加"%(message_id, key)
             send(group_id, msg)
-            return "OK"
         elif self.patterns['add'].match(msg)!=None:
             key, val = self.patterns['add'].findall(msg)[0]
             succ = add_question(group_id, key, val)
@@ -95,7 +93,6 @@ class MaintainFAQ(StandardPlugin):
             else:
                 msg = "[CQ:reply,id=%d]问题【%s】已存在"%(message_id, key)
             send(group_id, msg)
-            return "OK"
         elif self.patterns['del'].match(msg) != None:
             key = self.patterns['del'].findall(msg)[0]
             succ = del_question(group_id, key)
@@ -104,7 +101,6 @@ class MaintainFAQ(StandardPlugin):
             else:
                 msg = "[CQ:reply,id=%d]问题【%s】不存在"%(message_id, key)
             send(group_id, msg)
-            return "OK"
         elif self.patterns['append'].match(msg) != None:
             key, val = self.patterns['append'].findall(msg)[0]
             succ, newAns = append_question(group_id, key, val)
@@ -113,7 +109,6 @@ class MaintainFAQ(StandardPlugin):
             else:
                 msg = "[CQ:reply,id=%d]问题【%s】不存在，请先添加"%(message_id, key)
             send(group_id, msg)
-            return "OK"
         else:
             send(group_id, '输入格式不对哦，请输入【问答帮助】获取操作指南')
         return "OK"
@@ -206,9 +201,6 @@ def drawQuestionCard(questions: List[str], group_id: int)->str:
     """
     questions = sorted(questions, key=lambda x: lazy_pinyin(x[0])[0].lower())
     letterGroups = {'abcde': [], 'fghij': [], 'klmno': [], 'pqrst': [], 'uvwxyz': [], '0-9': [], '#': []}
-    for letter in range(ord('a'), 26):
-        letter = chr(letter)
-        letterGroups[letter] = []
     for q in questions:
         firstLetter = lazy_pinyin(q[0])[0][0].lower()
         firstLetter = ord(firstLetter)

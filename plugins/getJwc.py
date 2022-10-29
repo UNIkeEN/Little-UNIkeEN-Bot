@@ -86,12 +86,14 @@ def getSjtuNews():
             'source': source
         })
     return result
-def drawSjtuNews():
-    a = ResponseImage(title='交大新闻', 
-    titleColor=PALETTE_SJTU_RED, 
-    primaryColor=PALETTE_SJTU_RED, 
-    footer='update at %s'%datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M"),
-    layout='normal')
+def drawSjtuNews()->str:
+    a = ResponseImage(
+        title='交大新闻', 
+        titleColor=PALETTE_SJTU_RED, 
+        primaryColor=PALETTE_SJTU_RED, 
+        footer='update at %s'%datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M"),
+        layout='normal'
+    )
     for news in sorted(getSjtuNews(), key=lambda x: x['time'], reverse=True):
         if news['source'] == None:
             keyword = news['time']
@@ -104,7 +106,9 @@ def drawSjtuNews():
             'body': news['detail'],
             'icon': news['imgLink']
         })
-    a.generateImage(os.path.join(SAVE_TMP_PATH, 'sjtu_news.png'))
+    savePath = os.path.join(SAVE_TMP_PATH, 'sjtu_news.png')
+    a.generateImage(savePath)
+    return savePath
 
 def getJwc()->list:
     pageUrl = 'https://jwc.sjtu.edu.cn/xwtg/tztg.htm'
@@ -171,7 +175,7 @@ class GetSjtuNews(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         pic_path = os.path.join(SAVE_TMP_PATH, 'sjtu_news.png')
         pic_path = pic_path if os.path.isabs(pic_path) else os.path.join(ROOT_PATH, pic_path)
-        if not Path(pic_path).is_file():
+        if not os.path.isfile(pic_path):
             drawSjtuNews()
         send(target, '[CQ:image,file=files://%s,id=40000]'%pic_path, data['message_type'])
         return "OK"
@@ -197,14 +201,16 @@ class JwcGroup(PluginGroupManager):
         self.checkTimer = Timer(180,self.updateAndCheck)
         self.checkTimer.start()
         drawSjtuNews()
-        noticelist = getJwc()
-        exact_path=(f'data/jwc.json')
-        if not Path(exact_path).is_file():
-            Path(exact_path).write_text(r'[]')
+        exact_path='data/jwc.json'
+        if not os.path.isfile(exact_path):
+            with open(exact_path, 'w') as f:
+                f.write('[]')
         url_list = json.load(open(exact_path, 'r'))
-        for j in noticelist:
+        updateFlag = len(url_list) > 0
+        for j in getJwc():
             if j['link'] not in url_list:
                 url_list.append(j['link'])
+                if not updateFlag: continue
                 for group_id in APPLY_GROUP_ID:
                     if self.queryEnabled(group_id):
                         pic = DrawNoticePIC(j)
