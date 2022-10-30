@@ -31,8 +31,8 @@ from plugins.getPermission import GetPermission, AddPermission, DelPermission, S
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
-from plugins.getSjtuSwim import SjtuSwim
-swim = SjtuSwim()
+from plugins.dropOut import *
+
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 
@@ -63,9 +63,10 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     Show2cyPIC(), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
+    PluginGroupManager([DropOut()], 'dropout'), # 一键退学
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
-    helper,
+    helper, 
     ShowStatus(),ServerMonitor(),
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
     ShowNews(),
