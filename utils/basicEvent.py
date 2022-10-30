@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 from utils.basicConfigs import *
 import time
 import random
-from typing import List, Union, Tuple, Any
+from typing import Dict, List, Union, Tuple, Any
 from pymysql.converters import escape_string
 import traceback
 
@@ -22,7 +22,27 @@ def get_avatar_pic(id: int)->Union[None, bytes]:
         return None
     else:
         return url_avatar.content
-        
+
+def get_login_info()->dict:
+    """获取登录号信息
+    @return: {
+        'nickname': QQ昵称,
+        'user_id':  QQ号
+    }
+    """
+    url = HTTP_URL+"/get_login_info"
+    try:
+        loginInfo = requests.get(url).json()
+        if loginInfo['status'] != 'ok':
+            warning("get_login_info requests not return ok")
+            return []
+        return loginInfo['data']
+    except requests.JSONDecodeError as e:
+        warning("error in get_login_info: {}".format(e))
+    except KeyError as e:
+        warning("key error in get_login_info: {}".format(e))
+    return 0, ''
+
 def send(id: int, message: str, type:str='group')->None:
     """发送消息
     id: 群号或者私聊对象qq号
@@ -357,8 +377,8 @@ def readGlobalConfig(groupId: Union[None, int], pluginName: str)->Union[dict, An
 def writeGlobalConfig(groupId: Union[None, int], pluginName: str, value: Any):
     """写global config
     @groupId
-        if None, then read all groups' config
-        elif int, read the specific group config
+        if None, then write all groups' config
+        elif int, write the specific group config
         else: warning
     @pluginName
         like 'test1.enable' or 'test1'
@@ -377,10 +397,28 @@ def writeGlobalConfig(groupId: Union[None, int], pluginName: str, value: Any):
             mycursor.execute("insert ignore into BOT_DATA.globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
             mycursor.execute("update BOT_DATA.globalConfig set groupConfig=json_set(groupConfig, '$.%s', cast('%s' as json)) where groupId=%d"%(pluginName, json.dumps(value), groupId))
         except mysql.connector.Error as e:
-            warning("error in writeGlobalConfig: {}".format(e))
+            warning("mysql error in writeGlobalConfig: {}".format(e))
     else:
         warning("unknow groupId type in writeGlobalConfig: groupId = {}".format(groupId))
     mydb.commit()
+
+def getPluginEnabledGroups(pluginName: str)->List[int]:
+    """获取开启插件的群聊id列表
+    @pluginName: 被pluginGroupManager管理的插件组名称
+        eg: "faq", "superemoji"
+
+    @return: 开启插件的群id列表
+    """
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
+    pluginName = escape_string(pluginName)
+    try:
+        mycursor.execute("select groupId from BOT_DATA.globalConfig \
+            where json_extract(groupConfig, '$.%s.enable') = true"%escape_string(pluginName))
+        return [x[0] for x in list(mycursor)]
+    except mysql.connector.Error as e:
+        warning("mysql error in getPluginEnabledGroups: {}".format(e))
+
 def getGroupAdmins(groupId: int)->List[int]:
     """获取群bot管理列表
     @groupId: 群号

@@ -100,10 +100,10 @@ class DektGroup(PluginGroupManager):
             data_1 = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName[0]), 'r'))
             data_2 = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName[1]), 'r'))
             if data_1['data'][0]['id'] != data_2['data'][0]['id']:
-                for group_id in APPLY_GROUP_ID:
-                    if self.queryEnabled(group_id):
-                        pic = NewActlistPic()
-                        send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files:///{ROOT_PATH}/'+pic+',id=40000]')
+                picPath = NewActlistPic()
+                picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+                for group_id in getPluginEnabledGroups(self.groupName):
+                    send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files://{picPath},id=40000]')
         except json.JSONDecodeError as e:
             warning("dekt json parse error {}".format(e))
         except KeyError as e:

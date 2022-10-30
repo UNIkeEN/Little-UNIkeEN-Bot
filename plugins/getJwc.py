@@ -205,18 +205,17 @@ class JwcGroup(PluginGroupManager):
         if not os.path.isfile(exact_path):
             with open(exact_path, 'w') as f:
                 f.write('[]')
-        url_list = json.load(open(exact_path, 'r'))
+        url_list:list = json.load(open(exact_path, 'r'))
         updateFlag = len(url_list) > 0
         for j in getJwc():
             if j['link'] not in url_list:
                 url_list.append(j['link'])
                 if not updateFlag: continue
-                for group_id in APPLY_GROUP_ID:
-                    if self.queryEnabled(group_id):
-                        pic = DrawNoticePIC(j)
-                        pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
-                        send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
-                        send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
+                pic = DrawNoticePIC(j)
+                pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
+                for group_id in getPluginEnabledGroups(self.groupName):
+                    send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
+                    send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
         with open(exact_path, 'w') as f:
             json.dump(url_list, f, indent=4)
 

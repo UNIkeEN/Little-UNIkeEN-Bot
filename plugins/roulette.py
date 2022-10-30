@@ -227,22 +227,27 @@ class _roulette():
         self.__init__(self.group_id)
         return save_path
 
-roulette_dict={}
-for i in APPLY_GROUP_ID:
-    roulette_dict[i]=_roulette(i)
-
 # 插件类，响应bot事件
 class RoulettePlugin(StandardPlugin):
+    def __init__(self) -> None:
+        self.roulette_dict={}
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, CMD_ROULETTE) or (startswith_in(msg, CMD_ROULETTE_ONGOING) and roulette_dict[data['group_id']].status=='ongoing')
+        if data['message_type']!='group': return False
+        group_id = data['group_id']
+        if group_id not in self.roulette_dict.keys():
+            self.roulette_dict[group_id] = _roulette(group_id)
+        return startswith_in(msg, CMD_ROULETTE) or \
+            (startswith_in(msg, CMD_ROULETTE_ONGOING) and \
+            self.roulette_dict[group_id].status=='ongoing')
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        ret = roulette_dict[data['group_id']].get_cmd(data['user_id'],msg)
+        group_id = data['group_id']
+        ret = self.roulette_dict[group_id].get_cmd(data['user_id'],msg)
         try:
             if ret[-3:]=='png':
                 picPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
-                send(data['group_id'], f'[CQ:image,file=files://{picPath}]')
+                send(group_id, f'[CQ:image,file=files://{picPath}]')
             else:
-                send(data['group_id'], ret)
+                send(group_id, ret)
         except BaseException as e:
             warning("base exception in RoulettePlugin.executeEvent: {}".format(e))
         return "OK"
