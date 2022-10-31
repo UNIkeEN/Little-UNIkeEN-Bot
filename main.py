@@ -32,6 +32,7 @@ from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
 from plugins.dropOut import *
+from plugins.sjmcLive import SjmcLiveStatus
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
@@ -55,7 +56,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo()],'sjtuinfo'),
-    ShowSjmcStatus(),DektGroup(),JwcGroup(), # 校园服务,MC社服务,dekt服务,jwc服务
+    PluginGroupManager([ShowSjmcStatus(),SjmcLiveStatus(),], 'sjmc'), #MC社服务
+    DektGroup(),JwcGroup(), # 校园服务,dekt服务,jwc服务
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     # LotteryPlugin(), # 彩票 TODO

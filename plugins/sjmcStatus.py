@@ -15,6 +15,7 @@ class ShowSjmcStatus(StandardPlugin):
         return msg == '-sjmc'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        send(target, '正在获取sjmc状态...', data['message_type'])
         imgPath = get_sjmc_info()
         imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
         send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
