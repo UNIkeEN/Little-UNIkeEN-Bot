@@ -76,7 +76,7 @@ class _lottery():
         #print(h_m)
         if h_m in ['20:50']:
             for group_id in APPLY_GROUP_ID:
-                if check_config(group_id,'Lottery'):
+                if group_id in getPluginEnabledGroups('lottery'):
                     send(group_id, '🌈🎫本轮彩票还有10分钟开奖~\n - 关于玩法，请发送【彩票帮助】')
         if h_m in ['21:00']:
         #if True:
@@ -113,7 +113,7 @@ class _lottery():
             pic_path=(f'file:///{r_path}/'[:-8]+card_path)
             for group_id in APPLY_GROUP_ID:
                 #print(check_config(group_id, 'Lottery'))
-                if check_config(group_id, 'Lottery'):
+                if group_id in getPluginEnabledGroups('lottery'):
                     send(group_id, f'[CQ:image,file={pic_path}]')
         return
         
@@ -165,12 +165,13 @@ class _lottery():
 
 class LotteryPlugin(StandardPlugin):
     def __init__(self,):
+        print('注意，开启LotteryPlugin插件有被腾讯封号的风险')
         self.lottery = _lottery()
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return startswith_in(msg,CMD_LOTTERY)
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        if data['message_type']=='group' and not check_config(data['group_id'],'Lottery'):
+        if data['message_type']=='group' and data['group_id'] not in getPluginEnabledGroups('lottery'):
             send(target, TXT_PERMISSION_DENIED)
             return "OK"
         if msg=='彩票帮助':

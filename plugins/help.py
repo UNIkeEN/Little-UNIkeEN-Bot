@@ -22,7 +22,9 @@ class ShowHelp(StandardPlugin):
         return {
             'name': 'ShowHelp',
             'description': '帮助',
-            'commandDescription': '-help',
+            'commandDescription': '-help'
+            '\n开启插件组:  -grpcfg enable <group name>'
+            '\n关闭插件组:  -grpcfg disable <group name>',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
@@ -91,7 +93,7 @@ class ShowHelp(StandardPlugin):
         return save_path
 class ShowStatus(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg == '-test status' 
+        return msg in ['-test status', '-test']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         send(target, 'status: online\n'+VERSION_TXT,data['message_type'])
@@ -100,7 +102,7 @@ class ShowStatus(StandardPlugin):
         return {
             'name': 'ShowStatus',
             'description': '展示状态',
-            'commandDescription': '-test status',
+            'commandDescription': '-test/-test status',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

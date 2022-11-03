@@ -35,6 +35,8 @@ class Show2cyPIC(StandardPlugin):
             'author': 'Unicorn',
         }
 class ShowSePIC(StandardPlugin): 
+    def __init__(self) -> None:
+        print('注意，开启ShowSePIC插件有被腾讯封号的危险')
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return startswith_in(msg, ['来点涩涩'])
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
