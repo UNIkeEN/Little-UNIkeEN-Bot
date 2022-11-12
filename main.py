@@ -7,7 +7,7 @@ from utils.basicEvent import send
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
 
-from plugins.faq import *
+from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
 from plugins.greetings import *
 from plugins.checkCoins import *
 from plugins.superEmoji import *
@@ -167,6 +167,10 @@ def initialize():
     if not os.path.isdir('./data/tmp'):
         os.makedirs('./data/tmp')
     createGlobalConfig()
+    createFaqDb()
+    for group in get_group_list():
+        groupId = group['group_id']
+        createFaqTable(str(groupId))
     # do some check
     for p in GroupPluginList:
         infoDict = p.getPluginInfo()

@@ -37,7 +37,7 @@ class SjtuHesuan(StandardPlugin):
             return datetime.combine(nowTime.date(), time(int(t00), int(t01))), \
                    datetime.combine(nowTime.date(), time(int(t10), int(t11)))
         nowTime = datetime.now()
-        if not daily and nowTime.isoweekday() >= 5:
+        if not daily and nowTime.isoweekday() >= 6:
             return PALETTE_GREY, PALETTE_GREY
         else:
             for openTime in openTime.split(','):
@@ -67,7 +67,7 @@ class SjtuHesuan(StandardPlugin):
             showText = loc['title']+'\n'+loc['timeTitle']+' '+loc['time']
             titlesize = draw.textsize(showText, FONT_SYHT_M18)
             tmp = ResponseImage()
-            if loc['title'] in ['X86', '西三区广场', '化工学院', '包玉刚图书馆', '船建学院', 'X56']:
+            if loc['title'] in ['X86', '西三区广场', '化工学院', '包玉刚图书馆', '船建学院', 'X56', 'D28', 'D35', 'D25']:
                 tmp.drawRoundedRectangle(x-titlesize[0]/2-10, y+15, x+titlesize[0]/2+10, y+35+titlesize[1], fill = PALETTE_WHITE, border = True, target = hesuanMap)
                 draw.text((x-titlesize[0]/2, y+25), showText, wordFill , FONT_SYHT_M18)
             else:
@@ -88,8 +88,6 @@ class SjtuHesuan(StandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
-    def test(self):
-        pass
 if __name__ == '__main__':
     print(SjtuHesuan.xyToUv(121.44312, 31.032327))
     print(SjtuHesuan.xyToUv(121.429318, 31.033855))

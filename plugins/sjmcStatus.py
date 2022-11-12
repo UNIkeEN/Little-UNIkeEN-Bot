@@ -35,15 +35,15 @@ def get_sjmc_info():
     url="https://mc.sjtu.cn/wp-admin/admin-ajax.php"
     dat = []
     j, j1=0, 0
-    for t in range(7):
+    for t in range(8):
         #try:
         params={
             "_ajax_nonce": "0e441f8c8a",
             "action": "fetch_mcserver_status",
-            "i": str(t)
+            "i": str(t),
         }
         try:
-            res = requests.get(url, params=params)
+            res = requests.get(url, verify=False, params=params)
             if res.status_code!= requests.codes.ok:
                 continue
             res = res.json()
@@ -65,7 +65,7 @@ def get_sjmc_info():
     font_mc_s = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 16)
     font_mc_xl = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 39)
     width=860
-    height=1225+j*35
+    height=215+len(dat)*140+j*35
     img = Image.new('RGBA', (width, height), (46, 33, 23, 255))
     draw = ImageDraw.Draw(img)
     draw.rectangle((0, 120, width, height-80), fill=(15, 11, 7, 255))
@@ -77,7 +77,9 @@ def get_sjmc_info():
         res = dat[i]
         # 处理title非法字符
         try:
-            title = res['description']['text']
+            title = res['description']
+            if not isinstance(title, str):
+                title = title['text']
             title = title.replace('|',' | ',1)
             title = title.replace('\n','  |  ',1)
             title = title.replace('§l','',5)
@@ -94,7 +96,10 @@ def get_sjmc_info():
             img_avatar = Image.open(decode_image(icon_url)).resize((80,80))
         else:
             url_avatar = requests.get(icon_url)
-            img_avatar = Image.open(BytesIO(url_avatar.content)).resize((80,80))
+            if url_avatar.status_code != requests.codes.ok:
+                img_avatar = None
+            else:
+                img_avatar = Image.open(BytesIO(url_avatar.content)).resize((80,80))
         img.paste(img_avatar, (60, fy))
         new_title=""
         m=0
@@ -156,7 +161,7 @@ def decode_image(src):
                 k2HWtLdIWMSH9lfyODZoZTb4xdnpxQSEF9oyOWIqp6gaI9pI1Qo7BijbF
                 ZkoaAtEeiiLeKn72xM7vMZofJy8zJys2UxsCT3kO229LH1tXAAAOw=="
 
-    :return: str 保存到本地的文件名
+    :return: 图片的BytesIO
     """
     # 1、信息提取
     result = re.search("data:image/(?P<ext>.*?);base64,(?P<data>.*)", src, re.DOTALL)
@@ -164,11 +169,6 @@ def decode_image(src):
         ext = result.groupdict().get("ext")
         data = result.groupdict().get("data")
     else:
-        raise Exception("Do not parse!")
+        raise Exception("base64 image decode error")
     # 2、base64解码
-    img = base64.urlsafe_b64decode(data)
-    # 3、二进制文件保存
-    filename = os.path.join(SAVE_TMP_PATH, "{}.{}".format(uuid.uuid4(), ext))
-    with open(filename, "wb") as f:
-        f.write(img)
-    return filename
+    return BytesIO(base64.urlsafe_b64decode(data))

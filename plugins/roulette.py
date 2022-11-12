@@ -157,8 +157,6 @@ class _roulette():
 
     def shot(self, num_shot): # 开枪
         self.timer.cancel()    
-        self.timer=Timer(30,self.ongoing_timeout)
-        self.timer.start()
         for i in range(num_shot):
             self.cur_index+=1
             if self.cur_index in self.bullet_index:
@@ -169,6 +167,8 @@ class _roulette():
                 return self.result(self.player[1-self.round_index],self.player[self.round_index])
         self.round_index=1-self.round_index # 切换下一个开枪者
         tmp = random.choice(ALIVE_TEXT)+(f'\n------\n已进行到第{self.cur_index}发，轮盘共{self.num_whole}格，填入子弹{len(self.bullet_index)}颗')
+        self.timer=Timer(30,self.ongoing_timeout)
+        self.timer.start()
         return (f'[CQ:at,qq={self.player[1-self.round_index]}]:\n')+tmp+(f'\n请[CQ:at,qq={self.player[self.round_index]}]在30s内开枪，超时自动判负')
 
     def random_bullet(self, num_bullet, num_whole): # 随机生成子弹
@@ -187,6 +187,7 @@ class _roulette():
         self.timer.start()
 
     def result(self,win_qqid,loser_qqid):
+        self.timer.cancel()
         height=820
         width=720
         img = Image.new('RGBA', (width, height), (244, 149 ,4, 255))

@@ -57,6 +57,10 @@ def getGroupMessageThread(latestResultSeq):
         print("get {} messages from group {}".format(len(messages), group_id))
         for data in flatten(messages):
             try:
+                if 'card' not in data['sender'].keys():
+                    card = data['anonymous']['name']
+                else:
+                    card = data['sender']['card']
                 mycursor.execute("""
                     insert ignore into `BOT_DATA`.`messageRecord`
                     (`message_id`, `message_seq`, `time`, `user_id`,
@@ -69,7 +73,7 @@ def getGroupMessageThread(latestResultSeq):
                         escape_string(data['message']),
                         data['group_id'],
                         escape_string(data['sender']['nickname']),
-                        escape_string(data['sender']['card'])
+                        escape_string(card)
                     )
                 )
             except mysql.connector.Error as e:
@@ -133,6 +137,10 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
             mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
             mydb.autocommit = True
             mycursor = mydb.cursor()
+            if 'card' not in data['sender'].keys():
+                card = data['anonymous']['name']
+            else:
+                card = data['sender']['card']
             mycursor.execute("""
                 insert into `BOT_DATA`.`messageRecord`
                 (`message_id`, `message_seq`, `time`, `user_id`,
@@ -145,7 +153,7 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
                     escape_string(data['message']),
                     data['group_id'],
                     escape_string(data['sender']['nickname']),
-                    escape_string(data['sender']['card'])
+                    escape_string(card)
                 )
             )
         except mysql.connector.Error as e:
