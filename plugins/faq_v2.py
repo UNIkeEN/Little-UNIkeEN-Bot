@@ -2,13 +2,14 @@ from typing import Dict, Union, Any, List, Tuple
 from utils.basicEvent import getGroupAdmins, send, warning
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
-from utils.responseImage import ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
+from utils.responseImage import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
 import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector
 from pymysql.converters import escape_string
 FAQ_DATA_PATH="data"
 def createFaqTable(tableName: str):
+    # warning: tableName may danger
     if not isinstance(tableName, str):
         tableName = str(tableName)
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
@@ -51,7 +52,9 @@ class HelpFAQ(StandardPlugin):
                        "复制问题： 'faq cp <key> <new key>'\n"
                        "删除问题： 'faq del <key>'\n"
                        "附加答案： 'faq append <key> <ans to append>'\n"
-                       "标记分组： 'faq tag <key> <group tag>'")
+                       "标记分组： 'faq tag <key> <tag>'\n"
+                       "回滚(需要权限)： 'faq rollback <key>'\n"
+                       "修改记录(需要权限)： 'faq history <key>'")
         return "OK"
     def getPluginInfo(self)->Any:
         return {
@@ -195,6 +198,7 @@ class MaintainFAQ(StandardPlugin):
             'append': MaintainFAQ.faqAppend,
             'tag': MaintainFAQ.faqTag,
             'rollback': MaintainFAQ.faqRollBack,
+            'history': MaintainFAQ.faqHistory,
         }
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return self.findModPattern.match(msg) != None and data['message_type']=='group'
@@ -307,7 +311,7 @@ class MaintainFAQ(StandardPlugin):
         question = pattern.findall(cmd)
         groupId = data['group_id']
         if len(question) == 0:
-            pass
+            send(groupId, '语法有误，支持语句为: faq del <key>')
         else:
             question = question[0][0]
             status, _ = get_answer(groupId, question)
@@ -373,6 +377,21 @@ class MaintainFAQ(StandardPlugin):
                     send(groupId, '[CQ:reply,id=%d]OK'%data['message_id'])
                 else:
                     send(groupId, '[CQ:reply,id=%d]记录【%s】不存在'%(data['message_id'], question))
+    @staticmethod
+    def faqHistory(cmd: str, data):
+        groupId = data['group_id']
+        pattern = re.compile(r'^([^\s]+)$')
+        question = pattern.findall(cmd)
+        if len(question) == 0:
+            send(groupId, '语法有误，支持语句为: faq history <key>')
+        else:
+            if data['user_id'] not in getGroupAdmins(groupId):
+                send(groupId, '[CQ:reply,id=%d]您没有查看记录权限'%(data['message_id']))
+            else:
+                question = question[0]
+                picPath = draw_answer_history(groupId, question)
+                picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+                send(groupId, '[CQ:image,file=files://%s,id=40000]'%picPath)
 def drawQuestionCardByPinyin(questions: List[str], group_id: int)->str:
     """绘制问答列表图像
     @questions: 问题列表
@@ -439,3 +458,48 @@ def drawQuestionCardByTag(questions:Dict[str, List[str]], group_id: int)->str:
     savePath = os.path.join(SAVE_TMP_PATH, '%d-faq.png'%group_id)
     helpCards.generateImage(savePath)
     return savePath
+def draw_answer_history(group_id:int, question:str)->str:
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    try:
+        mycursor.execute("""select
+        `faq_seq`, `question`, `answer`, `latest`, `deleted`, `modify_user_id`, `modify_time`, `group_tag`
+        from `BOT_FAQ_DATA`.`%d` where `question` = '%s'
+        order by `faq_seq` desc limit 20
+        """%(group_id, escape_string(question)))
+    except mysql.connector.Error as e:
+        warning('mysql error in faq get_answer_history: {}'.format(e))
+        return []
+    except KeyError as e:
+        warning("key error in faq get_answer_history: {}".format(e))
+        return []
+    except BaseException as e:
+        warning("exception in faq get_answer_history: {}".format(e))
+        return []
+    helpCards = ResponseImage(
+        title = 'FAQ 【%s】 历史记录'%question, 
+        titleColor = PALETTE_CYAN,
+        width = 1000,
+        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
+    )
+    for faq_seq, question, answer, latest, deleted, modify_user_id, modify_time, group_tag in list(mycursor):
+        cardList = []
+        title = 'faq_seq = %d'% faq_seq
+        if deleted:
+            title += '  [DELETED]'
+        if latest:
+            title += '  [LATEST]'
+        cardList.append(('title', title))
+
+        cardList.append(('subtitle', '%s by %d'%(modify_time, modify_user_id)))
+        cardList.append(('keyword', group_tag))
+        cardList.append(('body', answer))
+        helpCards.addCard(ResponseImage.RichContentCard(
+            raw_content=cardList,
+            titleFontColor=PALETTE_RED if deleted else PALETTE_CYAN,
+        ))
+    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, '%d-faq-history.png'%(group_id, ))
+    helpCards.generateImage(savePath)
+    return savePath
+    
