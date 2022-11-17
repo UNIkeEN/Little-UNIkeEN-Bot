@@ -44,17 +44,9 @@ class HelpFAQ(StandardPlugin):
         return msg == '问答帮助' and data['message_type']=='group'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
-        send(group_id, "查询关键字： 'q <key>' / '问 <key>'\n"
-                       "问答库按拼音排序： 'faq show' / 'faq show -1'\n"
-                       "问答库按分组排序： 'faq show -2'\n"
-                       "新建问题： 'faq (new/add) <key> (<original ans>)'\n"
-                       "更改答案： 'faq edit <key> <new ans>'\n"
-                       "复制问题： 'faq cp <key> <new key>'\n"
-                       "删除问题： 'faq del <key>'\n"
-                       "附加答案： 'faq append <key> <ans to append>'\n"
-                       "标记分组： 'faq tag <key> <tag>'\n"
-                       "回滚(需要权限)： 'faq rollback <key>'\n"
-                       "修改记录(需要权限)： 'faq history <key>'")
+        picPath = draw_help_pic(group_id)
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+        send(group_id, '[CQ:image,file=files://%s]'%picPath)
         return "OK"
     def getPluginInfo(self)->Any:
         return {
@@ -199,6 +191,7 @@ class MaintainFAQ(StandardPlugin):
             'tag': MaintainFAQ.faqTag,
             'rollback': MaintainFAQ.faqRollBack,
             'history': MaintainFAQ.faqHistory,
+            'help': MaintainFAQ.faqHelp,
         }
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return self.findModPattern.match(msg) != None and data['message_type']=='group'
@@ -392,6 +385,13 @@ class MaintainFAQ(StandardPlugin):
                 picPath = draw_answer_history(groupId, question)
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 send(groupId, '[CQ:image,file=files://%s,id=40000]'%picPath)
+    @staticmethod
+    def faqHelp(cmd: str, data):
+        groupId = data['group_id']
+        picPath = draw_help_pic(groupId)
+        picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+        send(groupId, '[CQ:image,file=files://%s]'%picPath)
+
 def drawQuestionCardByPinyin(questions: List[str], group_id: int)->str:
     """绘制问答列表图像
     @questions: 问题列表
@@ -417,11 +417,12 @@ def drawQuestionCardByPinyin(questions: List[str], group_id: int)->str:
             letterGroups['#'].append(q)
 
     helpCards = ResponseImage(
-        title = '%d FAQ 问题列表'%group_id, 
+        title = 'FAQ 问题列表', 
         titleColor = PALETTE_CYAN,
         layout = 'two-column',
         width = 1280,
-        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
+        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        footer='群号 %d'%group_id
     )
     for k, v in letterGroups.items():
         cardList = []
@@ -442,11 +443,12 @@ def drawQuestionCardByTag(questions:Dict[str, List[str]], group_id: int)->str:
     @group_id:  群号
     """
     helpCards = ResponseImage(
-        title = '%d FAQ 问题列表'%group_id, 
+        title = 'FAQ 问题列表', 
         titleColor = PALETTE_CYAN,
         layout = 'two-column',
         width = 1280,
-        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
+        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        footer='群号 %d'%group_id,
     )
     for tag, qs in questions.items():
         cardList = []
@@ -481,7 +483,8 @@ def draw_answer_history(group_id:int, question:str)->str:
         title = 'FAQ 【%s】 历史记录'%question, 
         titleColor = PALETTE_CYAN,
         width = 1000,
-        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
+        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        footer= '群号 %d'%group_id,
     )
     for faq_seq, question, answer, latest, deleted, modify_user_id, modify_time, group_tag in list(mycursor):
         cardList = []
@@ -502,4 +505,38 @@ def draw_answer_history(group_id:int, question:str)->str:
     savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, '%d-faq-history.png'%(group_id, ))
     helpCards.generateImage(savePath)
     return savePath
-    
+def draw_help_pic(group_id:int)->str:
+    """绘制faq帮助
+    @group_id:  群号
+    @return:    图片存储路径
+    """
+    helpWords = (
+        "查询关键字： 'q <key>' / '问 <key>'\n"
+        "问答库按拼音排序： 'faq (show|ls)' / 'faq (show|ls) -1'\n"
+        "问答库按分组排序： 'faq (show|ls) -2'\n"
+        "新建问题： 'faq (new|add) <key> (<original ans>)'\n"
+        "更改答案： 'faq edit <key> <new ans>'\n"
+        "复制问题： 'faq cp <key> <new key>'\n"
+        "删除问题： 'faq del <key>'\n"
+        "附加答案： 'faq append <key> <ans to append>'\n"
+        "标记分组： 'faq tag <key> <tag>'\n"
+        "回滚(需要权限)： 'faq rollback <key>'\n"
+        "查看记录(需要权限)： 'faq history <key>'\n"
+        "获取帮助： 'faq help' / '问答帮助'\n\n"
+    )
+    helpCards = ResponseImage(
+        title = 'FAQ 帮助', 
+        titleColor = PALETTE_CYAN,
+        width = 1000,
+        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        footer='群号 %d'%group_id
+    )
+    cardList = []
+    cardList.append(('body', helpWords))
+    helpCards.addCard(ResponseImage.RichContentCard(
+        raw_content=cardList,
+        titleFontColor=PALETTE_CYAN,
+    ))
+    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, '%d-faq-helper.png'%(group_id, ))
+    helpCards.generateImage(savePath)
+    return savePath

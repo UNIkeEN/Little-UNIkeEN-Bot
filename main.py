@@ -34,6 +34,8 @@ from plugins.fileRecorder import GroupFileRecorder
 from plugins.dropOut import *
 from plugins.sjmcLive import SjmcLiveStatus, FduMcLiveStatus
 from plugins.sjtuHesuan import SjtuHesuan
+from plugins.EE0502 import *
+
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 
@@ -66,6 +68,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     PluginGroupManager([DropOut()], 'dropout'), # 一键退学
+    PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
@@ -78,8 +81,9 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetDektNewActivity(),GetJwc(),
     GenshinCookieBind(), GenshinDailyNote(),
     # LotteryPlugin(),
-    Show2cyPIC(), ShowSePIC(),
-    GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()
+    Show2cyPIC(), #ShowSePIC(),
+    GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(),
+    ShowEE0502Comments(),
 ]
 
 helper.updatePluginList(GroupPluginList, PrivatePluginList)

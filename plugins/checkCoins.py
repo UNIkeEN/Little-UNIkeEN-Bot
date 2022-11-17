@@ -1,11 +1,10 @@
-from datetime import datetime
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
 from utils.accountOperation import get_user_coins, get_user_transactions, update_user_coins
 from PIL import Image, ImageDraw, ImageFont
-import os.path
+import os.path, re
 
 class CheckCoins(StandardPlugin): # 查询当前金币
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -27,17 +26,26 @@ class CheckCoins(StandardPlugin): # 查询当前金币
             'author': 'Unicorn',
         }
 class AddAssignedCoins(StandardPlugin): # 测试时使用，给指定用户增加金币
+    def __init__(self) -> None:
+        self.pattern = re.compile(r'^\-addcoins\s+(\d+|\[CQ\:at\,qq=\d+\])\s+(\-?\d+(\.\d+)?)$')
+        self.cqAtPattern = re.compile(r'\[CQ\:at\,qq=(\d+)\]')
+        self.numPattern = re.compile(r'^\d+$')
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return (msg.startswith('-addcoins ') and data['user_id'] in ROOT_ADMIN_ID)
+        return (self.pattern.match(msg) != None and data['user_id'] in ROOT_ADMIN_ID)
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        msg=msg.replace('-addcoins ','',1)
-        msg_split=msg.strip().split()
-        try:
-            num_id=int(msg_split[0])
-            num_append=float(msg_split[1])
-        except:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        num_id, num_append, _ = self.pattern.findall(msg)[0]
+        num_append = float(num_append)
+        if self.numPattern.match(num_id) != None:
+            num_id = int(num_id)
+        elif self.cqAtPattern.match(num_id) != None:
+            num_id = int(self.cqAtPattern.findall(num_id)[0])
+            print(num_id)
+        else:
+            send(target, '[CQ:reply,id=%d]命令解析失败'%data['message_id'], data['message_type'])
             return "OK"
         update_user_coins(num_id, num_append, '管理员-addcoins命令')
+        send(target, '[CQ:reply,id=%d]OK'%data['message_id'], data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

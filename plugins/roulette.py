@@ -26,7 +26,6 @@ class _roulette():
         #self.random_bullet(num_bullet, num_whole)
         self.cur_index=0
         self.timer=Timer
-        
 
     def get_cmd(self, id, msg):
         # init阶段，发起决斗申请
@@ -114,10 +113,12 @@ class _roulette():
                 return ERR_DESCRIBES[7]
             if self.aim_id==id:
                 ret = (f"{id}拒绝了{self.player[0]}发起的决斗！")
+                self.timer.cancel()
                 self.__init__(self.group_id)
                 return ret
         elif startswith_in(msg,['取消决斗']) and self.status=='prepare':
             if id==self.player[0]:
+                self.timer.cancel()
                 self.__init__(self.group_id)
                 return "取消决斗成功"
             else:
@@ -201,22 +202,22 @@ class _roulette():
         draw.text(((width-txt_size[0])/2,290), "俄罗斯轮盘 - 对决结果", fill=(0,0,0,255), font=font_hywh_85w)
 
         # 获取头像1
-        url_avatar = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={win_qqid}&spec=100')
-        img_avatar = Image.open(BytesIO(url_avatar.content))
+        url_avatar1 = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={win_qqid}&spec=100')
+        img_avatar1 = Image.open(BytesIO(url_avatar1.content))
         mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
         # 圆形蒙版
         mask_draw = ImageDraw.Draw(mask)
         mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
-        img.paste(img_avatar, (60, 420), mask)
+        img.paste(img_avatar1, (60, 420), mask)
 
         # 获取头像2
-        url_avatar = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={loser_qqid}&spec=100')
-        img_avatar = Image.open(BytesIO(url_avatar.content))
-        mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
-        # 圆形蒙版
-        mask_draw = ImageDraw.Draw(mask)
-        mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
-        img.paste(img_avatar, (60, 570), mask)
+        url_avatar2 = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={loser_qqid}&spec=100')
+        img_avatar2 = Image.open(BytesIO(url_avatar2.content))
+        # mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
+        # # 圆形蒙版
+        # mask_draw = ImageDraw.Draw(mask)
+        # mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
+        img.paste(img_avatar2, (60, 570), mask)
 
         draw.text((210,420),f'胜利者：{win_qqid}', fill=(221, 0, 38, 255),font=font_hywh_85w)
         draw.text((210,490),f'金币+{self.wager} -> 当前金币：{get_user_coins(win_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)

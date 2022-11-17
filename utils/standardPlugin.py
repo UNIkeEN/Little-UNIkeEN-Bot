@@ -111,7 +111,7 @@ class PluginGroupManager(StandardPlugin):
             if self.queryEnabled(groupId) != enabled:
                 writeGlobalConfig(groupId, self.groupName + '.enable', enabled)
                 self.enabledDict[groupId] = enabled
-            send(data['group_id'], "OK")
+            send(data['group_id'], "[CQ:reply,id=%d]OK"%data['message_id'])
             return "OK"
         else:
             try:

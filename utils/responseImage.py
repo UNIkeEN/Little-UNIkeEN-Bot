@@ -343,7 +343,8 @@ class ResponseImage():
             txt_parse.append(txt_line)
         if len(txt_parse)==0:
             txt_parse=[' ']
-        height=len(txt_parse)*(font.getsize('测试')[1]+SPACE_ROW)
+        height = sum([SPACE_ROW +font.getsize(txt)[1] for txt in txt_parse])
+        # height=len(txt_parse)*(font.getsize('测试')[1]+SPACE_ROW)
         # print(txt_parse)
         return txt_parse, height
 
@@ -466,7 +467,7 @@ class ResponseImage():
                     elif line[0]=='body':
                         font = self.cardBodyFont
                         fill = bodyColor
-                    txt_size=draw.textsize(line[1], font = font)
+                    txt_size=font.getsize(line[1])
                     x_l = cardLeft+(card['width']-txt_size[0])/2 if card['style']=='notice' else x_left
                     draw.text((x_l, y_top), line[1], fill=fill, font = font)
                     y_top += (txt_size[1]+SPACE_ROW) 
