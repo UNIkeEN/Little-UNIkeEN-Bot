@@ -1292,103 +1292,103 @@
 </table>
 <h2 id="2">2. 原理讲解</h2>
 <p>用长为3的向量来表示二维坐标：</p>
-<p>$$
+<div class="arithmatex">\[
 (x, y, 1)^{\rm T} \iff \left(\frac xn, \frac yn, n\right)^{\rm T} \overset{denote}{\implies} (x, y)
-$$</p>
-<p>平移 $(\Delta x, \Delta y)$ 变换：</p>
-<p>$$
+\]</div>
+<p>平移 <span class="arithmatex">\((\Delta x, \Delta y)\)</span> 变换：</p>
+<div class="arithmatex">\[
 \begin{bmatrix}
-1&amp;0&amp;\Delta x\
-0&amp;1&amp;\Delta y\
+1&amp;0&amp;\Delta x\\
+0&amp;1&amp;\Delta y\\
 0&amp;0&amp;1
 \end{bmatrix}
-$$</p>
-<p>绕 $z$ 旋转 $\theta$ 角变换：</p>
-<p>$$
+\]</div>
+<p>绕 <span class="arithmatex">\(z\)</span> 旋转 <span class="arithmatex">\(\theta\)</span> 角变换：</p>
+<div class="arithmatex">\[
 \begin{bmatrix}
-\cos\theta&amp;\sin\theta&amp;0\
--\sin\theta&amp;\cos\theta&amp;0\
+\cos\theta&amp;\sin\theta&amp;0\\
+-\sin\theta&amp;\cos\theta&amp;0\\
 0&amp;0&amp;1
 \end{bmatrix}
-$$</p>
-<p>拉伸 $(\lambda, \mu)$ 变换：</p>
-<p>$$
+\]</div>
+<p>拉伸 <span class="arithmatex">\((\lambda, \mu)\)</span> 变换：</p>
+<div class="arithmatex">\[
 \begin{bmatrix}
-\lambda&amp;0&amp;0\
-0&amp;\mu&amp;0\
+\lambda&amp;0&amp;0\\
+0&amp;\mu&amp;0\\
 0&amp;0&amp;1
 \end{bmatrix}
-$$</p>
+\]</div>
 <p>地图变换可以视为如下方程，他把经纬度转换为照片材质的uv坐标：</p>
-<p>$$
+<div class="arithmatex">\[
 f({\rm lng}, {\rm lat})\implies(u,v)
-$$</p>
+\]</div>
 <p>地图变换把经纬度等比例拉伸到照片上，显然是线性变换，可以视为上面变换的线性组合，那么变换矩阵一定具有如下形式：</p>
-<p>$$
+<div class="arithmatex">\[
 \begin{bmatrix}
-a_{11}&amp;a_{12}&amp;a_{13}\
-a_{21}&amp;a_{22}&amp;a_{23}\
+a_{11}&amp;a_{12}&amp;a_{13}\\
+a_{21}&amp;a_{22}&amp;a_{23}\\
 0&amp;0&amp;1
 \end{bmatrix}
-$$</p>
+\]</div>
 <p>要解出这六个系数，只需要在照片和地图上挑3对不共线的 “经纬-uv” 对应点：</p>
-<p>$$
+<div class="arithmatex">\[
 \begin{bmatrix}
-a_{11}&amp;a_{12}&amp;a_{13}\
-a_{21}&amp;a_{22}&amp;a_{23}\
+a_{11}&amp;a_{12}&amp;a_{13}\\
+a_{21}&amp;a_{22}&amp;a_{23}\\
 0&amp;0&amp;1
 \end{bmatrix}
 \begin{bmatrix}
-{\rm lng}_1&amp;{\rm lng}_2&amp;{\rm lng}_3\
-{\rm lat}_1&amp;{\rm lat}_2&amp;{\rm lat}_3\
+{\rm lng}_1&amp;{\rm lng}_2&amp;{\rm lng}_3\\
+{\rm lat}_1&amp;{\rm lat}_2&amp;{\rm lat}_3\\
 1&amp;1&amp;1
 \end{bmatrix}
 =
 \begin{bmatrix}
-u_1&amp;u_2&amp;u_3\
-v_1&amp;v_2&amp;v_3\
+u_1&amp;u_2&amp;u_3\\
+v_1&amp;v_2&amp;v_3\\
 1&amp;1&amp;1
 \end{bmatrix}
-$$</p>
+\]</div>
 <p>解得：</p>
-<p>$$
+<div class="arithmatex">\[
 \begin{bmatrix}
-a_{11}&amp;a_{12}&amp;a_{13}\
-a_{21}&amp;a_{22}&amp;a_{23}\
+a_{11}&amp;a_{12}&amp;a_{13}\\
+a_{21}&amp;a_{22}&amp;a_{23}\\
 0&amp;0&amp;1
 \end{bmatrix}
 =
 \begin{bmatrix}
-u_1&amp;u_2&amp;u_3\
-v_1&amp;v_2&amp;v_3\
+u_1&amp;u_2&amp;u_3\\
+v_1&amp;v_2&amp;v_3\\
 1&amp;1&amp;1
 \end{bmatrix}
 \begin{bmatrix}
-{\rm lng}_1&amp;{\rm lng}_2&amp;{\rm lng}_3\
-{\rm lat}_1&amp;{\rm lat}_2&amp;{\rm lat}_3\
+{\rm lng}_1&amp;{\rm lng}_2&amp;{\rm lng}_3\\
+{\rm lat}_1&amp;{\rm lat}_2&amp;{\rm lat}_3\\
 1&amp;1&amp;1
 \end{bmatrix}^{-1}
-$$</p>
+\]</div>
 <p>所以，变换方程可以写成：</p>
-<p>$$
+<div class="arithmatex">\[
 \begin{bmatrix}
-u\v\1
+u\\v\\1
 \end{bmatrix}
 =
 \begin{bmatrix}
-u_1&amp;u_2&amp;u_3\
-v_1&amp;v_2&amp;v_3\
+u_1&amp;u_2&amp;u_3\\
+v_1&amp;v_2&amp;v_3\\
 1&amp;1&amp;1
 \end{bmatrix}
 \begin{bmatrix}
-{\rm lng}_1&amp;{\rm lng}_2&amp;{\rm lng}_3\
-{\rm lat}_1&amp;{\rm lat}_2&amp;{\rm lat}_3\
+{\rm lng}_1&amp;{\rm lng}_2&amp;{\rm lng}_3\\
+{\rm lat}_1&amp;{\rm lat}_2&amp;{\rm lat}_3\\
 1&amp;1&amp;1
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-{\rm lng}\{\rm lat}\1
+{\rm lng}\\{\rm lat}\\1
 \end{bmatrix}
-$$</p>
+\]</div>
 <div class="admonition tip">
 <p class="admonition-title">提示：更进一步了解</p>
 <p>你可以搜索“图形学坐标变换”以更进一步学习背后的知识</p>
@@ -1573,6 +1573,10 @@ $$</p>
     
     
       <script src="../../../assets/javascripts/bundle.37e9125f.min.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
       
     
   </body>
