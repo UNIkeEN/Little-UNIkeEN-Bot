@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 import json
 from io import BytesIO
-from threading import Timer
+from threading import Timer, Semaphore
 import mysql.connector
 from pymysql.converters import escape_string
 from typing import Union, Any
@@ -25,9 +25,11 @@ HELP_LOTTERY=(f"""彩票帮助
 21时开奖，一名用户在一个周期内可以重复购买""")
 
 class _lottery():
+    monitorSemaphore = Semaphore()
     def __init__(self):
         self.timer=Timer(1,self.drawing)
-        self.timer.start()
+        if _lottery.monitorSemaphore.acquire(blocking=False):
+            self.timer.start()
 
     def buyLottery(self,qq, msg):
         if get_user_coins(qq)<PRICE_NUM:

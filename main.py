@@ -24,8 +24,8 @@ from plugins.show2cyPic import *
 from plugins.help import *
 from plugins.chatWithNLP import *
 from plugins.chatWithAnswerbook import *
-from plugins.getDekt import DektGroup, GetDektNewActivity
-from plugins.getJwc import JwcGroup, GetJwc
+from plugins.getDekt import SjtuDekt
+from plugins.getJwc import GetSjtuNews, GetJwc
 from plugins.canvasSync import *
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission
 from plugins.goBang import GoBangPlugin
@@ -34,6 +34,7 @@ from plugins.fileRecorder import GroupFileRecorder
 from plugins.dropOut import *
 from plugins.sjmcLive import SjmcLiveStatus, FduMcLiveStatus
 from plugins.sjtuHesuan import SjtuHesuan
+from plugins.getMddStatus import MddStatus
 from plugins.EE0502 import *
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -57,9 +58,10 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan()],'sjtuinfo'),
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan(), MddStatus()],'sjtuinfo'), # 交大餐厅, 图书馆, 核酸点, 麦当劳
     PluginGroupManager([ShowSjmcStatus(),SjmcLiveStatus(),FduMcLiveStatus()], 'sjmc'), #MC社服务
-    DektGroup(),JwcGroup(), # 校园服务,dekt服务,jwc服务
+    PluginGroupManager([SjtuDekt()], 'dekt'), # 第二课堂服务,
+    PluginGroupManager([GetJwc(), GetSjtuNews()], 'jwc'), # jwc服务, 交大新闻
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     # LotteryPlugin(), # 彩票 TODO
@@ -78,12 +80,14 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MorningGreet(), NightGreet(),
     SignIn(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetDektNewActivity(),GetJwc(),
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(),GetSjtuNews(),
     GenshinCookieBind(), GenshinDailyNote(),
     # LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(),
     ShowEE0502Comments(),
+    SjmcLiveStatus(), FduMcLiveStatus(),
+    MddStatus(),
 ]
 
 helper.updatePluginList(GroupPluginList, PrivatePluginList)

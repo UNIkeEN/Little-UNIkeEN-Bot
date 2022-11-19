@@ -10,15 +10,21 @@ import re
 import uuid
 from io import BytesIO
 
+import aiohttp, asyncio
+
 class ShowSjmcStatus(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-sjmc'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         send(target, '正在获取sjmc状态...', data['message_type'])
-        imgPath = get_sjmc_info()
-        imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-        send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
+        try:
+            imgPath = draw_sjmc_info(aio_get_sjmc_info())
+            imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+            send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
+        except BaseException as e:
+            send(target, "internal error while getting sjmc", data['message_type'])
+            warning("basic exception in ShowSjmcStatus: {}".format(e))
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -31,10 +37,21 @@ class ShowSjmcStatus(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+def aio_get_sjmc_info():
+    async def get_page(i):
+        url=f"https://mc.sjtu.cn/wp-admin/admin-ajax.php?_ajax_nonce=0e441f8c8a&action=fetch_mcserver_status&i={i}"
+        async with aiohttp.request('GET', url) as req:
+            status = await req.json()
+            return i, status
+    tasks = [get_page(i) for i in range(8)]
+    result = asyncio.run(asyncio.wait(tasks))
+    result = [r.result() for r in result[0]]
+    result = sorted(result, key=lambda x: x[0])
+    result = [r[1] for r in result]
+    return result
 def get_sjmc_info():
     url="https://mc.sjtu.cn/wp-admin/admin-ajax.php"
     dat = []
-    j, j1=0, 0
     for t in range(8):
         #try:
         params={
@@ -47,8 +64,6 @@ def get_sjmc_info():
             if res.status_code!= requests.codes.ok:
                 continue
             res = res.json()
-            if res['online'] and res['players']['online']!=0:
-                j+=1
             dat.append(res)
         except requests.JSONDecodeError as e:
             warning("sjmc json decode error: {}".format(e))
@@ -58,6 +73,10 @@ def get_sjmc_info():
             warning("key error in sjmc: {}".format(e))
         except BaseException as e:
             warning("sjmc basic exception: {}".format(e))
+    return dat
+def draw_sjmc_info(dat):
+    j = sum([res['online'] and res['players']['online']!=0 for res in dat])
+    j1 = 0
     FONTS_PATH = 'resources/fonts'
     white, grey, green, red = (255,255,255,255),(128,128,128,255),(0,255,33,255),(255,85,85,255)
     font_mc_l = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 30)
@@ -72,9 +91,8 @@ def get_sjmc_info():
     draw.text((width-460,42), "SJMC服务器状态", fill=(255,255,255,255), font=font_mc_xl)
     draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
     
-    for i in range(len(dat)):
+    for i, res in enumerate(dat):
         fy = 160+i*140+j1*31
-        res = dat[i]
         # 处理title非法字符
         try:
             title = res['description']
@@ -91,16 +109,24 @@ def get_sjmc_info():
         # cop = re.compile("[^\u4e00-\u9fa5^a-z^A-Z^0-9^|^\ ^-]") # 正则筛选
         # title = cop.sub("", title)
 
-        icon_url = res['favicon']
-        if icon_url[:4]=="data":
-            img_avatar = Image.open(decode_image(icon_url)).resize((80,80))
-        else:
-            url_avatar = requests.get(icon_url)
-            if url_avatar.status_code != requests.codes.ok:
-                img_avatar = None
+        # draw icon
+        try:
+            icon_url = res['favicon']
+            if icon_url[:4]=="data":
+                img_avatar = Image.open(decode_image(icon_url)).resize((80,80))
+                img.paste(img_avatar, (60, fy))
             else:
-                img_avatar = Image.open(BytesIO(url_avatar.content)).resize((80,80))
-        img.paste(img_avatar, (60, fy))
+                url_avatar = requests.get(icon_url)
+                if url_avatar.status_code != requests.codes.ok:
+                    img_avatar = None
+                else:
+                    img_avatar = Image.open(BytesIO(url_avatar.content)).resize((80,80))
+                    img.paste(img_avatar, (60, fy))
+        except KeyError as e:
+            warning("key error in sjmc draw icon: {}".format(e))
+        except BaseException as e:
+            warning("base exception in sjmc draw icon: {}".format(e))
+
         new_title=""
         m=0
         while True:

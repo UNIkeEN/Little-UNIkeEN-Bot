@@ -4,7 +4,7 @@ from utils.basicEvent import send, warning
 from typing import Union, Tuple, Any, List
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
 from utils.basicEvent import getPluginEnabledGroups
-from threading import Timer
+from threading import Timer, Semaphore
 from bilibili_api.live import LiveRoom
 from bilibili_api.exceptions.LiveException import LiveException
 from bilibili_api.exceptions.ApiException import ApiException
@@ -12,6 +12,7 @@ from datetime import datetime
 import os.path
 import asyncio
 class FduMcLiveStatus(StandardPlugin):
+    monitorSemaphore = Semaphore()
     @staticmethod
     def dumpSjmcStatus(status: bool):
         exactPath = 'data/fdmcLive.json'
@@ -26,7 +27,8 @@ class FduMcLiveStatus(StandardPlugin):
         self.liveId = 24716629
         self.liveRoom = LiveRoom(self.liveId)
         self.timer = Timer(5, self.sjmcMonitor)
-        self.timer.start()
+        if FduMcLiveStatus.monitorSemaphore.acquire(blocking=False):
+            self.timer.start()
         self.exactPath = 'data/fdmcLive.json'
         self.prevStatus = False # false: 未开播, true: 开播
         self.sjmcQqGroup = 712514518
@@ -83,6 +85,7 @@ class FduMcLiveStatus(StandardPlugin):
             'author': 'Unicorn',
         }
 class SjmcLiveStatus(StandardPlugin):
+    monitorSemaphore = Semaphore()
     @staticmethod
     def dumpSjmcStatus(status: bool):
         exactPath = 'data/sjmcLive.json'
@@ -97,7 +100,8 @@ class SjmcLiveStatus(StandardPlugin):
         self.liveId = 25567444
         self.liveRoom = LiveRoom(self.liveId)
         self.timer = Timer(5, self.sjmcMonitor)
-        self.timer.start()
+        if SjmcLiveStatus.monitorSemaphore.acquire(blocking=False):
+            self.timer.start()
         self.exactPath = 'data/sjmcLive.json'
         self.prevStatus = False # false: 未开播, true: 开播
         self.sjmcQqGroup = 712514518

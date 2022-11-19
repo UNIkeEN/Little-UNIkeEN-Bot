@@ -200,24 +200,21 @@ class _roulette():
         draw.text(((width-txt_size[0])/2,180), "⚔️", fill=(120,120,120,255), font=font_sg_emj_l)
         txt_size = draw.textsize('俄罗斯轮盘 - 对决结果', font=font_hywh_85w)
         draw.text(((width-txt_size[0])/2,290), "俄罗斯轮盘 - 对决结果", fill=(0,0,0,255), font=font_hywh_85w)
-
-        # 获取头像1
-        url_avatar1 = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={win_qqid}&spec=100')
-        img_avatar1 = Image.open(BytesIO(url_avatar1.content))
-        mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
         # 圆形蒙版
+        mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
         mask_draw = ImageDraw.Draw(mask)
         mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
-        img.paste(img_avatar1, (60, 420), mask)
+        # 获取头像1
+        avatar1 = get_avatar_pic(win_qqid)
+        if avatar1 != None:
+            img_avatar1 = Image.open(BytesIO(avatar1))
+            img.paste(img_avatar1, (60, 420), mask)
 
         # 获取头像2
-        url_avatar2 = requests.get(f'http://q2.qlogo.cn/headimg_dl?dst_uin={loser_qqid}&spec=100')
-        img_avatar2 = Image.open(BytesIO(url_avatar2.content))
-        # mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
-        # # 圆形蒙版
-        # mask_draw = ImageDraw.Draw(mask)
-        # mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
-        img.paste(img_avatar2, (60, 570), mask)
+        avatar2 = get_avatar_pic(loser_qqid)
+        if avatar2 != None:
+            img_avatar2 = Image.open(BytesIO(avatar2))
+            img.paste(img_avatar2, (60, 570), mask)
 
         draw.text((210,420),f'胜利者：{win_qqid}', fill=(221, 0, 38, 255),font=font_hywh_85w)
         draw.text((210,490),f'金币+{self.wager} -> 当前金币：{get_user_coins(win_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)

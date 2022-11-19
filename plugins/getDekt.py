@@ -11,7 +11,7 @@ from io import BytesIO
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from browsermobproxy import Server
-from threading import Timer
+from threading import Timer, Semaphore
 
 DEKT_SOURCE_DIR = os.path.join(ROOT_PATH, 'data/dektSource/')
 def DownloadActlist():
@@ -62,7 +62,12 @@ def DownloadActlist():
     driver.close()
     driver.quit()
     os.system("kill `ps -ef | grep browsermob | awk 'NR==1{print $2}'`")
-class GetDektNewActivity(StandardPlugin): 
+class SjtuDekt(StandardPlugin): 
+    monitorSemaphore = Semaphore()
+    def __init__(self) -> None:
+        self.checkTimer = Timer(1,self.updateAndCheck)
+        if SjtuDekt.monitorSemaphore.acquire(blocking=False):
+            self.checkTimer.start()
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-dekt'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -73,7 +78,7 @@ class GetDektNewActivity(StandardPlugin):
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
-            'name': 'GetDektNewActivity',
+            'name': 'SjtuDekt',
             'description': '第二课堂',
             'commandDescription': '-dekt',
             'usePlace': ['group', 'private', ],
@@ -82,12 +87,6 @@ class GetDektNewActivity(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-# export this #
-class DektGroup(PluginGroupManager):
-    def __init__(self) -> None:
-        super().__init__([GetDektNewActivity()], 'dekt')
-        self.checkTimer = Timer(1,self.updateAndCheck)
-        self.checkTimer.start()
     def updateAndCheck(self):
         self.checkTimer.cancel()
         self.checkTimer = Timer(1790,self.updateAndCheck)
