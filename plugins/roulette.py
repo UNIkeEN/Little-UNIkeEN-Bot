@@ -29,7 +29,8 @@ class _roulette():
 
     def get_cmd(self, id, msg):
         # init阶段，发起决斗申请
-        if startswith_in(msg,['装弹','轮盘','决斗']):
+        initPattern = re.compile(r'^(装弹|轮盘|决斗)\s+(\d+)\s+(\d+)\s+(\d+)\s*(\[CQ:at,qq=\d+\])?$')
+        if initPattern.match(msg) != None:
             if self.status!='init':
                 ret_p=''
                 if self.status=='prepare':
@@ -38,15 +39,10 @@ class _roulette():
                     ret_p=(f'\n\n当前正在进行决斗：\n{self.player[0]} vs {self.player[1]}\n挑战金额：{self.wager}\n子弹数：{len(self.bullet_index)} in {self.num_whole}')
                 return ERR_DESCRIBES[4]+ret_p
             else:
-                msg_split=msg.split()
-                if len(msg_split)<4 or len(msg_split)>5:
-                    return ERR_DESCRIBES[0]
-                try:
-                    num_bul=int(msg_split[1])
-                    num_who=int(msg_split[2])
-                    num_wager=int(msg_split[3])
-                except:
-                    return ERR_DESCRIBES[0]
+                _, num_bul, num_who, num_wager, aim_id = initPattern.findall(msg)[0]
+                num_bul = int(num_bul)
+                num_who = int(num_who)
+                num_wager = int(num_wager)
                 if num_who<3 or num_who>30: #轮盘总格数在[3,30]之间
                     return ERR_DESCRIBES[1]
                 if num_bul>=num_who or num_bul<1:   #装入子弹数必须小于轮盘总格数
@@ -59,23 +55,19 @@ class _roulette():
                 self.__init__(self.group_id)
                 self.wager=num_wager
                 self.player.append(id)
-               # print(self.player)
-                try:
-                    if len(msg_split) > 4:
-                        qqExtractor = re.compile(r'\[CQ:at,qq=(\d+)\]')
-                        qqMsg = msg_split[4].strip()
-                        aim_id = int(qqExtractor.findall(qqMsg)[0])
-                        if aim_id==self.player[0]:
-                            return ERR_DESCRIBES[3]
-                        if aim_id==BOT_SELF_QQ:
-                            return ERR_DESCRIBES[6]
-                        self.aim_id = aim_id
-                        tmp = get_user_coins(self.aim_id)
-                        if self.wager>tmp: # 检查决斗对象赌注金额
-                            self.__init__(self.group_id)
-                            return ERR_DESCRIBES[11].format(aim_id=str(self.aim_id))
-                except BaseException as e:
-                    warning("exception in roulette, error: {}".format(e))
+                # print(self.player)
+                qqExtractor = re.compile(r'^\[CQ:at,qq=(\d+)\]$')
+                if qqExtractor.match(aim_id) != None:
+                    aim_id = int(qqExtractor.findall(aim_id)[0])
+                    if aim_id==self.player[0]:
+                        return ERR_DESCRIBES[3]
+                    if aim_id==BOT_SELF_QQ:
+                        return ERR_DESCRIBES[6]
+                    self.aim_id = aim_id
+                    tmp = get_user_coins(self.aim_id)
+                    if self.wager>tmp: # 检查决斗对象赌注金额
+                        self.__init__(self.group_id)
+                        return ERR_DESCRIBES[11].format(aim_id=str(self.aim_id))
                 self.random_bullet(num_bul, num_who) # 随机填入子弹
                 self.num_whole=num_who
                 self.status='prepare'
@@ -86,7 +78,7 @@ class _roulette():
                 else:
                     return (f'🚩{self.player[0]}向{self.aim_id}发起决斗请求！\n\n - 挑战金额：{self.wager} 子弹数：{len(self.bullet_index)} in {self.num_whole}\n - 若[CQ:at,qq={self.aim_id}]愿意，请回复【接受决斗】，支付相同金币参加决斗\n - 若不愿意，请回复【拒绝决斗】\n - 未应答前，发起者可以发送【取消决斗】取消，45s无应答自动取消🚩')   
         # prepare阶段，接受决斗申请
-        elif startswith_in(msg,['接受决斗']):
+        elif msg in ['接受', '接受决斗']:
             if id==self.player[0]:
                 return ERR_DESCRIBES[10][:5]
             if self.status!='prepare':
@@ -108,7 +100,7 @@ class _roulette():
                 self.round_index=0
                 return (f"{self.player[0]}和{self.player[1]}的决斗拉开帷幕！\n------\n发送“咔/嘭/嘣/砰/开枪 [开枪次数(可选，默认为1)]”以开枪\n")+(f'请发起方[CQ:at,qq={self.player[self.round_index]}]在30s内开枪，超时自动判负')
         # prepare阶段，拒绝决斗申请
-        elif startswith_in(msg,['拒绝决斗']):
+        elif msg in ['拒绝', '拒绝决斗']:
             if self.status!='prepare':
                 return ERR_DESCRIBES[7]
             if self.aim_id==id:
@@ -116,7 +108,7 @@ class _roulette():
                 self.timer.cancel()
                 self.__init__(self.group_id)
                 return ret
-        elif startswith_in(msg,['取消决斗']) and self.status=='prepare':
+        elif msg in ['取消', '取消决斗'] and self.status=='prepare':
             if id==self.player[0]:
                 self.timer.cancel()
                 self.__init__(self.group_id)

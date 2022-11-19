@@ -101,7 +101,7 @@ class SjtuDekt(StandardPlugin):
             if data_1['data'][0]['id'] != data_2['data'][0]['id']:
                 picPath = NewActlistPic()
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-                for group_id in getPluginEnabledGroups(self.groupName):
+                for group_id in getPluginEnabledGroups('dekt'):
                     send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files://{picPath},id=40000]')
         except json.JSONDecodeError as e:
             warning("dekt json parse error {}".format(e))

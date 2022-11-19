@@ -67,7 +67,7 @@ class MddStatus(StandardPlugin):
         if currentStatus :
             send(target, '交大闵行麦当劳当前状态：\n▶️营业中\n\n%s'%datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data['message_type'])
         else:
-            send(target, '交大闵行麦当劳当前状态：\n⏸️暂停营业%s'%datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data['message_type'])
+            send(target, '交大闵行麦当劳当前状态：\n⏸️暂停营业\n\n%s'%datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data['message_type'])
         return "OK"
         
     def getPluginInfo(self) -> dict:
