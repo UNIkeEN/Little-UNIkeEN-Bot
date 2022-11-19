@@ -23,6 +23,7 @@ nav:
         - '群权限获取': 'plugin/plugins/getPermissionPlugin.md'
         - '帮助插件':   'plugin/plugins/helpPlugin.md'
         - '群消息记录': 'plugin/plugins/messageRecorderPlugin.md'
+        - '群文件记录': 'plugin/plugins/fileRecorderPlugin.md'
       - 功能插件:
         - '超级表情':   'plugin/plugins/superEmojiPlugin.md'
         - '早安晚安':   'plugin/plugins/greetingsPlugin.md'
@@ -36,10 +37,14 @@ nav:
         - '买彩票':    'plugin/plugins/lotteryPlugin.md'
         - '五子棋':    'plugin/plugins/gobangPlugin.md'
         - '模拟炒股':  'plugin/plugins/stocksPlugin.md'
+        - 'SJMC服务器状态': 'plugin/plugins/sjmcPlugin.md'
+        - 'SJMC直播间状态': 'plugin/plugins/sjmcLivePlugin.md'
         - 'SJTU教务':  'plugin/plugins/sjtuJwcPlugin.md'
         - 'SJTU新闻':  'plugin/plugins/sjtuNewsPlugin.md'
         - 'SJTU第二课堂': 'plugin/plugins/sjtuDektPlugin.md'
         - 'SJTU canvas日历': 'plugin/plugins/canvasIcsPlugin.md'
+        - 'SJTU核酸点位': 'plugin/plugins/sjtuHesuanPlugin.md'
+        - '我爱电路实验':  'plugin/plugins/izfPlugin.md'
     - API:
       - '驱动器对接': 'api/send.md'
       - '运行时警告': 'api/warning.md'
@@ -101,8 +106,12 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.arithmatex:
+      generic: true
 
-
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js
 
 
 
