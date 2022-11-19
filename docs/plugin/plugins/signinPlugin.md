@@ -2,7 +2,7 @@
 
 | 插件名称 | 父类 | 触发关键词 | 触发权限| 内容 |
 | ---- | ---- | ---- | ---- | ---- |
-| SignIn | StandardPlugin | '签到'/'打卡'/'每日签到' | None | 签到 ｜
+| SignIn | StandardPlugin | '签到'/'打卡'/'每日签到' | None | 签到 |
 
 ## 2. 示范样例
 
@@ -14,9 +14,13 @@ bot> 【签到图2】
 ```
 
 签到图1:
+
 ![](../../images/plugins/signin1.png)
 
+----
+
 签到图2:
+
 ![](../../images/plugins/signin2.png)
 
 ## 3. 代码分析
