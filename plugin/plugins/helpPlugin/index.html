@@ -65,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#1" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -676,9 +681,59 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          帮助插件
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         帮助插件
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    1. 插件简介
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    2. 具体使用说明
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    3. 示范样例
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    4. 代码分析
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1212,9 +1267,207 @@
                   
 
 
-  <h1>帮助插件</h1>
-
-
+<h2 id="1">1. 插件简介</h2>
+<table>
+<thead>
+<tr>
+<th>插件名称</th>
+<th>父类</th>
+<th>触发关键词</th>
+<th>触发权限</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ShowHelp</td>
+<td>StandardPlugin</td>
+<td>'-help [...]'</td>
+<td>None</td>
+<td>展示 bot 使用方法帮助</td>
+</tr>
+<tr>
+<td>ShowStatus</td>
+<td>StandardPlugin</td>
+<td>'-test'</td>
+<td>None</td>
+<td>展示测试信息</td>
+</tr>
+</tbody>
+</table>
+<h1 id="2">2. 具体使用说明</h1>
+<p>插件列表由 <code>PluginGroupManager</code> 和 <code>StandardPlugin</code> 嵌套而成，help模块不仅支持常规查询，还支持嵌套查询。</p>
+<p>help格式如下：</p>
+<blockquote>
+<ol>
+<li>显示所有插件帮助：-help</li>
+<li>显示某个嵌套路径：-help 名称1 名称2 ...</li>
+</ol>
+</blockquote>
+<p>常规查询格式如 <code>1.</code> 所示，显示的是所有插件的帮助信息。</p>
+<p>嵌套查询格式如 <code>2.</code> 所示，显示的是这个嵌套路径下插件的帮助信息。</p>
+<h1 id="3">3. 示范样例</h1>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>私聊：
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="m">111</span>&gt; -help
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>bot&gt; 【帮助图片0】
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>群聊：
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="m">111</span>&gt; -help
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>bot&gt; 【帮助图片1】
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="m">111</span>&gt; -grpcfg disable sjmc
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>bot&gt; <span class="o">[</span>回复上文<span class="o">]</span>OK
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="m">222</span>&gt; -help
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>bot&gt; 【帮助图片2】
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="m">222</span>&gt; -help sjmc
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>bot&gt; 【帮助图片3】
+</code></pre></div>
+<p><center>帮助图片0    |    帮助图片3：</center></p>
+<p><center class="half">
+<img src="../../images/plugins/help0.png" width="40%"/>
+<img src="../../images/plugins/help3.png" width="40%"/>
+</center></p>
+<hr />
+<p><center>帮助图片1    |    帮助图片2：</center></p>
+<p><center class="half">
+<img src="../../images/plugins/help1.png" width="40%"/>
+<img src="../../images/plugins/help2.png" width="40%"/>
+</center></p>
+<h1 id="4">4. 代码分析</h1>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span> <span class="nc">ShowHelp</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span> 
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\-help\s*(.*)$&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">subdevidePattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^([^\s]+)\s+([^\s].*)$&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">pluginList</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">pluginListPrivate</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">None</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="n">group_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="mi">0</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="n">helpWords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">msg</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">def</span> <span class="nf">getTargetPluginList</span><span class="p">(</span><span class="n">pluginList</span><span class="p">:</span><span class="n">List</span><span class="p">[</span><span class="n">StandardPlugin</span><span class="p">],</span> <span class="n">helpWords</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">StandardPlugin</span><span class="p">]:</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="k">if</span> <span class="n">helpWords</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                <span class="k">return</span> <span class="n">pluginList</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdevidePattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">helpWords</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                <span class="n">currentPlugin</span><span class="p">,</span> <span class="n">nextHelpWords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdevidePattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">helpWords</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pluginList</span><span class="p">:</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">PluginGroupManager</span><span class="p">):</span> <span class="k">continue</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                    <span class="n">p</span><span class="p">:</span> <span class="n">PluginGroupManager</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>                    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">groupName</span> <span class="o">==</span> <span class="n">currentPlugin</span><span class="p">:</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>                        <span class="k">return</span> <span class="n">getTargetPluginList</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">plugins</span><span class="p">,</span> <span class="n">nextHelpWords</span><span class="p">)</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pluginList</span><span class="p">:</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">PluginGroupManager</span><span class="p">):</span> <span class="k">continue</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>                    <span class="n">p</span><span class="p">:</span> <span class="n">PluginGroupManager</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>                    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">groupName</span> <span class="o">==</span> <span class="n">helpWords</span><span class="p">:</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>                        <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">plugins</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>                <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        <span class="n">targetPluginList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pluginList</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">pluginListPrivate</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>        <span class="n">targetPluginList</span> <span class="o">=</span> <span class="n">getTargetPluginList</span><span class="p">(</span><span class="n">targetPluginList</span><span class="p">,</span> <span class="n">helpWords</span><span class="p">)</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">targetPluginList</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>            <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;[CQ:reply,id=</span><span class="si">%d</span><span class="s1">]暂未创建对应名称的模块&#39;</span><span class="o">%</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_id&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>            <span class="n">imgPath</span> <span class="o">=</span> <span class="n">drawHelpCard</span><span class="p">(</span><span class="n">targetPluginList</span><span class="p">,</span> <span class="n">group_id</span><span class="p">)</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>            <span class="n">imgPath</span> <span class="o">=</span> <span class="n">imgPath</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">imgPath</span><span class="p">)</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ROOT_PATH</span><span class="p">,</span> <span class="n">imgPath</span><span class="p">)</span>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>            <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;[CQ:image,file=files://</span><span class="si">%s</span><span class="s1">]&#39;</span><span class="o">%</span><span class="n">imgPath</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span><span class="o">-&gt;</span><span class="n">Any</span><span class="p">:</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ShowHelp&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;帮助&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>            <span class="s1">&#39;commandDescription&#39;</span><span class="p">:</span> <span class="s1">&#39;-help [...]?&#39;</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>                <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">开启插件组:  -grpcfg enable &lt;group name&gt;&#39;</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>                <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">关闭插件组:  -grpcfg disable &lt;group name&gt;&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>            <span class="s1">&#39;usePlace&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="p">],</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>            <span class="s1">&#39;showInHelp&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>            <span class="s1">&#39;pluginConfigTableNames&#39;</span><span class="p">:</span> <span class="p">[],</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.4&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>            <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="s1">&#39;Unicorn&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>        <span class="p">}</span>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>    <span class="k">def</span> <span class="nf">updatePluginList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugins</span><span class="p">,</span> <span class="n">private_plugins</span><span class="p">):</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>        <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="n">plugins</span><span class="p">:</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">plugin</span><span class="p">),</span> <span class="n">StandardPlugin</span><span class="p">):</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">pluginList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plugin</span><span class="p">)</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>                <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unexpected plugin </span><span class="si">{}</span><span class="s2"> type in ShowHelp plugin&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plugin</span><span class="p">))</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>        <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="n">private_plugins</span><span class="p">:</span>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">plugin</span><span class="p">),</span> <span class="n">StandardPlugin</span><span class="p">):</span>
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">pluginListPrivate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plugin</span><span class="p">)</span>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>                <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unexpected plugin </span><span class="si">{}</span><span class="s2"> type in ShowHelp plugin&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plugin</span><span class="p">))</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a><span class="k">def</span> <span class="nf">drawHelpCard</span><span class="p">(</span><span class="n">pluginList</span><span class="p">,</span> <span class="n">group_id</span><span class="p">):</span>
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>    <span class="n">helpCards</span> <span class="o">=</span> <span class="n">ResponseImage</span><span class="p">(</span>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;群聊功能配置&#39;</span> <span class="k">if</span> <span class="n">group_id</span><span class="o">!=</span><span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;私聊功能配置&#39;</span><span class="p">,</span> 
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>        <span class="n">footer</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;当前群号:</span><span class="si">{</span><span class="n">group_id</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">group_id</span><span class="o">!=</span><span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>        <span class="n">titleColor</span> <span class="o">=</span> <span class="n">PALETTE_CYAN</span><span class="p">,</span>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>        <span class="n">layout</span> <span class="o">=</span> <span class="s1">&#39;two-column&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>        <span class="n">width</span> <span class="o">=</span> <span class="mi">1280</span><span class="p">,</span>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>        <span class="n">cardBodyFont</span><span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FONTS_PATH</span><span class="p">,</span> <span class="s1">&#39;SourceHanSansCN-Medium.otf&#39;</span><span class="p">),</span> <span class="mi">24</span><span class="p">),</span>
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>        <span class="n">cardSubtitleFont</span><span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FONTS_PATH</span><span class="p">,</span> <span class="s1">&#39;SourceHanSansCN-Medium.otf&#39;</span><span class="p">),</span> <span class="mi">24</span><span class="p">),</span>
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>    <span class="p">)</span>
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">pluginList</span><span class="p">:</span>
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>        <span class="n">cardPluginList</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>        <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">PluginGroupManager</span><span class="p">):</span>
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>            <span class="n">item</span><span class="p">:</span> <span class="n">PluginGroupManager</span>
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>            <span class="n">flag</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">queryEnabled</span><span class="p">(</span><span class="n">group_id</span><span class="p">)</span>
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>            <span class="n">cardPluginList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">groupName</span><span class="p">))</span>
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>            <span class="n">cardPluginList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;separator&#39;</span><span class="p">,</span> <span class="p">))</span>
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>            <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">getPlugins</span><span class="p">():</span>
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>                <span class="n">infoDict</span><span class="p">:</span><span class="nb">dict</span> <span class="o">=</span> <span class="n">plugin</span><span class="o">.</span><span class="n">getPluginInfo</span><span class="p">()</span>
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>                <span class="k">if</span> <span class="s1">&#39;showInHelp&#39;</span> <span class="ow">in</span> <span class="n">infoDict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;showInHelp&#39;</span><span class="p">]:</span>
+<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a>                    <span class="k">continue</span>
+<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>                <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">PluginGroupManager</span><span class="p">):</span>
+<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a>                        <span class="n">plugin</span><span class="p">:</span> <span class="n">PluginGroupManager</span>
+<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>                        <span class="n">cardPluginList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span>
+<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>                            <span class="s1">&#39;body&#39;</span> <span class="k">if</span> <span class="n">plugin</span><span class="o">.</span><span class="n">queryEnabled</span><span class="p">(</span><span class="n">group_id</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;subtitle&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>                            <span class="s2">&quot;[GROUP] &quot;</span><span class="o">+</span> <span class="n">plugin</span><span class="o">.</span><span class="n">groupName</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>                                <span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>                        <span class="p">))</span>
+<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>                    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a>                        <span class="n">cardPluginList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;body&#39;</span><span class="p">,(</span><span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;:  &#39;</span><span class="o">+</span><span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;commandDescription&#39;</span><span class="p">])))</span>
+<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a>                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a>                    <span class="n">warning</span><span class="p">(</span><span class="s1">&#39;meet KeyError when getting help, plugin: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plugin</span><span class="p">))</span>
+<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a>            <span class="n">item</span><span class="p">:</span> <span class="n">StandardPlugin</span>
+<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a>            <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>            <span class="n">infoDict</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">getPluginInfo</span><span class="p">()</span>
+<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a>            <span class="k">if</span> <span class="s1">&#39;showInHelp&#39;</span> <span class="ow">in</span> <span class="n">infoDict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;showInHelp&#39;</span><span class="p">]:</span>
+<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a>                <span class="n">cardPluginList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;body&#39;</span><span class="p">,(</span><span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;:  &#39;</span><span class="o">+</span><span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;commandDescription&#39;</span><span class="p">])))</span>
+<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a>            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a>                <span class="n">warning</span><span class="p">(</span><span class="s1">&#39;meet KeyError when getting help, plugin: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a>
+<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cardPluginList</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a>            <span class="n">clr</span> <span class="o">=</span> <span class="n">PALETTE_GREY</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">flag</span> <span class="k">else</span> <span class="n">PALETTE_CYAN</span>
+<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a>            <span class="n">clr2</span> <span class="o">=</span> <span class="n">PALETTE_GREY</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">flag</span> <span class="k">else</span> <span class="n">PALETTE_BLACK</span>
+<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a>            <span class="n">helpCards</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span><span class="n">ResponseImage</span><span class="o">.</span><span class="n">RichContentCard</span><span class="p">(</span><span class="n">raw_content</span><span class="o">=</span><span class="n">cardPluginList</span><span class="p">,</span> <span class="n">titleFontColor</span><span class="o">=</span><span class="n">clr</span> <span class="p">,</span><span class="n">bodyFontColor</span><span class="o">=</span><span class="n">clr2</span><span class="p">,</span><span class="n">subtitleFontColor</span><span class="o">=</span><span class="n">PALETTE_GREY</span><span class="p">))</span>
+<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>    <span class="n">save_path</span> <span class="o">=</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_TMP_PATH</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">group_id</span><span class="si">}</span><span class="s1">_help.png&#39;</span><span class="p">))</span>
+<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>    <span class="n">helpCards</span><span class="o">.</span><span class="n">generateImage</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a>    <span class="k">return</span> <span class="n">save_path</span>
+<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a><span class="k">class</span> <span class="nc">ShowStatus</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span> 
+<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a>        <span class="k">return</span> <span class="n">msg</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;-test status&#39;</span><span class="p">,</span> <span class="s1">&#39;-test&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a>        <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;status: online</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">VERSION_TXT</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
+<a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span><span class="o">-&gt;</span><span class="n">Any</span><span class="p">:</span>
+<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-126" name="__codelineno-1-126" href="#__codelineno-1-126"></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ShowStatus&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-127" name="__codelineno-1-127" href="#__codelineno-1-127"></a>            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;展示状态&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-128" name="__codelineno-1-128" href="#__codelineno-1-128"></a>            <span class="s1">&#39;commandDescription&#39;</span><span class="p">:</span> <span class="s1">&#39;-test/-test status&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-129" name="__codelineno-1-129" href="#__codelineno-1-129"></a>            <span class="s1">&#39;usePlace&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="p">],</span>
+<a id="__codelineno-1-130" name="__codelineno-1-130" href="#__codelineno-1-130"></a>            <span class="s1">&#39;showInHelp&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-131" name="__codelineno-1-131" href="#__codelineno-1-131"></a>            <span class="s1">&#39;pluginConfigTableNames&#39;</span><span class="p">:</span> <span class="p">[],</span>
+<a id="__codelineno-1-132" name="__codelineno-1-132" href="#__codelineno-1-132"></a>            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-133" name="__codelineno-1-133" href="#__codelineno-1-133"></a>            <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="s1">&#39;Unicorn&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-134" name="__codelineno-1-134" href="#__codelineno-1-134"></a>        <span class="p">}</span>
+</code></pre></div>
 
 
 
