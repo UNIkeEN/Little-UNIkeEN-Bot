@@ -19,7 +19,8 @@ bot> 【sjmc直播间信息图片】
 bot> 【sjmc直播间信息图片】
 ```
 
-![](../../images/plugins/sjmcLive.png)
+sjmc直播间信息图片:
+![](../../images/plugins/sjmcLive.png) 
 
 ## 3. 代码分析
 

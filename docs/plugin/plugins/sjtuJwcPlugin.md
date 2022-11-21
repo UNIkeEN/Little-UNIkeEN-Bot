@@ -2,7 +2,8 @@
 
 | 插件名称 | 父类 | 触发关键词 | 触发权限 | 内容 |
 | ---- | ---- | ---- | ---- | ---- |
-| JwcGroup | PluginGroupManager | '-jwc' | None | 获取交大教务处信息 |
+| JwcGroup | StandardPlugin | '-jwc' | None | 获取交大教务处信息 |
+| SjtuJwcMonitor | StandardPlugin <br> CronStandardPlugin | `None` | None | 广播交大教务处更新信息 |
 
 ## 2. 示范样例
 
@@ -46,104 +47,95 @@ bot> ${教务处通知的图片}
 
 ![](../../images/plugins/jwc.png)
 
+!!! warning "注意：旧的绘图代码"
+    这是早期完成的插件，绘图部分代码并未使用推荐的 responseImage 库
+
 ## 3. 代码分析
 
 ```python
-from utils.standardPlugin import StandardPlugin, Any, Union, PluginGroupManager
+from utils.standardPlugin import StandardPlugin, Any, Union, CronStandardPlugin
 from utils.responseImage import *
 import requests
 from bs4 import BeautifulSoup as BS
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from threading import Timer
+from threading import Timer, Semaphore
 from pathlib import Path
 import json
 from datetime import datetime
+from urllib.parse import urljoin
 import qrcode
-def getSjtuGk():
-    """交大信息公开网"""
-    html = requests.get('https://gk.sjtu.edu.cn').text
-    html = BS(html, 'lxml')
-    news = html.find(class_='new-ncon').find_all('li')
-    result = []
-    for n in news:
-        category = n.i.contents[0]
-        link = n.a.get('href')
-        if link[0] == '/':
-            link = 'https://gk.sjtu.edu.cn'+link
-        title = n.a.contents[0]
-        result.append({
-            'category': category,
-            'link': link,
-            'title': title
-        })
-    return result
-def getSjtuNews():
-    """交大新闻网"""
-    html = requests.get('https://news.sjtu.edu.cn/jdyw/index.html').text
-    html = BS(html, 'lxml')
-    news = html.find('div', class_='list-card-h').find_all('li', class_='item')
-    result = []
-    for n in news:
-        card = n.find('a', class_='card')
-        link =  card.get('href')
-        if link[0] == '/':
-            link = 'https://news.sjtu.edu.cn' +link
-        imgLink = card.find('img').get('src')
-        if imgLink[0] == '/':
-            imgLink = 'https://news.sjtu.edu.cn' + imgLink
-        title = card.find('p', class_='dot').contents[0]
-        detail = card.find('div', class_='des dot').contents[0]
-        about = card.find('div', class_='time')
-        time = about.find('span').contents[0]
-        source = about.find('div', class_='source').p.contents[0]
-        result.append({
-            'title': title,
-            'link': link,
-            'imgLink': imgLink,
-            'detail': detail,
-            'time': time,
-            'source': source
-        })
-    return result
-def drawSjtuNews():
-    a = ResponseImage(title='交大新闻', 
-    titleColor=PALETTE_SJTU_RED, 
-    primaryColor=PALETTE_SJTU_RED, 
-    footer='update at %s'%datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M"),
-    layout='normal')
-    for news in sorted(getSjtuNews(), key=lambda x: x['time'], reverse=True):
-        a.addCard({
-            'style': 'normal',
-            'title': news['title'],
-            'keyword': news['source'] + '  ' + news['time'],
-            'body': news['detail'],
-            'icon': news['imgLink']
-        })
-    a.generateImage(os.path.join(SAVE_TMP_PATH, 'sjtu_news.png'))
+import os, os.path
 
-def getJwc():
-    page = str(requests.get('https://jwc.sjtu.edu.cn/xwtg/tztg.htm').content, 'utf-8')
+def getJwc()->list:
+    pageUrl = 'https://jwc.sjtu.edu.cn/xwtg/tztg.htm'
+    req = requests.get(pageUrl)
+    if req.status_code != requests.codes.ok:
+        warning("jwc.sjtu.edu.cn API failed!")
+        return []
+    page = str(req.content, 'utf-8')
     page = BS(page, 'lxml')
     news = page.find(class_='Newslist').ul.find_all(class_='clearfix')
     newsList = []
     for n in news:
-        sj = n.find(class_='sj')
-        year, month = sj.p.contents[0].split('.')
-        day = sj.h2.contents[0]
-        content = n.find(class_='wz')
-        title:str = content.h2.contents[0]
-        link:str = content.a.get('href').replace('..', 'https://jwc.sjtu.edu.cn')
-        detail:str = content.p.contents[0]
-        newsList.append({
-            'year': year,
-            'month': month,
-            'day': day,
-            'title': title,
-            'detail': detail,
-            'link': link,
-        })
+        try:
+            sj = n.find(class_='sj')
+            year, month = sj.p.contents[0].split('.')
+            day = sj.h2.contents[0]
+            content = n.find(class_='wz')
+            title:str = content.h2.contents[0]
+            link:str = content.a.get('href')
+            link = urljoin(pageUrl, link)
+            detail:str = content.p.contents[0]
+            newsList.append({
+                'year': year,
+                'month': month,
+                'day': day,
+                'title': title,
+                'detail': detail,
+                'link': link,
+            })
+        except BaseException as e:
+            print("exception in getJwc: {}".format(e))
     return newsList
+class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
+    monitorSemaphore = Semaphore()
+    def __init__(self) -> None:
+        if SjtuJwcMonitor.monitorSemaphore.acquire(blocking=False):
+            self.start(20, 180)
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return False
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        return "OK"
+    def tick(self, ):
+        exact_path='data/jwc.json'
+        if not os.path.isfile(exact_path):
+            with open(exact_path, 'w') as f:
+                f.write('[]')
+        url_list:list = json.load(open(exact_path, 'r'))
+        updateFlag = len(url_list) > 0
+        for j in getJwc():
+            if j['link'] not in url_list:
+                url_list.append(j['link'])
+                if not updateFlag: continue
+                pic = DrawNoticePIC(j)
+                pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
+                for group_id in getPluginEnabledGroups('jwc'):
+                    send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
+                    send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
+        with open(exact_path, 'w') as f:
+            json.dump(url_list, f, indent=4)
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'SjtuJwcMonitor',
+            'description': '教务通知更新广播',
+            'commandDescription': 'None',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.4',
+            'author': 'Unicorn',
+        }
 
 class GetJwc(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -153,7 +145,7 @@ class GetJwc(StandardPlugin):
         jwc = sorted(getJwc(), key=lambda x: '%s-%s-%s'%(x['year'], x['month'], x['day']), reverse=True)
         jwcStr = ""
         idx = 1
-        for j in jwc[:5]:
+        for j in jwc[:7]:
             jwcStr += '【%d】%s-%s-%s %s %s\n'%(idx, j['year'], j['month'], j['day'], j['title'], j['link'])
             idx += 1
         jwcStr = jwcStr[:-1]
@@ -172,14 +164,20 @@ class GetJwc(StandardPlugin):
         }
 
 class GetSjtuNews(StandardPlugin): 
+    monitorSemaphore = Semaphore()
+    def __init__(self) -> None:
+        self.checkTimer = Timer(20,self.updateAndCheck)
+        if GetSjtuNews.monitorSemaphore.acquire(blocking=False):
+            self.checkTimer.start()
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg=='-sjtu news'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         pic_path = os.path.join(SAVE_TMP_PATH, 'sjtu_news.png')
-        if not Path(pic_path).is_file():
+        pic_path = pic_path if os.path.isabs(pic_path) else os.path.join(ROOT_PATH, pic_path)
+        if not os.path.isfile(pic_path):
             drawSjtuNews()
-        send(target, f'[CQ:image,file=files:///{ROOT_PATH}/{pic_path},id=40000]', data['message_type'])
+        send(target, '[CQ:image,file=files://%s,id=40000]'%pic_path, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -192,32 +190,11 @@ class GetSjtuNews(StandardPlugin):
             'version': '1.0.0',
             'author': 'fangtiancheng',
         }
-
-class JwcGroup(PluginGroupManager):
-    def __init__(self,):
-        super().__init__([GetJwc(), GetSjtuNews()], 'jwc')
-        self.checkTimer = Timer(20,self.updateAndCheck)
-        self.checkTimer.start()
     def updateAndCheck(self, ):
         self.checkTimer.cancel()
-        self.checkTimer = Timer(180,self.updateAndCheck)
+        self.checkTimer = Timer(900,self.updateAndCheck)
         self.checkTimer.start()
         drawSjtuNews()
-        noticelist = getJwc()
-        exact_path=(f'data/jwc.json')
-        if not Path(exact_path).is_file():
-            Path(exact_path).write_text(r'[]')
-        url_list = json.load(open(exact_path, 'r'))
-        for j in noticelist:
-            if j['link'] not in url_list:
-                url_list.append(j['link'])
-                for group_id in APPLY_GROUP_ID:
-                    if self.queryEnabled(group_id):
-                        pic = DrawNoticePIC(j)
-                        send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
-                        send(group_id, f'[CQ:image,file=files:///{ROOT_PATH}/{pic},id=40000]')
-        with open(exact_path, 'w') as f:
-            json.dump(url_list, f, indent=4)
 
 def DrawNoticePIC(notice)->str:
     width = 720
@@ -281,5 +258,4 @@ def DrawNoticePIC(notice)->str:
     save_path=os.path.join(SAVE_TMP_PATH, 'jwc_notice.png')
     img.save(save_path)
     return save_path
-
 ```

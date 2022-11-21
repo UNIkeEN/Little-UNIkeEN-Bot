@@ -9,7 +9,7 @@
 用长为3的向量来表示二维坐标：
 
 $$
-(x, y, 1)^{\rm T} \iff \left(\frac xn, \frac yn, n\right)^{\rm T} \overset{denote}{\implies} (x, y)
+(x, y, 1)^{\rm T} \iff \left(nx, ny, n\right)^{\rm T} \overset{denote}{\implies} (x, y)
 $$
 
 平移 $(\Delta x, \Delta y)$ 变换：

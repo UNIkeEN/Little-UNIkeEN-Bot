@@ -64,7 +64,8 @@ bot>    查询失败
 
 ## 3. 代码分析
 
-由于历史原因，canvasIcsPlugin的绘图函数没有调用LittleUnicorn的推荐绘图API。
+!!! warning "注意：旧的绘图代码"
+    这是早期完成的插件，绘图部分代码并未使用推荐的 responseImage 库
 
 ```python
 from utils.standardPlugin import StandardPlugin, Any, Union
