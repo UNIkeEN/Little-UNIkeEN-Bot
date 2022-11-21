@@ -1290,7 +1290,8 @@
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>检测到活动列表更新
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>bot&gt; 已发现第二课堂活动更新:【第二课堂最新活动图片】
 </code></pre></div>
-<p><img alt="" src="../../../images/plugins/dekt.png" /></p>
+<p>第二课堂最新活动图片：
+<img alt="" src="../../../images/plugins/dekt.png" /></p>
 <h2 id="3">3. 代码分析</h2>
 <p>第二课堂使用 selenium 进行模拟登录、获取活动列表，获取结果并在 <code>data/dektSource</code> 中以 JSON 形式存储，每次响应 <code>-dekt</code> 命令时不直接向服务器请求，而是从保存的 JSON 数据中选择最新的返回。</p>
 <div class="admonition tip">
