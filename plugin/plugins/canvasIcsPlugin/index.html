@@ -1345,7 +1345,10 @@
 <p>图片展示：</p>
 <p><img alt="" src="../../../images/plugins/canvas.png" /></p>
 <h2 id="3">3. 代码分析</h2>
-<p>由于历史原因，canvasIcsPlugin的绘图函数没有调用LittleUnicorn的推荐绘图API。</p>
+<div class="admonition warning">
+<p class="admonition-title">注意：旧的绘图代码</p>
+<p>这是早期完成的插件，绘图部分代码并未使用推荐的 responseImage 库</p>
+</div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">utils.standardPlugin</span> <span class="kn">import</span> <span class="n">StandardPlugin</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span> <span class="nn">requests</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span> <span class="nn">utils.basicEvent</span> <span class="kn">import</span> <span class="o">*</span>
