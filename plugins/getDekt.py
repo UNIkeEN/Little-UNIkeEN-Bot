@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, PluginGroupManager
+from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from selenium import webdriver
@@ -62,12 +62,48 @@ def DownloadActlist():
     driver.close()
     driver.quit()
     os.system("kill `ps -ef | grep browsermob | awk 'NR==1{print $2}'`")
-class SjtuDekt(StandardPlugin): 
+
+class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:
-        self.checkTimer = Timer(1,self.updateAndCheck)
-        if SjtuDekt.monitorSemaphore.acquire(blocking=False):
-            self.checkTimer.start()
+        if SjtuDektMonitor.monitorSemaphore.acquire(blocking=False):
+            self.start(10, 1790)
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return False
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        return "OK"
+    def tick(self) -> None:
+        DownloadActlist()
+        fileName=sorted(os.listdir(DEKT_SOURCE_DIR))[-2:]
+        if len(fileName) < 2:
+            return
+        try:
+            data_1 = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName[0]), 'r'))
+            data_2 = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName[1]), 'r'))
+            if data_1['data'][0]['id'] != data_2['data'][0]['id']:
+                picPath = NewActlistPic()
+                picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+                for group_id in getPluginEnabledGroups('dekt'):
+                    send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files://{picPath},id=40000]')
+        except json.JSONDecodeError as e:
+            warning("dekt json parse error {}".format(e))
+        except KeyError as e:
+            warning("dekt key error: {}".format(e))
+        except BaseException as e:
+            warning("dekt error: {}".format(e))
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'SjtuDektMonitor',
+            'description': '第二课堂更新广播',
+            'commandDescription': 'None',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.4',
+            'author': 'Unicorn',
+        }
+
+class SjtuDekt(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-dekt'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -87,28 +123,6 @@ class SjtuDekt(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-    def updateAndCheck(self):
-        self.checkTimer.cancel()
-        self.checkTimer = Timer(1790,self.updateAndCheck)
-        self.checkTimer.start()
-        DownloadActlist()
-        fileName=sorted(os.listdir(DEKT_SOURCE_DIR))[-2:]
-        if len(fileName) < 2:
-            return
-        try:
-            data_1 = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName[0]), 'r'))
-            data_2 = json.load(open(os.path.join(DEKT_SOURCE_DIR, fileName[1]), 'r'))
-            if data_1['data'][0]['id'] != data_2['data'][0]['id']:
-                picPath = NewActlistPic()
-                picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-                for group_id in getPluginEnabledGroups('dekt'):
-                    send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files://{picPath},id=40000]')
-        except json.JSONDecodeError as e:
-            warning("dekt json parse error {}".format(e))
-        except KeyError as e:
-            warning("dekt key error: {}".format(e))
-        except BaseException as e:
-            warning("dekt error: {}".format(e))
 
 def Timestamp2time(timestp):
     time_local = time.localtime(float(timestp/1000))

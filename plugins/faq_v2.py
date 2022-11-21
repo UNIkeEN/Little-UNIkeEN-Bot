@@ -59,11 +59,11 @@ class HelpFAQ(StandardPlugin):
             'version': '1.0.4',
             'author': 'Unicorn',
         }
-def get_answer(group_id: int, key: str)->Tuple[bool, str]:
+def get_answer(group_id: int, key: str)->Tuple[bool, str, str]:
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mycursor = mydb.cursor()
     mycursor.execute("""
-    select `answer` from `BOT_FAQ_DATA`.`%d` where 
+    select `answer`, `group_tag` from `BOT_FAQ_DATA`.`%d` where 
         `question` = '%s' and
         `latest` = true and
         `deleted` = false
@@ -73,9 +73,9 @@ def get_answer(group_id: int, key: str)->Tuple[bool, str]:
     ))
     answer = list(mycursor)
     if len(answer) == 0:
-        return False, ''
+        return False, '', ''
     else:
-        return True, answer[0][0]
+        return True, answer[0][0], answer[0][1]
 def rollback_answer(group_id:int, question:str)->bool:
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
@@ -158,7 +158,7 @@ class AskFAQ(StandardPlugin):
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         question = self.pattern.findall(msg)[0][1]
         group_id = data['group_id']
-        hasMsg, ans = get_answer(group_id, question)
+        hasMsg, ans, tag = get_answer(group_id, question)
         if hasMsg:
             ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, question)
         else:
@@ -252,7 +252,7 @@ class MaintainFAQ(StandardPlugin):
             send(groupId, '语法有误，支持语句为: faq (new/add) <key> (<ans>)')
         else:
             question, answer = qa[0]
-            status, _ = get_answer(groupId, question)
+            status, _, _ = get_answer(groupId, question)
             if status:
                 send(groupId, '[CQ:reply,id=%d]问题【%s】已经存在'%(data['message_id'], question))
             else:
@@ -271,11 +271,11 @@ class MaintainFAQ(StandardPlugin):
             send(groupId, '语法有误，支持语句为: faq edit <key> <ans>')
         else:
             question, answer = qa[0]
-            status, _ = get_answer(groupId, question)
+            status, _, tag = get_answer(groupId, question)
             if not status:
                 send(groupId, '[CQ:reply,id=%d]问题不存在，请先使用"faq add"语句创建该问题'%data['message_id'])
             else:
-                status = update_answer(groupId, question, answer, data)
+                status = update_answer(groupId, question, answer, data, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], answer, question))
                 else:
@@ -289,11 +289,11 @@ class MaintainFAQ(StandardPlugin):
             send(groupId, '语法有误，支持语句为: faq cp <name> <new name>')
         else:
             prevName, newName = qa[0]
-            status, answer = get_answer(groupId, prevName)
+            status, answer, tag = get_answer(groupId, prevName)
             if not status:
                 send(groupId,"[CQ:reply,id=%d]【%s】问题不存在"%(data['message_id'], prevName))
             else:
-                status = update_answer(groupId, newName, answer, data)
+                status = update_answer(groupId, newName, answer, data, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], answer, newName))
                 else:
@@ -306,12 +306,13 @@ class MaintainFAQ(StandardPlugin):
         if len(question) == 0:
             send(groupId, '语法有误，支持语句为: faq del <key>')
         else:
-            question = question[0][0]
-            status, _ = get_answer(groupId, question)
+            question = question[0]
+            print(question)
+            status, _, tag = get_answer(groupId, question)
             if not status:
                 send(groupId, "[CQ:reply,id=%d]问题不存在"%(data['message_id']))
             else:
-                status = update_answer(groupId, question, '', data, delete=True)
+                status = update_answer(groupId, question, '', data, delete=True, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]问题删除成功"%(data['message_id']))
                 else:
@@ -325,12 +326,12 @@ class MaintainFAQ(StandardPlugin):
             send(groupId, '语法有误，支持语句为: faq append <key> <ans to append>')
         else:
             question, answer = qa[0]
-            status, prevAns = get_answer(groupId, question)
+            status, prevAns, tag = get_answer(groupId, question, tag)
             if not status:
                 send(groupId,"[CQ:reply,id=%d]【%s】问题不存在"%(data['message_id'], question))
             else:
                 answer = prevAns + answer
-                status = update_answer(groupId, question, answer, data)
+                status = update_answer(groupId, question, answer, data, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], answer, question))
                 else:
@@ -344,7 +345,7 @@ class MaintainFAQ(StandardPlugin):
             send(groupId, '语法有误，支持语句为: faq tag <key> <tag>')
         else:
             question, tag = qa[0]
-            status, answer = get_answer(groupId, question)
+            status, answer, _ = get_answer(groupId, question)
             if not status:
                 send(groupId,"[CQ:reply,id=%d]【%s】问题不存在"%(data['message_id'], question))
             else:
@@ -522,7 +523,7 @@ def draw_help_pic(group_id:int)->str:
         "标记分组： 'faq tag <key> <tag>'\n"
         "回滚(需要权限)： 'faq rollback <key>'\n"
         "查看记录(需要权限)： 'faq history <key>'\n"
-        "获取帮助： 'faq help' / '问答帮助'\n\n"
+        "获取帮助： 'faq help' / '问答帮助'"
     )
     helpCards = ResponseImage(
         title = 'FAQ 帮助', 

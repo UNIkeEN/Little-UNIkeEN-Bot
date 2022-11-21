@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, Tuple, Any, List
 from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig, getGroupAdmins
-
+from threading import Timer, Semaphore
 class StandardPlugin(ABC):
     @abstractmethod
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -50,15 +50,33 @@ class GroupUploadStandardPlugin(ABC):
     @abstractmethod
     def uploadFile(self, data)->Union[str, None]:
         raise NotImplementedError
-
+class CronStandardPlugin(ABC):
+    def __init__(self) -> None:
+        self.timer = None
+        self.intervalTime = 180
+    @abstractmethod
+    def tick(self,)->None:
+        raise NotImplementedError
+    def _tick(self)->None:
+        self.timer.cancel()
+        self.timer = Timer(self.intervalTime, self._tick)
+        self.timer.start()
+        try:
+            self.tick()
+        except BaseException as e:
+            warning('base exception in CronStandardPlugin: {}'.format(e))
+    def start(self, startTime:float, intervalTime:float)->None:
+        self.timer = Timer(startTime, self._tick)
+        self.intervalTime = intervalTime
+        self.timer.start()
 class PluginGroupManager(StandardPlugin):
-    def __init__(self, plugins:List[StandardPlugin], groupName: str, groupInfo:dict = {}) -> None:
+    def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
         self.plugins = plugins
         self.groupName = groupName
         self.readyPlugin = None
         self.enabledDict = readGlobalConfig(None, groupName+'.enable')
         self.defaultEnabled = False
-        self.groupInfo = groupInfo
+        self.groupInfo = {}
         self._checkGroupInfo()
 
     def _checkGroupInfo(self):
@@ -67,17 +85,15 @@ class PluginGroupManager(StandardPlugin):
             self.groupInfo['name'] = self.groupName
         # check description
         if 'description' not in self.groupInfo.keys():
-            description = ''
-            for p in self.plugins:
-                description += p.getPluginInfo()['description'] + '/'
-            description = description[:-1]
+            description = '\n'.join([
+                p.getPluginInfo()['description'] for p in self.plugins
+            ])
             self.groupInfo['description'] = description
         # check command descrption
         if 'commandDescription' not in self.groupInfo.keys():
-            commandDescription = ''
-            for p in self.plugins:
-                commandDescription += p.getPluginInfo()['commandDescription'] + '/'
-            commandDescription = commandDescription[:-1]
+            commandDescription = '/'.join([
+                p.getPluginInfo()['commandDescription'] for p in self.plugins
+            ])
             self.groupInfo['commandDescription'] = commandDescription
         # check use place
         if not all(['group' in p.getPluginInfo()['usePlace'] for p in self.plugins]):
@@ -108,9 +124,10 @@ class PluginGroupManager(StandardPlugin):
             enabled = self.readyPlugin == 'enable'
             self.readyPlugin = None
             groupId = data["group_id"]
-            if self.queryEnabled(groupId) != enabled:
-                writeGlobalConfig(groupId, self.groupName + '.enable', enabled)
-                self.enabledDict[groupId] = enabled
+            if enabled:
+                self.setEnabled(groupId, enabled)
+            else:
+                self.recursiveSetEnabled(groupId, enabled)
             send(data['group_id'], "[CQ:reply,id=%d]OK"%data['message_id'])
             return "OK"
         else:
@@ -128,5 +145,15 @@ class PluginGroupManager(StandardPlugin):
             writeGlobalConfig(groupId, self.groupName, {'name':self.groupName, 'enable': self.defaultEnabled})
             self.enabledDict[groupId] = self.defaultEnabled
         return self.enabledDict[groupId]
+    def setEnabled(self, groupId: int, enabled: bool):
+        if self.queryEnabled(groupId) != enabled:
+            writeGlobalConfig(groupId, self.groupName + '.enable', enabled)
+            self.enabledDict[groupId] = enabled
+    def recursiveSetEnabled(self, groupId: int, enabled: bool):
+        self.setEnabled(groupId, enabled)
+        for p in self.getPlugins():
+            if issubclass(type(p), PluginGroupManager):
+                p: PluginGroupManager
+                p.recursiveSetEnabled(groupId, enabled)
     def getPlugins(self)->List[StandardPlugin]:
         return self.plugins

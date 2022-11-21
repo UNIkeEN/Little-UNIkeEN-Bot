@@ -21,20 +21,20 @@ from plugins.genshin import *
 from plugins.roulette import *
 # from plugins.lottery import *
 from plugins.show2cyPic import *
-from plugins.help import *
+from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.chatWithNLP import *
 from plugins.chatWithAnswerbook import *
-from plugins.getDekt import SjtuDekt
-from plugins.getJwc import GetSjtuNews, GetJwc
+from plugins.getDekt import SjtuDekt, SjtuDektMonitor
+from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor
 from plugins.canvasSync import *
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
 from plugins.dropOut import *
-from plugins.sjmcLive import SjmcLiveStatus, FduMcLiveStatus
+from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
 from plugins.sjtuHesuan import SjtuHesuan
-from plugins.getMddStatus import MddStatus
+from plugins.getMddStatus import GetMddStatus, MonitorMddStatus
 from plugins.EE0502 import *
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -58,10 +58,12 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan(), MddStatus()],'sjtuinfo'), # 交大餐厅, 图书馆, 核酸点, 麦当劳
-    PluginGroupManager([ShowSjmcStatus(),SjmcLiveStatus(),FduMcLiveStatus()], 'sjmc'), #MC社服务
-    PluginGroupManager([SjtuDekt()], 'dekt'), # 第二课堂服务,
-    PluginGroupManager([GetJwc(), GetSjtuNews()], 'jwc'), # jwc服务, 交大新闻
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan(), GetMddStatus(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+                        PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
+    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
+                        PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
+    PluginGroupManager([GetJwc(), SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
+                        PluginGroupManager([SjtuDektMonitor()], 'dekt')], 'jwc'), 
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     # LotteryPlugin(), # 彩票 TODO
@@ -86,8 +88,8 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     Show2cyPIC(), #ShowSePIC(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(),
     ShowEE0502Comments(),
-    SjmcLiveStatus(), FduMcLiveStatus(),
-    MddStatus(),
+    GetSjmcLive(), GetFduMcLive(),
+    GetMddStatus(),
 ]
 
 helper.updatePluginList(GroupPluginList, PrivatePluginList)

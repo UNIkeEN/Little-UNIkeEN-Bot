@@ -11,46 +11,10 @@ from bilibili_api.exceptions.ApiException import ApiException
 from datetime import datetime
 import os.path
 import asyncio
-class FduMcLiveStatus(StandardPlugin):
-    monitorSemaphore = Semaphore()
-    @staticmethod
-    def dumpSjmcStatus(status: bool):
-        exactPath = 'data/fdmcLive.json'
-        with open(exactPath, 'w') as f:
-            f.write('1' if status else '0')
-    @staticmethod
-    def loadSjmcStatus()->bool:
-        exactPath = 'data/fdmcLive.json'
-        with open(exactPath, 'r') as f:
-            return f.read().startswith('1')
+class GetFduMcLive(StandardPlugin):
     def __init__(self) -> None:
         self.liveId = 24716629
         self.liveRoom = LiveRoom(self.liveId)
-        self.timer = Timer(5, self.sjmcMonitor)
-        if FduMcLiveStatus.monitorSemaphore.acquire(blocking=False):
-            self.timer.start()
-        self.exactPath = 'data/fdmcLive.json'
-        self.prevStatus = False # false: 未开播, true: 开播
-        self.sjmcQqGroup = 712514518
-        if not os.path.isfile(self.exactPath):
-            FduMcLiveStatus.dumpSjmcStatus(False)
-        else:
-            self.prevStatus = FduMcLiveStatus.loadSjmcStatus()
-    def sjmcMonitor(self):
-        # print('mctick')
-        self.timer.cancel()
-        self.timer = Timer(60,self.sjmcMonitor)
-        self.timer.start()
-        prevStatus = FduMcLiveStatus.loadSjmcStatus()
-        roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
-        currentStatus = roomInfo['live_status'] == 1
-        if currentStatus != prevStatus:
-            FduMcLiveStatus.dumpSjmcStatus(currentStatus)
-            if currentStatus and self.sjmcQqGroup in getPluginEnabledGroups('sjmc'):
-                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive.png')
-                send(self.sjmcQqGroup, '检测到基岩社B站开播，基岩社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                genLivePic(roomInfo, '基岩社直播间状态', savePath)
-                send(self.sjmcQqGroup, f'[CQ:image,file=files://{savePath},id=40000]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg == '-fdmclive'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -84,47 +48,64 @@ class FduMcLiveStatus(StandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
-class SjmcLiveStatus(StandardPlugin):
+class FduMcLiveMonitor(StandardPlugin):
     monitorSemaphore = Semaphore()
     @staticmethod
     def dumpSjmcStatus(status: bool):
-        exactPath = 'data/sjmcLive.json'
+        exactPath = 'data/fdmcLive.json'
         with open(exactPath, 'w') as f:
             f.write('1' if status else '0')
     @staticmethod
     def loadSjmcStatus()->bool:
-        exactPath = 'data/sjmcLive.json'
+        exactPath = 'data/fdmcLive.json'
         with open(exactPath, 'r') as f:
             return f.read().startswith('1')
     def __init__(self) -> None:
-        self.liveId = 25567444
+        self.liveId = 24716629
         self.liveRoom = LiveRoom(self.liveId)
         self.timer = Timer(5, self.sjmcMonitor)
-        if SjmcLiveStatus.monitorSemaphore.acquire(blocking=False):
+        if FduMcLiveMonitor.monitorSemaphore.acquire(blocking=False):
             self.timer.start()
-        self.exactPath = 'data/sjmcLive.json'
+        self.exactPath = 'data/fdmcLive.json'
         self.prevStatus = False # false: 未开播, true: 开播
-        self.sjmcQqGroup = 712514518
         if not os.path.isfile(self.exactPath):
-            SjmcLiveStatus.dumpSjmcStatus(False)
+            FduMcLiveMonitor.dumpSjmcStatus(False)
         else:
-            self.prevStatus = SjmcLiveStatus.loadSjmcStatus()
+            self.prevStatus = FduMcLiveMonitor.loadSjmcStatus()
     def sjmcMonitor(self):
         # print('mctick')
         self.timer.cancel()
         self.timer = Timer(60,self.sjmcMonitor)
         self.timer.start()
-        prevStatus = SjmcLiveStatus.loadSjmcStatus()
+        prevStatus = FduMcLiveMonitor.loadSjmcStatus()
         roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
         currentStatus = roomInfo['live_status'] == 1
         if currentStatus != prevStatus:
-            SjmcLiveStatus.dumpSjmcStatus(currentStatus)
-            if currentStatus and self.sjmcQqGroup in getPluginEnabledGroups('sjmc'):
-                send(self.sjmcQqGroup, '检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive.png')
-                genLivePic(roomInfo, 'sjmc直播间状态', savePath)
-                send(self.sjmcQqGroup, f'[CQ:image,file=files://{savePath},id=40000]')
-
+            FduMcLiveMonitor.dumpSjmcStatus(currentStatus)
+            for group in getPluginEnabledGroups('mclive'):
+                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive.png')
+                send(group, '检测到基岩社B站开播，基岩社直播地址： https://live.bilibili.com/%d'%self.liveId)
+                genLivePic(roomInfo, '基岩社直播间状态', savePath)
+                send(group, f'[CQ:image,file=files://{savePath}]')
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return "OK"
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'sjmclive',
+            'description': '广播基岩社B站直播间开播信息',
+            'commandDescription': 'None',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.3',
+            'author': 'Unicorn',
+        }
+class GetSjmcLive(StandardPlugin):
+    def __init__(self) -> None:
+        self.liveId = 25567444
+        self.liveRoom = LiveRoom(self.liveId)
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg in ['-mclive', '-sjmclive']
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -152,6 +133,59 @@ class SjmcLiveStatus(StandardPlugin):
             'name': 'sjmclive',
             'description': '交大MC社B站直播间状态',
             'commandDescription': '-mclive/-sjmclive',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.3',
+            'author': 'Unicorn',
+        }
+class SjmcLiveMonitor(StandardPlugin):
+    monitorSemaphore = Semaphore()
+    @staticmethod
+    def dumpSjmcStatus(status: bool):
+        exactPath = 'data/sjmcLive.json'
+        with open(exactPath, 'w') as f:
+            f.write('1' if status else '0')
+    @staticmethod
+    def loadSjmcStatus()->bool:
+        exactPath = 'data/sjmcLive.json'
+        with open(exactPath, 'r') as f:
+            return f.read().startswith('1')
+    def __init__(self) -> None:
+        self.liveId = 25567444
+        self.liveRoom = LiveRoom(self.liveId)
+        self.timer = Timer(5, self.sjmcMonitor)
+        if SjmcLiveMonitor.monitorSemaphore.acquire(blocking=False):
+            self.timer.start()
+        self.exactPath = 'data/sjmcLive.json'
+        self.prevStatus = False # false: 未开播, true: 开播
+        if not os.path.isfile(self.exactPath):
+            SjmcLiveMonitor.dumpSjmcStatus(False)
+        else:
+            self.prevStatus = SjmcLiveMonitor.loadSjmcStatus()
+    def sjmcMonitor(self):
+        self.timer.cancel()
+        self.timer = Timer(60,self.sjmcMonitor)
+        self.timer.start()
+        prevStatus = SjmcLiveMonitor.loadSjmcStatus()
+        roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
+        currentStatus = roomInfo['live_status'] == 1
+        if currentStatus != prevStatus:
+            SjmcLiveMonitor.dumpSjmcStatus(currentStatus)
+            for group in getPluginEnabledGroups('mclive'):
+                send(group, '检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/%d'%self.liveId)
+                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive.png')
+                genLivePic(roomInfo, 'sjmc直播间状态', savePath)
+                send(group, f'[CQ:image,file=files://{savePath}]')
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return "OK"
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'sjmclive',
+            'description': '广播交大MC社B站直播间开播信息',
+            'commandDescription': 'None',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

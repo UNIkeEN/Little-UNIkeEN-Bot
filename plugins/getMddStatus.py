@@ -9,48 +9,7 @@ from resources.api.mddApi import mddUrl, mddHeaders
 from datetime import datetime
 import os.path
 
-class MddStatus(StandardPlugin):
-    monitorSemaphore = Semaphore()
-    @staticmethod
-    def dumpMddStatus(status: bool):
-        exactPath = 'data/mdd.json'
-        with open(exactPath, 'w') as f:
-            f.write('1' if status else '0')
-    @staticmethod
-    def loadMddStatus()->bool:
-        exactPath = 'data/mdd.json'
-        with open(exactPath, 'r') as f:
-            return f.read().startswith('1')
-    def __init__(self) -> None:
-        self.timer = Timer(5, self.mddMonitor)
-        if MddStatus.monitorSemaphore.acquire(blocking=False):
-            self.timer.start()
-        self.exactPath = 'data/mdd.json'
-        self.prevStatus = False # false: 暂停营业, true: 营业
-        if not os.path.isfile(self.exactPath):
-            MddStatus.dumpMddStatus(False)
-        else:
-            self.prevStatus = MddStatus.loadMddStatus()
-    def mddMonitor(self):
-        self.timer.cancel()
-        self.timer = Timer(60,self.mddMonitor)
-        self.timer.start()
-        prevStatus = MddStatus.loadMddStatus()
-        req = getMddStatus()
-        if req == None: return
-        try:
-            currentStatus = req["data"]["onlineBusinessStatus"]
-        except KeyError as e:
-            warning('mdd api failed: {}'.format(e))
-            return
-        if currentStatus != prevStatus:
-            MddStatus.dumpMddStatus(currentStatus)
-            if currentStatus :
-                for group in getPluginEnabledGroups('sjtuinfo'):
-                    send(group, '📣交大闵行麦当劳 已▶️开放营业')
-            else:
-                for group in getPluginEnabledGroups('sjtuinfo'):
-                    send(group, '📣交大闵行麦当劳 已⏸️暂停营业')
+class GetMddStatus(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg == '-mdd'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -72,10 +31,67 @@ class MddStatus(StandardPlugin):
         
     def getPluginInfo(self) -> dict:
         return {
-            'name': 'mddstatus',
+            'name': 'GetMddStatus',
             'description': '麦当劳查询',
             'commandDescription': '-mdd',
             'usePlace': ['group', 'private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.3',
+            'author': 'Teruteru',
+        }
+class MonitorMddStatus(StandardPlugin):
+    monitorSemaphore = Semaphore()
+    @staticmethod
+    def dumpMddStatus(status: bool):
+        exactPath = 'data/mdd.json'
+        with open(exactPath, 'w') as f:
+            f.write('1' if status else '0')
+    @staticmethod
+    def loadMddStatus()->bool:
+        exactPath = 'data/mdd.json'
+        with open(exactPath, 'r') as f:
+            return f.read().startswith('1')
+    def __init__(self) -> None:
+        self.timer = Timer(5, self.mddMonitor)
+        if MonitorMddStatus.monitorSemaphore.acquire(blocking=False):
+            self.timer.start()
+        self.exactPath = 'data/mdd.json'
+        self.prevStatus = False # false: 暂停营业, true: 营业
+        if not os.path.isfile(self.exactPath):
+            MonitorMddStatus.dumpMddStatus(False)
+        else:
+            self.prevStatus = MonitorMddStatus.loadMddStatus()
+    def mddMonitor(self):
+        self.timer.cancel()
+        self.timer = Timer(60,self.mddMonitor)
+        self.timer.start()
+        prevStatus = MonitorMddStatus.loadMddStatus()
+        req = getMddStatus()
+        if req == None: return
+        try:
+            currentStatus = req["data"]["onlineBusinessStatus"]
+        except KeyError as e:
+            warning('mdd api failed: {}'.format(e))
+            return
+        if currentStatus != prevStatus:
+            MonitorMddStatus.dumpMddStatus(currentStatus)
+            if currentStatus :
+                for group in getPluginEnabledGroups('mddmonitor'):
+                    send(group, '📣交大闵行麦当劳 已▶️开放营业')
+            else:
+                for group in getPluginEnabledGroups('mddmonitor'):
+                    send(group, '📣交大闵行麦当劳 已⏸️暂停营业')
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return "OK"
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'MonitorMddStatus',
+            'description': '麦当劳状态监控',
+            'commandDescription': 'None',
+            'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
             'version': '1.0.3',

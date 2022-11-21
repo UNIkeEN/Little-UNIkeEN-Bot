@@ -1,5 +1,4 @@
-from ast import keyword
-from utils.standardPlugin import StandardPlugin, Any, Union, PluginGroupManager
+from utils.standardPlugin import StandardPlugin, Any, Union, CronStandardPlugin
 from utils.responseImage import *
 import requests
 from bs4 import BeautifulSoup as BS
@@ -141,13 +140,46 @@ def getJwc()->list:
         except BaseException as e:
             print("exception in getJwc: {}".format(e))
     return newsList
-
-class GetJwc(StandardPlugin): 
+class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:
-        self.checkTimer = Timer(20,self.updateAndCheck)
-        if GetJwc.monitorSemaphore.acquire(blocking=False):
-            self.checkTimer.start()
+        if SjtuJwcMonitor.monitorSemaphore.acquire(blocking=False):
+            self.start(20, 180)
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return False
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        return "OK"
+    def tick(self, ):
+        exact_path='data/jwc.json'
+        if not os.path.isfile(exact_path):
+            with open(exact_path, 'w') as f:
+                f.write('[]')
+        url_list:list = json.load(open(exact_path, 'r'))
+        updateFlag = len(url_list) > 0
+        for j in getJwc():
+            if j['link'] not in url_list:
+                url_list.append(j['link'])
+                if not updateFlag: continue
+                pic = DrawNoticePIC(j)
+                pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
+                for group_id in getPluginEnabledGroups('jwc'):
+                    send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
+                    send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
+        with open(exact_path, 'w') as f:
+            json.dump(url_list, f, indent=4)
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'SjtuJwcMonitor',
+            'description': '教务通知更新广播',
+            'commandDescription': 'None',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.4',
+            'author': 'Unicorn',
+        }
+
+class GetJwc(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg=='-jwc'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -172,27 +204,6 @@ class GetJwc(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-    def updateAndCheck(self, ):
-        self.checkTimer.cancel()
-        self.checkTimer = Timer(180,self.updateAndCheck)
-        self.checkTimer.start()
-        exact_path='data/jwc.json'
-        if not os.path.isfile(exact_path):
-            with open(exact_path, 'w') as f:
-                f.write('[]')
-        url_list:list = json.load(open(exact_path, 'r'))
-        updateFlag = len(url_list) > 0
-        for j in getJwc():
-            if j['link'] not in url_list:
-                url_list.append(j['link'])
-                if not updateFlag: continue
-                pic = DrawNoticePIC(j)
-                pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
-                for group_id in getPluginEnabledGroups(self.groupName):
-                    send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
-                    send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
-        with open(exact_path, 'w') as f:
-            json.dump(url_list, f, indent=4)
 
 class GetSjtuNews(StandardPlugin): 
     monitorSemaphore = Semaphore()

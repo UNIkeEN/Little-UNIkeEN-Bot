@@ -114,7 +114,8 @@ def draw_sjmc_info(dat):
             icon_url = res['favicon']
             if icon_url[:4]=="data":
                 img_avatar = Image.open(decode_image(icon_url)).resize((80,80))
-                img.paste(img_avatar, (60, fy))
+                if img_avatar != None:
+                    img.paste(img_avatar, (60, fy))
             else:
                 url_avatar = requests.get(icon_url)
                 if url_avatar.status_code != requests.codes.ok:
@@ -175,7 +176,7 @@ def draw_sjmc_info(dat):
     img.save(save_path)
     return save_path
 
-def decode_image(src):
+def decode_image(src)->Union[None, BytesIO]:
     """
     解码图片
     :param src: 图片编码
@@ -195,6 +196,6 @@ def decode_image(src):
         ext = result.groupdict().get("ext")
         data = result.groupdict().get("data")
     else:
-        raise Exception("base64 image decode error")
+        return None
     # 2、base64解码
     return BytesIO(base64.urlsafe_b64decode(data))
