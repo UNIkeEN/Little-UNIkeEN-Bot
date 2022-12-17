@@ -95,6 +95,9 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
         mydb.autocommit = True
         mycursor = mydb.cursor()
         mycursor.execute("""
+        create database if not exists `BOT_DATA`
+        """)
+        mycursor.execute("""
         create table if not exists `BOT_DATA`.`messageRecord`(
             `message_id` int not null,
             `message_seq` bigint not null,
