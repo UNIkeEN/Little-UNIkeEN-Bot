@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 # 资源/临时路径
 FONTS_PATH = 'resources/fonts'
-SAVE_TMP_PATH = 'tmp'
+SAVE_TMP_PATH = 'data/tmp'
 
 # 字体预定义常量
 FONT_SYHT_M32 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 32)

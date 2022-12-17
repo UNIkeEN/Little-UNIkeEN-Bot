@@ -41,6 +41,8 @@ class SjtuHesuan(StandardPlugin):
             return PALETTE_GREY, PALETTE_GREY
         else:
             for openTime in openTime.split(','):
+                if openTime == '暂不开放':
+                    return PALETTE_GREY, PALETTE_GREY
                 startTime, endTime = parseTime(openTime, nowTime)
                 warningTime = endTime - timedelta(minutes=20)
                 if startTime <= nowTime and nowTime < warningTime:

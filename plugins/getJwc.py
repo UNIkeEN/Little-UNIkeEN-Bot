@@ -1,4 +1,5 @@
-from utils.standardPlugin import StandardPlugin, Any, Union, CronStandardPlugin
+from utils.standardPlugin import StandardPlugin, CronStandardPlugin
+from typing import Set, Union, Any, List
 from utils.responseImage import *
 import requests
 from bs4 import BeautifulSoup as BS
@@ -162,9 +163,15 @@ class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
                 if not updateFlag: continue
                 pic = DrawNoticePIC(j)
                 pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
+                broadcastWord = '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link']
                 for group_id in getPluginEnabledGroups('jwc'):
-                    send(group_id, '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link'])
+                    send(group_id, broadcastWord)
                     send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
+                # time.sleep(3)
+                # for user_id in SubscribeJwc.getJwcSubscribers():
+                #     send(user_id, broadcastWord, 'private')
+                #     time.sleep(0.5)
+            
         with open(exact_path, 'w') as f:
             json.dump(url_list, f, indent=4)
     def getPluginInfo(self, )->Any:
@@ -204,7 +211,76 @@ class GetJwc(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-
+class SubscribeJwc(StandardPlugin):
+    initGuard = Semaphore()
+    # https://docs.python.org/3/faq/library.html#what-kinds-of-global-value-mutation-are-thread-safe
+    subscribers = set()
+    def __init__(self) -> None:
+        if SubscribeJwc.initGuard.acquire(blocking=False):
+            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+            mydb.autocommit = True
+            mycursor = mydb.cursor()
+            mycursor.execute("""
+            create table if not exists `BOT_DATA`.`jwcSubscriber`(
+                `user_id` bigint not null,
+                `subscribe_time` timestamp not null,
+                primary key(`user_id`)
+            );""")
+            mycursor.execute("select `user_id` from `BOT_DATA`.`jwcSubscriber`")
+            for user_id, in list(mycursor):
+                SubscribeJwc.subscribers.add(user_id)
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return msg in ['订阅教务处', '取消订阅教务处']
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        subscribe = msg == '订阅教务处'
+        user_id = data['user_id']
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+        mydb.autocommit = True
+        mycursor = mydb.cursor()
+        try:
+            if subscribe:
+                if user_id in SubscribeJwc.subscribers:
+                    send(target,"[CQ:reply,id=%d]订阅失败，您已订阅"%data['message_id'], data['message_type'])
+                else:
+                    SubscribeJwc.subscribers.add(user_id)
+                    mycursor.execute("""
+                    insert ignore into `BOT_DATA`.`jwcSubscriber` (`user_id`, `subscribe_time`)
+                    values (%d, from_unixtime(%d));"""%(
+                        user_id,
+                        data['time']
+                    ))
+                    send(target, "[CQ:reply,id=%d]订阅成功，注意添加bot好友接收通知信息"%data['message_id'], data['message_type'])
+            else:
+                if user_id not in SubscribeJwc.subscribers:
+                    send(target,"[CQ:reply,id=%d]取消订阅失败，您尚未订阅"%data['message_id'], data['message_type'])
+                else:
+                    SubscribeJwc.subscribers.remove(user_id)
+                    mycursor.execute("""
+                    delete from `BOT_DATA`.`jwcSubscriber` where `user_id` = %d
+                    """%data['user_id'])
+                    send(target,"[CQ:reply,id=%d]取消订阅成功"%data['message_id'], data['message_type'])
+        except mysql.connector.Error as e:
+            warning('mysql exception in SubscribeJwc: {}'.format(e))
+            send(target,"[CQ:reply,id=%d]操作失败"%data['message_id'], data['message_type'])
+        except BaseException as e:
+            warning('base exception in SubscribeJwc: {}'.format(e))
+            send(target,"[CQ:reply,id=%d]操作失败"%data['message_id'], data['message_type'])
+        return "OK"
+    @staticmethod
+    def getJwcSubscribers()->Set[int]:
+        return SubscribeJwc.subscribers
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'SubscribeJwc',
+            'description': '教务处订阅',
+            'commandDescription': '订阅教务处/取消订阅教务处',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': ['jwcSubscriber'],
+            'version': '1.0.3',
+            'author': 'Unicorn',
+        }
 class GetSjtuNews(StandardPlugin): 
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:

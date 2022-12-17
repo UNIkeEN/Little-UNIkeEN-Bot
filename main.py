@@ -5,37 +5,53 @@ from enum import IntEnum
 
 from utils.basicEvent import send
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, PluginGroupManager
+from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin
 
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
-from plugins.greetings import *
-from plugins.checkCoins import *
-from plugins.superEmoji import *
-from plugins.news import *
-from plugins.signIn import *
+from plugins.greetings import MorningGreet, NightGreet
+from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
+from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
+from plugins.news import ShowNews
+from plugins.signIn import SignIn
 from plugins.stocks import *
-from plugins.jile import *
-from plugins.sjtuInfo import *
-from plugins.sjmcStatus import *
-from plugins.genshin import *
-from plugins.roulette import *
-# from plugins.lottery import *
-from plugins.show2cyPic import *
+from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
+from plugins.sjmcStatus_v2 import ShowSjmcStatus
+from plugins.genshin import GenshinCookieBind, GenshinDailyNote
+from plugins.roulette import RoulettePlugin
+from plugins.lottery import LotteryPlugin
+from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
-from plugins.chatWithNLP import *
-from plugins.chatWithAnswerbook import *
+try:
+    from plugins.chatWithNLP import ChatWithNLP
+except:
+    ChatWithNLP = EmptyPlugin
+from plugins.chatWithAnswerbook import ChatWithAnswerbook
 from plugins.getDekt import SjtuDekt, SjtuDektMonitor
-from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor
-from plugins.canvasSync import *
-from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission
+from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
+from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
+from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
-from plugins.dropOut import *
+from plugins.dropOut import DropOut
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
 from plugins.sjtuHesuan import SjtuHesuan
-from plugins.getMddStatus import GetMddStatus, MonitorMddStatus
-from plugins.EE0502 import *
+
+#### not published plugins ####
+try:
+    from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
+except:
+    Chai_Jile = EmptyPlugin
+    Yuan_Jile = EmptyPlugin
+try:
+    from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
+except:
+    GetMddStatus, MonitorMddStatus = EmptyPlugin, EmptyPlugin
+try:
+    from plugins.notPublished.EE0502 import ShowEE0502Comments
+except:
+    ShowEE0502Comments = EmptyPlugin
+###### end not published plugins
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
@@ -49,7 +65,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder,
     helper,ShowStatus(),ServerMonitor(), # 帮助
     GetPermission(), 
-    PluginGroupManager([AddPermission(), DelPermission(), ShowPermission()], 'permission'), # 权限
+    PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
@@ -58,15 +74,16 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan(), GetMddStatus(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
-    PluginGroupManager([GetJwc(), SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
+    PluginGroupManager([GetJwc(), #SubscribeJwc() ,
+                        SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
                         PluginGroupManager([SjtuDektMonitor()], 'dekt')], 'jwc'), 
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
-    # LotteryPlugin(), # 彩票 TODO
+    PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
     PluginGroupManager([GoBangPlugin()],'gobang'),
     PluginGroupManager([Show2cyPIC()], 'anime'), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
@@ -82,14 +99,16 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MorningGreet(), NightGreet(),
     SignIn(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(),GetSjtuNews(),
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), #SubscribeJwc(), 
+    GetSjtuNews(),
     GenshinCookieBind(), GenshinDailyNote(),
-    # LotteryPlugin(),
+    LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(),
     ShowEE0502Comments(),
     GetSjmcLive(), GetFduMcLive(),
-    GetMddStatus(),
+    GetMddStatus(),#SubscribeMdd(),
+    SjtuHesuan(),
 ]
 
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
@@ -174,8 +193,6 @@ def post_data():
         set_friend_add_request(data['flag'], True)
     return "OK"
 def initialize():
-    if not os.path.isdir('./data/tmp'):
-        os.makedirs('./data/tmp')
     createGlobalConfig()
     createFaqDb()
     for group in get_group_list():

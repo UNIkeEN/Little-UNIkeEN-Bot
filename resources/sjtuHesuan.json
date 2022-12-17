@@ -1,158 +1,4 @@
 [{
-    "title": "X13",
-    "name": "X13东侧",
-    "number": "3",
-    "point": {
-        "lng": 121.439498,
-        "lat": 31.026311
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "X28",
-    "name": "X28东侧",
-    "number": "2",
-    "point": {
-        "lng": 121.438537,
-        "lat": 31.030709
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "东一区广场",
-    "name": "东一区广场",
-    "number": "4",
-    "point": {
-        "lng": 121.443302,
-        "lat": 31.027507
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -25
-}, {
-    "title": "D19",
-    "name": "D19南侧",
-    "number": "2",
-    "point": {
-        "lng": 121.441546,
-        "lat": 31.030168
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "D25",
-    "name": "D25东侧",
-    "number": "2",
-    "point": {
-        "lng": 121.440441,
-        "lat": 31.033386
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "D28",
-    "name": "D28西侧",
-    "number": "2",
-    "point": {
-        "lng": 121.43926,
-        "lat": 31.034891
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "D35",
-    "name": "D35北侧",
-    "number": "2",
-    "point": {
-        "lng": 121.438402,
-        "lat": 31.036627
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "西三区广场",
-    "name": "西三区广场",
-    "number": "2",
-    "point": {
-        "lng": 121.435644,
-        "lat": 31.032168
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -25
-}, {
-    "title": "X56",
-    "name": "X56西侧",
-    "number": "2",
-    "point": {
-        "lng": 121.435546,
-        "lat": 31.034423
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "X86",
-    "name": "X86北侧",
-    "number": "2",
-    "point": {
-        "lng": 121.433134,
-        "lat": 31.03308
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
-    "title": "X87",
-    "name": "X87西侧",
-    "number": "2",
-    "point": {
-        "lng": 121.434018,
-        "lat": 31.033781
-    },
-    "time": "11:30-13:30",
-    "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -3
-}, {
     "title": "图信大楼",
     "name": "图信大楼",
     "number": "2",
@@ -160,7 +6,7 @@
         "lng": 121.442957,
         "lat": 31.031738
     },
-    "time": "7:30-14:30",
+    "time": "9:00-10:30,12:30-15:30,17:30-20:00",
     "timeTitle": "每天",
     "isOpen": true,
     "isExpand": false,
@@ -174,7 +20,7 @@
         "lng": 121.4365258,
         "lat": 31.027971
     },
-    "time": "7:30-14:30",
+    "time": "暂不开放",
     "timeTitle": "每天",
     "isOpen": true,
     "isExpand": false,
@@ -188,36 +34,8 @@
         "lng": 121.431557,
         "lat": 31.032427
     },
-    "time": "7:30-10:30",
+    "time": "9:00-10:30,12:30-15:30,17:30-20:00",
     "timeTitle": "每天",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "材料学院",
-    "name": "材料学院A楼连廊",
-    "number": "3",
-    "point": {
-        "lng": 121.433814,
-        "lat": 31.029199
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "化工学院",
-    "name": "化学A楼门厅",
-    "number": "2",
-    "point": {
-        "lng": 121.435532,
-        "lat": 31.029816
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
     "isOpen": true,
     "isExpand": false,
     "width": "155",
@@ -230,94 +48,10 @@
         "lng": 121.440077,
         "lat": 31.024675
     },
-    "time": "12:00-16:30,17:30-22:00",
+    "time": "9:00-11:30,12:30-16:30,17:30-21:00",
     "timeTitle": "每天",
     "isOpen": true,
     "isExpand": false,
     "width": "155",
     "left": -16
-}, {
-    "title": "农生学院",
-    "name": "农生A楼门厅",
-    "number": "2",
-    "point": {
-        "lng": 121.44801,
-        "lat": 31.038855
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "船建学院",
-    "name": "船建木兰楼门厅",
-    "number": "3",
-    "point": {
-        "lng": 121.451755,
-        "lat": 31.037343
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "生命学院",
-    "name": "生命学院3号楼广场",
-    "number": "2",
-    "point": {
-        "lng": 121.449891,
-        "lat": 31.036492
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "新行政楼",
-    "name": "新行政楼北侧停车场",
-    "number": "1",
-    "point": {
-        "lng": 121.446761,
-        "lat": 31.033452
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "电信学院",
-    "name": "电信学院2号楼连廊",
-    "number": "5",
-    "point": {
-        "lng": 121.448032,
-        "lat": 31.032175
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
-}, {
-    "title": "机动学院",
-    "name": "机动学院A楼门厅",
-    "number": "4",
-    "point": {
-        "lng": 121.453898,
-        "lat": 31.03223
-    },
-    "time": "8:00-10:00",
-    "timeTitle": "工作日",
-    "isOpen": true,
-    "isExpand": false,
-    "width": "155",
-    "left": -20
 }]

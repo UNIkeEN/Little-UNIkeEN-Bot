@@ -168,17 +168,23 @@ def NewActlistPic():
             act_txt = activity['activityName']
         draw.text((l+150, h+30), act_txt, fill=(0,0,0,255), font = font_syhtmed_24)
         draw.text((l+150, h+80), '活动时间：'+Timestamp2time(activity['activeStartTime'])+' ~ '+Timestamp2time(activity['activeEndTime']), fill=(115,115,115,255), font = font_syhtmed_18)
-        clr = 'o' if nowtime < activity['enrollStartTime'] else 'g'
-        # print(nowtime,' ' , activity['enrollStartTime'])
-        clr = 'h' if nowtime > activity['enrollEndTime'] else clr
-        flag_txt = '报名未开始' if clr=='o' else '报名进行中'
-        flag_txt = '报名已结束' if clr=='h' else flag_txt
-        enroll_time = '报名时间：'+Timestamp2time(activity['enrollStartTime'])+' ~ '+Timestamp2time(activity['enrollEndTime'])
-        draw.text((l+150, h+120), enroll_time , fill=(115,115,115,255), font = font_syhtmed_18)
-        txt_size = draw.textsize(enroll_time, font= font_syhtmed_18)
-        txt_size_2 = draw.textsize(flag_txt, font= font_syhtmed_18)
-        img = draw_rounded_rectangle(img, x1=l+160+txt_size[0], y1=h+110, x2=l+180+txt_size[0]+txt_size_2[0] ,y2=h+txt_size_2[1]+130, fill=BACK_CLR[clr])
-        draw.text((l+170+txt_size[0], h+120), flag_txt, fill=FONT_CLR[clr], font=font_syhtmed_18)
+        try:
+            clr = 'o' if nowtime < activity['enrollStartTime'] else 'g'
+            # print(nowtime,' ' , activity['enrollStartTime'])
+            clr = 'h' if nowtime > activity['enrollEndTime'] else clr
+            flag_txt = '报名未开始' if clr=='o' else '报名进行中'
+            flag_txt = '报名已结束' if clr=='h' else flag_txt
+            enroll_time = '报名时间：'+Timestamp2time(activity['enrollStartTime'])+' ~ '+Timestamp2time(activity['enrollEndTime'])
+            draw.text((l+150, h+120), enroll_time , fill=(115,115,115,255), font = font_syhtmed_18)
+            txt_size = draw.textsize(enroll_time, font= font_syhtmed_18)
+            txt_size_2 = draw.textsize(flag_txt, font= font_syhtmed_18)
+            img = draw_rounded_rectangle(img, x1=l+160+txt_size[0], y1=h+110, x2=l+180+txt_size[0]+txt_size_2[0] ,y2=h+txt_size_2[1]+130, fill=BACK_CLR[clr])
+            draw.text((l+170+txt_size[0], h+120), flag_txt, fill=FONT_CLR[clr], font=font_syhtmed_18)
+        except:
+            enroll_time = '报名时间未知（API返回空值）'
+            draw.text((l+150, h+120), enroll_time , fill=(115,115,115,255), font = font_syhtmed_18)
+            pass
+        
         if activity['recruitQty']==0:
             activity['recruitQty']="不限"
         draw.text((l+150, h+160), '招募人数：'+str(activity['recruitQty'])+'  |  组织单位：'+activity['sponsor'][:21], fill=(115,115,115,255), font = font_syhtmed_18)

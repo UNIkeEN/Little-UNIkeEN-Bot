@@ -7,6 +7,8 @@ import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector
 from pymysql.converters import escape_string
+from fuzzywuzzy import process as fuzzy_process
+
 FAQ_DATA_PATH="data"
 def createFaqTable(tableName: str):
     # warning: tableName may danger
@@ -60,6 +62,16 @@ class HelpFAQ(StandardPlugin):
             'author': 'Unicorn',
         }
 def get_answer(group_id: int, key: str)->Tuple[bool, str, str]:
+    """获取问题答案
+    @group_id: 群号
+    @key:      问题
+
+    @return:(
+        bool: 是否存在问题
+        str:  该问题的回答
+        str:  该问题的tag
+    )
+    """
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mycursor = mydb.cursor()
     mycursor.execute("""
@@ -77,6 +89,12 @@ def get_answer(group_id: int, key: str)->Tuple[bool, str, str]:
     else:
         return True, answer[0][0], answer[0][1]
 def rollback_answer(group_id:int, question:str)->bool:
+    """问题回滚
+    @group_id: 群号
+    @question: 问题
+
+    @return: bool: 是否回滚成功
+    """
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -111,6 +129,16 @@ def rollback_answer(group_id:int, question:str)->bool:
         return False
     return True
 def update_answer(group_id:int, question:str, answer:str, data:Any, tag:str = '',delete:bool= False)->bool:
+    """更新回答，包括增加原本不存在的key
+    @group_id: 群号
+    @question: 问题
+    @answer:   回答
+    @data:     go-cqhttp的data
+    @tag:      问题的tag
+    @deleted:  问题是否被删除
+
+    @return:   是否更新成功
+    """
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -163,6 +191,15 @@ class AskFAQ(StandardPlugin):
             ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, question)
         else:
             ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
+            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+            mycursor = mydb.cursor()
+            mycursor.execute("""select `question` from `BOT_FAQ_DATA`.`%d`
+            where latest = true and deleted = false
+            """%group_id)
+            questions = [q[0] for q in list(mycursor)]
+            fuzzy_ans = [fza[0] for fza in fuzzy_process.extract(question, questions, limit=5) if fza[1]>30]
+            if len(fuzzy_ans)>0:
+                ans += "，猜你可能想问：\n{}".format('、'.join(fuzzy_ans))
         send(group_id, ans)
 
     def getPluginInfo(self)->Any:
@@ -219,7 +256,13 @@ class MaintainFAQ(StandardPlugin):
         mydb.autocommit = True
         mycursor = mydb.cursor()
         groupId = data['group_id']
-        if cmd == '' or cmd == '-1':
+        if cmd == '':
+            mycursor.execute("""select `question` from `BOT_FAQ_DATA`.`%d`
+            where latest = true and deleted = false
+            """%groupId)
+            questions = [q[0] for q in list(mycursor)]
+            send(groupId, '问题列表：\n{}'.format('、'.join(questions)))
+        elif cmd == '-1':
             mycursor.execute("""select `question` from `BOT_FAQ_DATA`.`%d`
             where latest = true and deleted = false
             """%groupId)
@@ -436,12 +479,14 @@ def drawQuestionCardByPinyin(questions: List[str], group_id: int)->str:
     helpCards.generateImage(savePath)
     return savePath
 def drawQuestionCardByTag(questions:Dict[str, List[str]], group_id: int)->str:
-    """
+    """根据tag来归类问题并且画图
     @questions: {
         'tag0': [question00, question01, ...],
         'tag1': [question10, question11, ...],
     }
     @group_id:  群号
+
+    @return:    画出来的图的存储位置
     """
     helpCards = ResponseImage(
         title = 'FAQ 问题列表', 
@@ -458,10 +503,16 @@ def drawQuestionCardByTag(questions:Dict[str, List[str]], group_id: int)->str:
         cardList.append(('body', "、".join(qs)))
         helpCards.addCard(ResponseImage.RichContentCard(
             raw_content=cardList, titleFontColor=PALETTE_CYAN))
-    savePath = os.path.join(SAVE_TMP_PATH, '%d-faq.png'%group_id)
+    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, '%d-faq.png'%group_id)
     helpCards.generateImage(savePath)
     return savePath
 def draw_answer_history(group_id:int, question:str)->str:
+    """绘制问题编辑历史
+    @group_id: 群号
+    @question: 问题
+
+    @return:   问题编辑历史图片的保存位置（绝对路径）
+    """
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -509,12 +560,13 @@ def draw_answer_history(group_id:int, question:str)->str:
 def draw_help_pic(group_id:int)->str:
     """绘制faq帮助
     @group_id:  群号
-    @return:    图片存储路径
+    @return:    图片存储路径（绝对路径）
     """
     helpWords = (
         "查询关键字： 'q <key>' / '问 <key>'\n"
-        "问答库按拼音排序： 'faq (show|ls)' / 'faq (show|ls) -1'\n"
-        "问答库按分组排序： 'faq (show|ls) -2'\n"
+        "问题列表（纯文字）： 'faq (show|ls)\n"
+        "问题列表按拼音排序： 'faq (show|ls) -1'\n"
+        "问题列表按tag排序： 'faq (show|ls) -2'\n"
         "新建问题： 'faq (new|add) <key> (<original ans>)'\n"
         "更改答案： 'faq edit <key> <new ans>'\n"
         "复制问题： 'faq cp <key> <new key>'\n"

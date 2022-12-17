@@ -19,7 +19,7 @@ class ShowSjmcStatus(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         send(target, '正在获取sjmc状态...', data['message_type'])
         try:
-            imgPath = draw_sjmc_info(aio_get_sjmc_info())
+            imgPath = draw_sjmc_info(aio_get_sjmc_info_v2())
             imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
             send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
         except BaseException as e:
@@ -37,6 +37,25 @@ class ShowSjmcStatus(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+def aio_get_sjmc_info_v2()->Union[None, List]:
+    baseUrl = 'https://mc.sjtu.cn/custom/serverlist'
+    async def get_page(i, url):
+        async with aiohttp.request('GET', url) as req:
+            status = await req.json()
+            return i, status
+    req = requests.get(baseUrl)
+    if req.status_code != requests.codes.ok:
+        return None
+    try:
+        jobs = [get_page(i, baseUrl+'?query='+server['ip']) for i, server in enumerate(req.json())]
+        result = asyncio.run(asyncio.wait(jobs))
+        result = [r.result() for r in result[0]]
+        result = sorted(result, key=lambda x: x[0])
+        result = [r[1] for r in result]
+        return result
+    except BaseException as e:
+        warning("mc api v2 failed")
+        return None
 def aio_get_sjmc_info():
     async def get_page(i):
         url=f"https://mc.sjtu.cn/wp-admin/admin-ajax.php?_ajax_nonce=0e441f8c8a&action=fetch_mcserver_status&i={i}"
@@ -68,14 +87,14 @@ def get_sjmc_info():
         except requests.JSONDecodeError as e:
             warning("sjmc json decode error: {}".format(e))
         except requests.Timeout as e:
-            print("connection time out")
+            warning("connection time out in sjmc status")
         except KeyError as e:
             warning("key error in sjmc: {}".format(e))
         except BaseException as e:
             warning("sjmc basic exception: {}".format(e))
     return dat
 def draw_sjmc_info(dat):
-    j = sum([res['online'] and res['players']['online']!=0 for res in dat])
+    j = sum([res['players']['online']!=0 for res in dat])
     j1 = 0
     FONTS_PATH = 'resources/fonts'
     white, grey, green, red = (255,255,255,255),(128,128,128,255),(0,255,33,255),(255,85,85,255)
@@ -112,7 +131,9 @@ def draw_sjmc_info(dat):
         # draw icon
         try:
             icon_url = res['favicon']
-            if icon_url[:4]=="data":
+            if icon_url == None:
+                pass
+            elif icon_url[:4]=="data":
                 img_avatar = Image.open(decode_image(icon_url)).resize((80,80))
                 if img_avatar != None:
                     img.paste(img_avatar, (60, fy))
@@ -128,15 +149,16 @@ def draw_sjmc_info(dat):
         except BaseException as e:
             warning("base exception in sjmc draw icon: {}".format(e))
 
-        new_title=""
-        m=0
-        while True:
-            if title[m]=='§':
-                m+=2
-            new_title+=title[m]
-            m+=1
-            if m>=len(title):
-                break
+        # new_title=""
+        # m=0
+        # while True:
+        #     if title[m]=='§':
+        #         m+=2
+        #     new_title+=title[m]
+        #     m+=1
+        #     if m>=len(title):
+        #         break
+        new_title = title
         if res['online']:
             res['hostname'] = res['hostname'].replace('.',' . ')
         draw.text((160, fy), new_title, fill=white, font=font_mc_l)

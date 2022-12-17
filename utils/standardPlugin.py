@@ -2,7 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Union, Tuple, Any, List
 from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig, getGroupAdmins
 from threading import Timer, Semaphore
+import re
+
 class StandardPlugin(ABC):
+    """接收‘正常私聊消息或群消息’的接口"""
     @abstractmethod
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         """
@@ -41,12 +44,35 @@ class StandardPlugin(ABC):
             }
         """
         raise NotImplementedError
+
+class EmptyPlugin(StandardPlugin):
+    """空插件"""
+    def __init__(self, *args, **kwargs) -> None:
+        return
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return None
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'EmptyPlugin',
+            'description': '空插件',
+            'commandDescription': '',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': False,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
 class RecallMessageStandardPlugin(ABC):
+    """接收‘撤回类型’消息的接口"""
     @abstractmethod
     def recallMessage(self, data:Any)->Union[str, None]:
         raise NotImplementedError
 
 class GroupUploadStandardPlugin(ABC):
+    """接收‘上传文件’消息的接口"""
     @abstractmethod
     def uploadFile(self, data)->Union[str, None]:
         raise NotImplementedError
@@ -69,6 +95,7 @@ class CronStandardPlugin(ABC):
         self.timer = Timer(startTime, self._tick)
         self.intervalTime = intervalTime
         self.timer.start()
+
 class PluginGroupManager(StandardPlugin):
     def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
         self.plugins = plugins
@@ -77,6 +104,8 @@ class PluginGroupManager(StandardPlugin):
         self.enabledDict = readGlobalConfig(None, groupName+'.enable')
         self.defaultEnabled = False
         self.groupInfo = {}
+        self.onPattern = re.compile(r'^\-grpcfg\s+enable\s+(%s|\*)$'%self.groupName)
+        self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
         self._checkGroupInfo()
 
     def _checkGroupInfo(self):
@@ -103,10 +132,10 @@ class PluginGroupManager(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any)->bool:
         userId = data['user_id']
         groupId = data['group_id']
-        if msg == '-grpcfg enable %s'%self.groupName and userId in getGroupAdmins(groupId):
+        if self.onPattern.match(msg) != None and userId in getGroupAdmins(groupId):
             self.readyPlugin = 'enable'
             return True
-        if msg == '-grpcfg disable %s'%self.groupName and userId in getGroupAdmins(groupId):
+        if self.offPattern.match(msg) != None and userId in getGroupAdmins(groupId):
             self.readyPlugin = 'disable'
             return True
         if not self.queryEnabled(groupId):
@@ -124,6 +153,9 @@ class PluginGroupManager(StandardPlugin):
             enabled = self.readyPlugin == 'enable'
             self.readyPlugin = None
             groupId = data["group_id"]
+            if msg[-1] == '*':
+                self.recursiveSetEnabled(groupId, enabled)
+                return None
             if enabled:
                 self.setEnabled(groupId, enabled)
             else:

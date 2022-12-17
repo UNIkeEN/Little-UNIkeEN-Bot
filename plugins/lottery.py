@@ -13,16 +13,15 @@ from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
 from utils.accountOperation import get_user_coins, update_user_coins
 
-CMD_LOTTERY=['购买彩票','买彩票','彩票帮助']
-PRIZE_NUM=[0,10,200,1200]
-PRICE_NUM=30
-HELP_LOTTERY=(f"""彩票帮助
-彩票{PRICE_NUM}金币/张
-购买彩票请发送 '买彩票 数字'
-数字部分需为3个1-10之间的不重复数字
-系统会自动按从小到大排列
-开奖时按位置匹配，按所中个数1-3分别发放{PRIZE_NUM[1:]}金币奖金
-21时开奖，一名用户在一个周期内可以重复购买""")
+CMD_LOTTERY=['祈愿','祈愿帮助']
+PRIZE_NUM=[0,30,600,5000]
+PRICE_NUM=100
+HELP_LOTTERY=(f"""【祈愿帮助】
+祈愿 {PRICE_NUM}💰/次
+请发送 '祈愿 数字'，数字部分需为3个1-10之间的不重复数字
+系统会自动按从小到大排列并按位置匹配，
+21时，神明将默念三个数字，数字有对应者将得到神明的认可，
+按所中个数1-3分别赠予{PRIZE_NUM[1:]}💰赐礼""")
 
 class _lottery():
     monitorSemaphore = Semaphore()
@@ -65,8 +64,8 @@ class _lottery():
             print("[LOG] Insert Lottery: Done!")
         except mysql.connector.errors.DatabaseError as e: 
             print(e)
-        update_user_coins(qq,-PRICE_NUM, '购买彩票')
-        return (f"购买成功！扣款【{PRICE_NUM}】金币，剩余金币：【{get_user_coins(qq)}】")
+        update_user_coins(qq,-PRICE_NUM, '祈愿')
+        return (f"祈愿成功！花费【{PRICE_NUM}】💰，剩余【{get_user_coins(qq)}】💰")
 
     def drawing(self): # 判断时间并开奖
         #global auto_timer
@@ -79,7 +78,7 @@ class _lottery():
         if h_m in ['20:50']:
             for group_id in APPLY_GROUP_ID:
                 if group_id in getPluginEnabledGroups('lottery'):
-                    send(group_id, '🌈🎫本轮彩票还有10分钟开奖~\n - 关于玩法，请发送【彩票帮助】')
+                    send(group_id, '🌈🎫本轮祈愿还有10分钟公布~\n - 关于玩法，请发送【祈愿帮助】')
         if h_m in ['21:00']:
         #if True:
             key_list=[]
@@ -106,7 +105,7 @@ class _lottery():
                 record['prize']=num_in
                 if num_in>0:
                     win_list.append(record)
-                    update_user_coins(record['qq'], PRIZE_NUM[num_in], '彩票中奖')
+                    update_user_coins(record['qq'], PRIZE_NUM[num_in], '祈愿成真')
             mycursor.execute("TRUNCATE TABLE BOT_DATA.lotteries;")
             #mydb.commit()
             win_list = sorted(win_list,key=lambda x:x['prize'],reverse=True)
@@ -128,10 +127,10 @@ class _lottery():
         img = Image.new('RGBA', (width, height), (244, 149 ,4, 255))
         draw = ImageDraw.Draw(img)
         draw.rectangle((0, 120, width, height), fill=(255, 255, 255, 255))
-        draw.text((width-260,40), "三色彩", fill=(255,255,255,255), font=font_hywh_85w)
+        draw.text((width-230,40), "祈愿", fill=(255,255,255,255), font=font_hywh_85w)
         draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
-        txt_size = draw.textsize('三色彩 - 开奖结果', font=font_hywh_85w)
-        draw.text(((width-txt_size[0])/2,180), "三色彩 - 开奖结果", fill=(0,0,0,255), font=font_hywh_85w)
+        txt_size = draw.textsize('祈愿 - 开奖结果', font=font_hywh_85w)
+        draw.text(((width-txt_size[0])/2,180), "祈愿 - 开奖结果", fill=(0,0,0,255), font=font_hywh_85w)
         rec_width=140
         rec_height=90
         len_win = len(win_list)
@@ -156,18 +155,21 @@ class _lottery():
             draw.text((width-150, 260+150*(i+1), width, height), f"{TXT_CLASS[win_list[i]['prize']]}等奖", fill=(135,135,135,255), font=font_hywh_85w_s)
             draw.text((width-150, 260+150*(i+1)+40, width, height), f"金币+{PRIZE_NUM[win_list[i]['prize']]}", fill=(135,135,135,255), font=font_hywh_85w_s)
         if len_win==0:
-            txt_size = draw.textsize('本期彩票无人中奖', font=font_hywh_85w)
-            draw.text(((width-txt_size[0])/2,390), "本期群内无人中奖", fill=(145,145,145,255), font=font_hywh_85w)
+            txt_size = draw.textsize('本期祈愿，没有人得到了神明的认可', font=font_hywh_85w)
+            draw.text(((width-txt_size[0])/2,390), "本期祈愿，没有人得到了神明的认可", fill=(145,145,145,255), font=font_hywh_85w)
 
-        draw.text((30,height-48),'发送[彩票帮助]，查询如何使用本功能', fill=(175,175,175,255), font=font_syht_m)
+        draw.text((30,height-48),'发送[祈愿帮助]，查询如何使用本功能', fill=(175,175,175,255), font=font_syht_m)
         save_path=os.path.join(SAVE_TMP_PATH,'lot_draw.png')
         img.save(save_path)
         return save_path
 
 
 class LotteryPlugin(StandardPlugin):
+    warningSemaphore = Semaphore()
     def __init__(self,):
-        print('注意，开启LotteryPlugin插件有被腾讯封号的风险')
+        if LotteryPlugin.warningSemaphore.acquire(blocking=False):
+            # warning once
+            print('注意，开启LotteryPlugin插件有被腾讯封号的风险')
         self.lottery = _lottery()
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return startswith_in(msg,CMD_LOTTERY)
@@ -176,7 +178,7 @@ class LotteryPlugin(StandardPlugin):
         if data['message_type']=='group' and data['group_id'] not in getPluginEnabledGroups('lottery'):
             send(target, TXT_PERMISSION_DENIED)
             return "OK"
-        if msg=='彩票帮助':
+        if msg=='祈愿帮助':
             send(target, HELP_LOTTERY, data['message_type'])
         else:
             send(target, self.lottery.buyLottery(data['user_id'],msg), data['message_type'])
@@ -184,8 +186,8 @@ class LotteryPlugin(StandardPlugin):
     def getPluginInfo(self, )->Any:
         return {
             'name': 'LotteryPlugin',
-            'description': '彩票',
-            'commandDescription': '购买彩票/买彩票',
+            'description': '祈愿',
+            'commandDescription': '祈愿/祈愿帮助',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

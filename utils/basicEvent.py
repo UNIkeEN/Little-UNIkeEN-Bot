@@ -9,7 +9,7 @@ import random
 from typing import Dict, List, Union, Tuple, Any
 from pymysql.converters import escape_string
 import traceback
-
+import aiohttp, asyncio
 def get_avatar_pic(id: int)->Union[None, bytes]:
     """获取QQ头像
     @id: qq号
@@ -56,16 +56,53 @@ def send(id: int, message: str, type:str='group')->None:
             "group_id": id,
             "message": message
         }
-        print(params)
-        requests.get(url, params=params)
     elif type=='private':
         params = {
             "message_type": type,
             "user_id": id,
             "message": message
         }
-        print(params)
-        requests.get(url, params=params)
+    print(params)
+    # ###
+    # pic=(re.findall("files://(.*?)]",message))
+    # if len(pic)!=0:
+    #     try:
+    #         for f in pic:      
+    #             img=Image.open(f)
+    #             img.convert('L').save(f)
+    #     except:
+    #         pass
+    # pic=(re.findall("files://(.*?),",message))
+    # if len(pic)!=0:
+    #     try:
+    #         for f in pic:      
+    #             img=Image.open(f)
+    #             img.convert('L').save(f)
+    #     except:
+    #         pass
+    # ###
+    requests.get(url, params=params)
+async def aioSend(id: int, message: str, type:str='group')->None:
+    """异步发送消息
+    id: 群号或者私聊对象qq号
+    message: 消息
+    type: Union['group', 'private'], 默认 'group'
+    """
+    url = HTTP_URL+"/send_msg"
+    if type=='group':
+        params = {
+            "message_type": type,
+            "group_id": id,
+            "message": message
+        }
+    elif type=='private':
+        params = {
+            "message_type": type,
+            "user_id": id,
+            "message": message
+        }
+    async with aiohttp.request('GET', url, params=params) as req:
+        pass
 
 def get_group_list()->list:
     """获取群聊列表
@@ -232,6 +269,78 @@ def get_group_files_by_folder(group_id: int, folder_id: str)->dict:
         warning("base exception in get_group_files_by_folder: {}".format(e))
     return {}
 
+def get_group_member_info(group_id: int, user_id: int, no_cache: bool=False)->Union[dict, None]:
+    """获取群成员信息
+    @group_id: 群号
+    @user_id: 群成员qq
+    @no_cache: 是否不使用缓存（使用缓存可能更新不及时, 但响应更快）
+
+    @return:
+        None if error,
+        {
+            group_id,
+            user_id,
+            nickname,
+            card,
+            sex,
+            age,
+            area,
+            join_time,
+            last_sent_time,
+            level,
+            role,
+            unfriendly,
+            title,
+            title_expire_time,
+            card_changeable,
+            shut_up_timestamp,
+        } if ok
+    参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E4%BF%A1%E6%81%AF
+    """
+    url = HTTP_URL+"/get_group_member_info"
+    params = {
+        "group_id": group_id,
+        "user_id": user_id,
+        "no_cache": no_cache,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("get_group_member_info requests not return ok")
+            return None
+        return info['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_member_info: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_member_info: {}".format(e))
+    return None
+
+def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
+    """获取群成员列表
+    @group_id: 群号
+    @no_cache: 是否不使用缓存（使用缓存可能更新不及时, 但响应更快）
+
+    @return:
+        see get_group_member_info
+    参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E5%88%97%E8%A1%A8
+    """
+    url = HTTP_URL+"/get_group_member_list"
+    params = {
+        "group_id": group_id,
+        "no_cache": no_cache,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("get_group_member_list requests not return ok")
+            return None
+        return info['data']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_member_list: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_member_list: {}".format(e))
+    return None
+
 def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, None]:
     """获取群文件资源链接
     @group_id: 群号
@@ -247,7 +356,7 @@ def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, Non
         info = requests.get(url, params=params).json()
         if info['retcode'] != 0:
             warning("get_group_file_url requests not return ok")
-            return {}
+            return None
         return info['data']
     except requests.JSONDecodeError as e:
         warning("json decode error in get_group_file_url: {}".format(e))

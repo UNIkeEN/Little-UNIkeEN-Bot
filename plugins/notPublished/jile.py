@@ -4,7 +4,7 @@ from utils.standardPlugin import StandardPlugin
 
 class Chai_Jile(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return ('我寄' in msg or '寄了' in msg) and (data['user_id']==None)
+        return ('我寄' in msg or '寄了' in msg) and (data['user_id']==0)
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         send(data['group_id'], 'patpat柴[CQ:face,id=49], 不要伤心😘')
         return "OK"
@@ -21,7 +21,7 @@ class Chai_Jile(StandardPlugin):
         }
 class Yuan_Jile(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return ('真弱' in msg or '寄了' in msg or '好菜' in msg) and (data['user_id']==None)
+        return ('真弱' in msg or '寄了' in msg or '好菜' in msg) and (data['user_id']==0) and (data['group_id']==0)
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         send(data['group_id'], '😅😅😅😅😅😅😅😅😅😅')
         return "OK"

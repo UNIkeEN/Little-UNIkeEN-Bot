@@ -233,6 +233,7 @@ class RoulettePlugin(StandardPlugin):
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         group_id = data['group_id']
         ret = self.roulette_dict[group_id].get_cmd(data['user_id'],msg)
+        if ret == None: return
         try:
             if ret[-3:]=='png':
                 picPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
@@ -279,8 +280,12 @@ DEAD_TEXT=[
     '终究还是你先走一步...',
     '寄汤来咯！你终究还是没能逃脱命运的枷锁',
     '无情的子弹穿透了你的小脑壳',
-    '"死神，来收人了"，你甚至没有机会重新睁开眼睛',
-    '你感受到了子弹的动能'
+    '你感受到了子弹的动能',
+    '生命...终有尽时...',
+    '让世界...彻底遗忘我',
+    '败者...没有借口...',
+    '浮世景色百千年依旧，人之在世却如白露与泡影，虚无。——雷电将军',
+    '可惜，枫叶红时，总多离别。——枫原万叶'
 ]
 ALIVE_TEXT=[
     '呼呼，没有爆裂的声响，你活了下来',
