@@ -1,5 +1,6 @@
 beautifulsoup4
 browsermob_proxy
+fuzzywuzzy
 Flask
 httpx
 icalendar
@@ -11,6 +12,7 @@ pandas
 Pillow
 pydantic
 PyMySQL
+pypinyin
 qrcode
 requests
 selenium
