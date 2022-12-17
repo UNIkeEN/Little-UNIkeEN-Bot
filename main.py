@@ -33,11 +33,14 @@ from plugins.getPermission import GetPermission, AddPermission, DelPermission, S
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
-from plugins.dropOut import DropOut
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
 from plugins.sjtuHesuan import SjtuHesuan
 
 #### not published plugins ####
+try:
+    from plugins.notPublished.dropOut import DropOut
+except:
+    DropOut = EmptyPlugin
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except:
