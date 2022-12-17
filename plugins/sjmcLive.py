@@ -156,6 +156,7 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
         self.prevStatus = False # false: 未开播, true: 开播
         if SjmcLiveMonitor.monitorSemaphore.acquire(blocking=False):
             if not os.path.isfile(self.exactPath):
+                os.makedirs('data', exist_ok=True)
                 SjmcLiveMonitor.dumpSjmcStatus(self.prevStatus)
             else:
                 self.prevStatus = SjmcLiveMonitor.loadSjmcStatus()
