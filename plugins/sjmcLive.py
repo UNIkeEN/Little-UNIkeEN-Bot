@@ -67,6 +67,7 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
         self.prevStatus = False # false: 未开播, true: 开播
         if FduMcLiveMonitor.monitorSemaphore.acquire(blocking=False):
             if not os.path.isfile(self.exactPath):
+                os.makedirs('data', exist_ok=True)
                 FduMcLiveMonitor.dumpSjmcStatus(self.prevStatus)
             else:
                 self.prevStatus = FduMcLiveMonitor.loadSjmcStatus()
