@@ -26,7 +26,10 @@ try:
 except:
     ChatWithNLP = EmptyPlugin
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
-from plugins.getDekt import SjtuDekt, SjtuDektMonitor
+try:
+    from plugins.getDekt import SjtuDekt, SjtuDektMonitor
+except:
+    SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
