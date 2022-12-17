@@ -42,6 +42,7 @@ from plugins.sjtuHesuan import SjtuHesuan
 #### not published plugins ####
 try:
     from plugins.notPublished.dropOut import DropOut
+    DropOut()
 except:
     DropOut = EmptyPlugin
 try:
@@ -51,10 +52,12 @@ except:
     Yuan_Jile = EmptyPlugin
 try:
     from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
+    GetMddStatus()
 except:
     GetMddStatus, MonitorMddStatus = EmptyPlugin, EmptyPlugin
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
+    ShowEE0502Comments()
 except:
     ShowEE0502Comments = EmptyPlugin
 ###### end not published plugins
