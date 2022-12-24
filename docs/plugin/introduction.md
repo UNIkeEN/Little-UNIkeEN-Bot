@@ -1,8 +1,10 @@
 Little-UNIkeEN-Bot 通过插件机制实现功能的开发，通过维护插件列表实现功能的增减。
 
+# 1. 聊天插件 - StandardPlugin
+
 ## 插件逻辑
 
-所有插件都必须继承于 `StandardPlugin` 类，并实现以下三个接口函数：
+所有接收私聊消息和群消息的插件都必须继承于 `StandardPlugin` 类，并实现以下三个接口函数：
 
 | 接口名称 | 参数 | 返回值类型 | 作用 |
 | ---- | ---- | ---- | ---- |
@@ -93,7 +95,23 @@ PrivatePluginList=[ # 私聊启用插件
     Bot 在设计时默认一句指令只能进行一次响应，开发者请尽量确保触发条件不冲突，或考虑插件列表中各插件的先后顺序。
     如某一插件触发但不提供响应，可以返回 None 以继续执行列表中的后续插件。
 
-## 代码分析
+# 2. 接收撤回消息插件
+
+所有接收'私聊撤回消息'和'群聊撤回消息'的插件都必须继承于 `RecallMessageStandardPlugin` 类，并实现以下接口函数：
+
+| 接口名称 | 参数 | 返回值类型 | 作用 |
+| ---- | ---- | ---- | ---- |
+| recallMessage | `@data`: 消息所包括的所有信息，`dict`类型 | `None` | 对'撤回消息'消息进行处理 |
+
+# 3. 接收上传文件插件
+
+所有接收'群聊上传文件'的插件都必须继承于 `GroupUploadStandardPlugin` 类，并实现以下接口函数：
+
+| 接口名称 | 参数 | 返回值类型 | 作用 |
+| ---- | ---- | ---- | ---- |
+| uploadFile | `@data`: 消息所包括的所有信息，`dict`类型 | `None` | 对'上传文件'消息进行处理 |
+
+# 代码分析
 
 ```python
 # parts of utils/standardPlugin.py
@@ -101,6 +119,7 @@ from abc import ABC, abstractmethod
 from typing import Union, Tuple, Any, List
 
 class StandardPlugin(ABC):
+    """接收‘正常私聊消息或群消息’的接口"""
     @abstractmethod
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         """
@@ -138,5 +157,37 @@ class StandardPlugin(ABC):
                 ...                                 # any other information you want
             }
         """
+        raise NotImplementedError
+
+class EmptyPlugin(StandardPlugin):
+    """空插件"""
+    def __init__(self, *args, **kwargs) -> None:
+        return
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return None
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'EmptyPlugin',
+            'description': '空插件',
+            'commandDescription': '',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': False,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class RecallMessageStandardPlugin(ABC):
+    """接收‘撤回类型’消息的接口"""
+    @abstractmethod
+    def recallMessage(self, data:Any)->Union[str, None]:
+        raise NotImplementedError
+
+class GroupUploadStandardPlugin(ABC):
+    """接收‘上传文件’消息的接口"""
+    @abstractmethod
+    def uploadFile(self, data)->Union[str, None]:
         raise NotImplementedError
 ```

@@ -1,4 +1,4 @@
-`version 1.0.0`
+`version 1.1.0`
 # 1. 简介
 
 Little-UNIkeEN-Bot 是一个由 Python 编写的轻量级、可扩展的QQ机器人前端，底层基于 go-cqhttp、flask、mysql 等第三方依赖。

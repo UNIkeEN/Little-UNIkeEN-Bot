@@ -46,6 +46,7 @@ nav:
         - 'SJTU 核酸点位': 'plugin/plugins/sjtuHesuanPlugin.md'
         - 'SJTU 麦当劳': 'plugin/plugins/sjtuMddPlugin.md'
         - '我爱电路实验':  'plugin/plugins/izfPlugin.md'
+        - '水群报告': 'plugin/plugins/myactPlugin.md'
     - API:
       - '驱动器对接': 'api/send.md'
       - '运行时警告': 'api/warning.md'
