@@ -145,7 +145,8 @@ class _roulette():
         #self.__init__(self.group_id) 在result中执行了
         r_path=os.path.dirname(__file__)
         pic_path=(f'file:///{r_path}/'[:-8]+ret)
-        send(self.group_id, f'[CQ:image,file={pic_path}]')
+        if ret!=None:
+            send(self.group_id, f'[CQ:image,file={pic_path}]')
         return
 
     def shot(self, num_shot): # 开枪
@@ -183,40 +184,44 @@ class _roulette():
         self.timer.cancel()
         height=820
         width=720
-        img = Image.new('RGBA', (width, height), (244, 149 ,4, 255))
-        draw = ImageDraw.Draw(img)
-        draw.rectangle((0, 120, width, height), fill=(255, 255, 255, 255))
-        draw.text((width-340,40), "俄罗斯轮盘", fill=(255,255,255,255), font=font_hywh_85w)
-        draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
-        txt_size = draw.textsize('⚔️', font=font_sg_emj_l)
-        draw.text(((width-txt_size[0])/2,180), "⚔️", fill=(120,120,120,255), font=font_sg_emj_l)
-        txt_size = draw.textsize('俄罗斯轮盘 - 对决结果', font=font_hywh_85w)
-        draw.text(((width-txt_size[0])/2,290), "俄罗斯轮盘 - 对决结果", fill=(0,0,0,255), font=font_hywh_85w)
-        # 圆形蒙版
-        mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
-        mask_draw = ImageDraw.Draw(mask)
-        mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
-        # 获取头像1
-        avatar1 = get_avatar_pic(win_qqid)
-        if avatar1 != None:
-            img_avatar1 = Image.open(BytesIO(avatar1))
-            img.paste(img_avatar1, (60, 420), mask)
-
-        # 获取头像2
-        avatar2 = get_avatar_pic(loser_qqid)
-        if avatar2 != None:
-            img_avatar2 = Image.open(BytesIO(avatar2))
-            img.paste(img_avatar2, (60, 570), mask)
-
-        draw.text((210,420),f'胜利者：{win_qqid}', fill=(221, 0, 38, 255),font=font_hywh_85w)
-        draw.text((210,490),f'金币+{self.wager} -> 当前金币：{get_user_coins(win_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
-        draw.text((210,570),f'失败者：{loser_qqid}', fill=(0, 191, 48, 255),font=font_hywh_85w)
-        draw.text((210,640),f'金币-{self.wager} -> 当前金币：{get_user_coins(loser_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
-        draw.text((60,720),'发起新的决斗：\n装弹/轮盘/决斗 [子弹数] [轮盘总格数] [挑战金额] [@决斗对象(可选)]\n举例：装弹 2 7 100 @xxx',fill=(175, 175, 175, 255), font=font_syht_m)
-        save_path=(f'{SAVE_TMP_PATH}/{self.group_id}_roulette.png')
-        img.save(save_path)
         self.__init__(self.group_id)
-        return save_path
+        try:
+            img = Image.new('RGBA', (width, height), (244, 149 ,4, 255))
+            draw = ImageDraw.Draw(img)
+            draw.rectangle((0, 120, width, height), fill=(255, 255, 255, 255))
+            draw.text((width-340,40), "俄罗斯轮盘", fill=(255,255,255,255), font=font_hywh_85w)
+            draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
+            txt_size = draw.textsize('⚔️', font=font_sg_emj_l)
+            draw.text(((width-txt_size[0])/2,180), "⚔️", fill=(120,120,120,255), font=font_sg_emj_l)
+            txt_size = draw.textsize('俄罗斯轮盘 - 对决结果', font=font_hywh_85w)
+            draw.text(((width-txt_size[0])/2,290), "俄罗斯轮盘 - 对决结果", fill=(0,0,0,255), font=font_hywh_85w)
+            # 圆形蒙版
+            mask = Image.new('RGBA', (100, 100), color=(0,0,0,0))
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.ellipse((0,0, 100, 100), fill=(159,159,160))
+            # 获取头像1
+            avatar1 = get_avatar_pic(win_qqid)
+            if avatar1 != None:
+                img_avatar1 = Image.open(BytesIO(avatar1))
+                img.paste(img_avatar1, (60, 420), mask)
+
+            # 获取头像2
+            avatar2 = get_avatar_pic(loser_qqid)
+            if avatar2 != None:
+                img_avatar2 = Image.open(BytesIO(avatar2))
+                img.paste(img_avatar2, (60, 570), mask)
+
+            draw.text((210,420),f'胜利者：{win_qqid}', fill=(221, 0, 38, 255),font=font_hywh_85w)
+            draw.text((210,490),f'金币+{self.wager} -> 当前金币：{get_user_coins(win_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
+            draw.text((210,570),f'失败者：{loser_qqid}', fill=(0, 191, 48, 255),font=font_hywh_85w)
+            draw.text((210,640),f'金币-{self.wager} -> 当前金币：{get_user_coins(loser_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
+            draw.text((60,720),'发起新的决斗：\n装弹/轮盘/决斗 [子弹数] [轮盘总格数] [挑战金额] [@决斗对象(可选)]\n举例：装弹 2 7 100 @xxx',fill=(175, 175, 175, 255), font=font_syht_m)
+            save_path=(f'{SAVE_TMP_PATH}/{self.group_id}_roulette.png')
+            img.save(save_path)
+            return save_path
+        except:
+            return None
+        
 
 # 插件类，响应bot事件
 class RoulettePlugin(StandardPlugin):

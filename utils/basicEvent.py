@@ -371,6 +371,7 @@ def warning(what:str)->None:
     what += '\n\n[location]\n' + stack
     admin_users = ROOT_ADMIN_ID
     admin_groups = []
+    # print(what)
     for admin in admin_users:
         send(admin, what, 'private')
     for admin in admin_groups:

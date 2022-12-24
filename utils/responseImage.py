@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 # 资源/临时路径
 FONTS_PATH = 'resources/fonts'
-SAVE_TMP_PATH = 'data/tmp'
+SAVE_TMP_PATH = 'tmp'
 
 # 字体预定义常量
 FONT_SYHT_M32 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 32)
@@ -467,7 +467,7 @@ class ResponseImage():
                     elif line[0]=='body':
                         font = self.cardBodyFont
                         fill = bodyColor
-                    txt_size=font.getsize(line[1])
+                    txt_size=draw.textsize(line[1], font = font)
                     x_l = cardLeft+(card['width']-txt_size[0])/2 if card['style']=='notice' else x_left
                     draw.text((x_l, y_top), line[1], fill=fill, font = font)
                     y_top += (txt_size[1]+SPACE_ROW) 

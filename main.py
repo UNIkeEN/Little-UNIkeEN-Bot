@@ -38,13 +38,14 @@ from plugins.messageRecorder import GroupMessageRecorder
 from plugins.fileRecorder import GroupFileRecorder
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
 from plugins.sjtuHesuan import SjtuHesuan
+from plugins.groupActReport import ActReportPlugin
 
 #### not published plugins ####
-try:
-    from plugins.notPublished.dropOut import DropOut
-    DropOut()
-except:
-    DropOut = EmptyPlugin
+# try:
+#     from plugins.notPublished.dropOut import DropOut
+#     DropOut()
+# except:
+#     DropOut = EmptyPlugin
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except:
@@ -93,12 +94,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
-    PluginGroupManager([GoBangPlugin()],'gobang'),
+    # PluginGroupManager([GoBangPlugin()],'gobang'),
     PluginGroupManager([Show2cyPIC()], 'anime'), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
-    PluginGroupManager([DropOut()], 'dropout'), # 一键退学
+    # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
     PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
+    PluginGroupManager([ActReportPlugin()], 'actreport'), #水群报告
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
