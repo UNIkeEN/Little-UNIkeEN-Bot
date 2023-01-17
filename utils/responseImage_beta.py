@@ -11,6 +11,7 @@ FONTS_PATH = 'resources/fonts'
 SAVE_TMP_PATH = 'data/tmp'
 
 # 字体预定义常量
+FONT_SYHT_M42 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 42)
 FONT_SYHT_M32 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 32)
 FONT_SYHT_M24 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
 FONT_SYHT_M18 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 18)
@@ -388,14 +389,16 @@ class ResponseImage():
             return url
         if isinstance(url, BytesIO):
             return Image.open(url)
-        if url[:4]=="data": # 传入图片地址
-            img_ = Image.open(self.decodeBase64(url))
-        elif url[:4]=="http":
-            url_ = requests.get(url)
-            img_ = Image.open(BytesIO(url_.content))
-        else:
-            img_ = Image.open(url)
-        return img_
+        if isinstance(url, str):
+            if url[:4]=="data": # 传入图片地址
+                img_ = Image.open(self.decodeBase64(url))
+            elif url[:4]=="http":
+                url_ = requests.get(url)
+                img_ = Image.open(BytesIO(url_.content))
+            else:
+                img_ = Image.open(url)
+            return img_
+        raise RuntimeError('unknow url format')
 
     # 绘制
     def drawImage(self):

@@ -76,12 +76,14 @@ class GroupUploadStandardPlugin(ABC):
     @abstractmethod
     def uploadFile(self, data)->Union[str, None]:
         raise NotImplementedError
+    
 class CronStandardPlugin(ABC):
     def __init__(self) -> None:
         self.timer = None
         self.intervalTime = 180
     @abstractmethod
     def tick(self,)->None:
+        """每次触发任务所做的事情"""
         raise NotImplementedError
     def _tick(self)->None:
         self.timer.cancel()
@@ -92,6 +94,10 @@ class CronStandardPlugin(ABC):
         except BaseException as e:
             warning('base exception in CronStandardPlugin: {}'.format(e))
     def start(self, startTime:float, intervalTime:float)->None:
+        """开始执行
+        @startTime: 从调用此函数开始过多久触发第一次任务，单位：秒
+        @intervalTime: 间隔多久执行一次任务，单位：秒
+        """
         self.timer = Timer(startTime, self._tick)
         self.intervalTime = intervalTime
         self.timer.start()

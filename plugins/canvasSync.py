@@ -220,7 +220,7 @@ def DrawEventListPic(event_list, qq_id):
         proceed_list.append([title_parse, description_parse, deadline, h_block])
 
     height=len(event_list[:10])*150+190+(240 if len(event_list)==0 else 0)+h_title+h_des+(40 if len(event_list)>10 else 0)
-    img, draw, h = init_image_template('Canvas 日历馈送', width, height, (0, 142, 226, 255))
+    img, draw, h = init_image_template('Canvas 日历馈送', width, height, (0, 142, 226, 255)) # (0, 142, 226, 255)
     h+=130
     for title, description, deadline, h_block in proceed_list:
         img = draw_rounded_rectangle(img, x1=60, y1=h, x2=width-60 ,y2=h+120+h_block, fill=(255,255,255,255))

@@ -11,7 +11,18 @@ from copy import deepcopy
 from io import BytesIO
 import re
 
-class ActReportPlugin(StandardPlugin): # 查询当前金币
+BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
+            '-help','-st','-lib','-hs','-mdd',
+            '-jwc','-dekt','-mc','-sjmc','-fdc',
+            '-tjmc','-mclive','-sjmclive',
+            '-fdmclive','小马，','小🦄，',
+            '小马,','小🦄,','-mycoins','-mytrans',
+            '新闻', '-sjtu news', '交大新闻',
+            '来点图图',
+            '决斗','接受决斗','ttzf','izf',
+            '-myact', '-wc']
+
+class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-myact' and data['message_type'] == 'group'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -59,7 +70,7 @@ def getMyActivity(user_id, group_id):
             y = time_mes.get(t,0)
             y += 1
             time_mes[t] = y
-            if startswith_in(message.strip(),['-ddl','-canvas','签到','祈愿','-help','-st','-lib','-hs','-mdd','-jwc','-dekt','-mc','-sjmc','-fdc','-tjmc','-mclive','-sjmclive','-fdmclive','小马，','小🦄，','小马,','小🦄,','-mycoins','-mytrans','决斗','接受决斗','ttzf','izf','-myact']):
+            if startswith_in(message.strip(),BOT_CMD):
                 y = time_meswithbot.get(t,0)
                 y += 1
                 time_meswithbot[t] = y
@@ -183,7 +194,7 @@ def getMyActivity(user_id, group_id):
         ]
         if len(messageImgEmjMedal) > 0:
             card_content3.append(('subtitle', '  '.join(messageImgEmjMedal), PALETTE_SJTU_GREEN))
-        
+
         img_avatar = Image.open(BytesIO(get_avatar_pic(user_id)))
         # 生成卡片图
         ActCards = ResponseImage(
@@ -220,4 +231,3 @@ def getMyActivity(user_id, group_id):
         warning("mysql error in getMyActivity: {}".format(e))
     except BaseException as e:
         warning("error in getMyActivity: {}".format(e))
-        

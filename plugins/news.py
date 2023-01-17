@@ -1,4 +1,3 @@
-from posixpath import isabs
 import requests
 from lxml import etree
 from PIL import Image, ImageDraw, ImageFont

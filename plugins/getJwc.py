@@ -288,7 +288,7 @@ class GetSjtuNews(StandardPlugin):
         if GetSjtuNews.monitorSemaphore.acquire(blocking=False):
             self.checkTimer.start()
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg=='-sjtu news'
+        return msg in ['-sjtu news', '交大新闻']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         pic_path = os.path.join(SAVE_TMP_PATH, 'sjtu_news.png')
@@ -301,7 +301,7 @@ class GetSjtuNews(StandardPlugin):
         return {
             'name': 'GetSjtuNews',
             'description': '获取交大新闻网',
-            'commandDescription': '-sjtu news',
+            'commandDescription': '-sjtu news/交大新闻',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

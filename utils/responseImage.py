@@ -5,10 +5,7 @@ import re
 import uuid
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
-
-# 资源/临时路径
-FONTS_PATH = 'resources/fonts'
-SAVE_TMP_PATH = 'tmp'
+from utils.basicConfigs import FONTS_PATH, SAVE_TMP_PATH
 
 # 字体预定义常量
 FONT_SYHT_M32 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 32)

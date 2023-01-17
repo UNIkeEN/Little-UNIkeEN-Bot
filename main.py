@@ -39,6 +39,7 @@ from plugins.fileRecorder import GroupFileRecorder
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
 from plugins.sjtuHesuan import SjtuHesuan
 from plugins.groupActReport import ActReportPlugin
+from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 
 #### not published plugins ####
 # try:
@@ -100,7 +101,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
     PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
-    PluginGroupManager([ActReportPlugin()], 'actreport'), #水群报告
+    PluginGroupManager([ActReportPlugin(), wordCloudPlugin(), PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 

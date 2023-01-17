@@ -184,6 +184,7 @@ class _roulette():
         self.timer.cancel()
         height=820
         width=720
+        wager = self.wager
         self.__init__(self.group_id)
         try:
             img = Image.new('RGBA', (width, height), (244, 149 ,4, 255))
@@ -212,9 +213,9 @@ class _roulette():
                 img.paste(img_avatar2, (60, 570), mask)
 
             draw.text((210,420),f'胜利者：{win_qqid}', fill=(221, 0, 38, 255),font=font_hywh_85w)
-            draw.text((210,490),f'金币+{self.wager} -> 当前金币：{get_user_coins(win_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
+            draw.text((210,490),f'金币+{wager} -> 当前金币：{get_user_coins(win_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
             draw.text((210,570),f'失败者：{loser_qqid}', fill=(0, 191, 48, 255),font=font_hywh_85w)
-            draw.text((210,640),f'金币-{self.wager} -> 当前金币：{get_user_coins(loser_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
+            draw.text((210,640),f'金币-{wager} -> 当前金币：{get_user_coins(loser_qqid)}', fill=(175, 175, 175, 255),font=font_hywh_85w_mms)
             draw.text((60,720),'发起新的决斗：\n装弹/轮盘/决斗 [子弹数] [轮盘总格数] [挑战金额] [@决斗对象(可选)]\n举例：装弹 2 7 100 @xxx',fill=(175, 175, 175, 255), font=font_syht_m)
             save_path=(f'{SAVE_TMP_PATH}/{self.group_id}_roulette.png')
             img.save(save_path)
