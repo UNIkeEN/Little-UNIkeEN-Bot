@@ -10,6 +10,8 @@
 
 ## 3. 代码分析
 
+代码位于 `plugins/groupActReport.py`
+
 ```python
 class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
