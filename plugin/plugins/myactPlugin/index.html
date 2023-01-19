@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3_5">
@@ -1148,6 +1152,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wordcloudPlugin/" class="md-nav__link">
+        昨日词云
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../randomNumPlugin/" class="md-nav__link">
+        随机数
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1318,6 +1350,7 @@
 <h2 id="2">2. 示范样例</h2>
 <p><img alt="" src="../../../images/plugins/myact.png" /></p>
 <h2 id="3">3. 代码分析</h2>
+<p>代码位于 <code>plugins/groupActReport.py</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span> <span class="nc">ActReportPlugin</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span> 
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="k">return</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;-myact&#39;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;group&#39;</span>
@@ -1569,13 +1602,13 @@
       
       
         
-        <a href="../../../api/send/" class="md-footer__link md-footer__link--next" aria-label="Next: 驱动器对接" rel="next">
+        <a href="../wordcloudPlugin/" class="md-footer__link md-footer__link--next" aria-label="Next: 昨日词云" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              驱动器对接
+              昨日词云
             </div>
           </div>
           <div class="md-footer__button md-icon">
