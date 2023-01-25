@@ -88,7 +88,7 @@ def drawHelpCard(pluginList, group_id):
             flag = item.queryEnabled(group_id)
             cardPluginList.append(('title', item.groupName))
             cardPluginList.append(('separator', ))
-            for plugin in item.getPlugins():
+            for plugin in item.plugins:
                 infoDict:dict = plugin.getPluginInfo()
                 if 'showInHelp' in infoDict.keys() and not infoDict['showInHelp']:
                     continue

@@ -1,30 +1,33 @@
 from utils.basicConfigs import *
 from utils.basicEvent import *
 from typing import Union, Tuple, Any, List, Optional
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
+from utils.standardPlugin import StandardPlugin, ScheduleStandardPlugin
 import mysql.connector
 from utils.responseImage_beta import *
 import wordcloud
 import jieba
 from io import BytesIO
 import re
-from threading import Timer, Semaphore
+from threading import Timer, Semaphore, Thread
 import datetime
 import os
+from matplotlib import colors
 
 def wc_save_path(group_id:int, yesterday_str:str)->str:
     return os.path.join(ROOT_PATH, SAVE_TMP_PATH, f'{group_id}_{yesterday_str}_wordcloud.png')
 
-class GenWordCloud(StandardPlugin, CronStandardPlugin):
+class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self):
         self.stopwords = set()
+        self.userdict_path = os.path.join(ROOT_PATH, 'resources/corpus/wc_userdict.txt')
 
         if GenWordCloud.monitorSemaphore.acquire(blocking=False):
-            self.start(5, 60)
+            self.schedule(hour=0, minute=0)
             _content = [line.strip() for line in open('resources/corpus/wc_stopwords.txt', 'r', encoding='utf-8-sig').readlines()]
             self.stopwords.update(_content)
-    
+            if os.path.exists(self.userdict_path):            
+                jieba.load_userdict(self.userdict_path)
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     
@@ -32,14 +35,12 @@ class GenWordCloud(StandardPlugin, CronStandardPlugin):
         return None
     
     def tick(self):
-        now_time = datetime.datetime.now()
-        h_m = datetime.datetime.strftime(now_time,'%H:%M')
         yesterday_str=(datetime.date.today() + datetime.timedelta(days=-1)).strftime('%Y-%m-%d')
-        if h_m not in ['00:00']: return
+        threadPool:List[Thread] = []
 
-        for group_id in APPLY_GROUP_ID:
+        def genSendSaveImg(group_id):
             wcPic = self.genWordCloud(group_id)
-            if wcPic == None: continue
+            if wcPic == None: return
             picPath = wc_save_path(group_id, yesterday_str)
             img = Image.new('RGBA', (860, 670), PALETTE_WHITE)
             draw = ImageDraw.Draw(img)
@@ -56,7 +57,16 @@ class GenWordCloud(StandardPlugin, CronStandardPlugin):
             if group_id in getPluginEnabledGroups('wcdaily'):
                 send(group_id, '本群昨日词云已生成~','group')
                 send(group_id, f'[CQ:image,file=files://{picPath}]','group')
-            
+        # end def genSendSaveImg
+
+        for group_id in APPLY_GROUP_ID:
+            thread = Thread(target=genSendSaveImg, args=(group_id,))
+            thread.start()
+            threadPool.append(thread)
+
+        for thread in threadPool:
+            thread.join()
+
     def genWordCloud(self,group_id)->Optional[Image.Image]:
         try:
             mydb = mysql.connector.connect(**sqlConfig)
@@ -67,20 +77,25 @@ class GenWordCloud(StandardPlugin, CronStandardPlugin):
 
             for sentence, in result:
                 sentence:str
-                subsentence = re.split(r'\[CQ[^\]]*\]|\s|\,|\.|\!|\@|\;|。|！|？|：|；|“|”|【|】', sentence)
-                subsentence = [re.sub(r'[^\u4e00-\u9fa5]', '', s) for s in subsentence]
+                subsentence = re.split(r'\[CQ[^\]]*\]|\s|\,|\.|\!|\@|\;|。|！|？|：|；|“|”|【|】|-', sentence)
+                subsentence = [re.sub(r'[^\u4e00-\u9fa5^a-z^A-Z]', '', s) for s in subsentence]
                 for s in subsentence:
                     text += jieba.cut(s)
 
             if len(text)<=50:
                 return None # 消息过少，不生成词云
 
-            wc = wordcloud.WordCloud(font_path="resources/fonts/SourceHanSansCN-Medium.otf",
+            color_list = ['#ec1c24', '#ec1c42','#ec3b1c', '#e00d0d', '#fe3f3f', '#f59037', '#f57037', '#fb922a', '#fba42a', '#fbbc2a', '#ffa710', '#ffcb10']
+            colormap = colors.ListedColormap(color_list) # 新春色调
+
+            wc = wordcloud.WordCloud(font_path="resources/fonts/汉仪文黑.ttf",
                                 width = 800,
                                 height = 540,
                                 background_color='white',
                                 min_font_size=6,
-                                max_words=120,stopwords=self.stopwords)
+                                max_words=110,stopwords=self.stopwords,
+                                colormap=colormap)
+
             wc.generate(' '.join(text))
             im = wc.to_image()
             return im

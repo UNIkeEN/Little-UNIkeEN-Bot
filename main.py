@@ -8,6 +8,7 @@ from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin
 
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
+from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
 from plugins.greetings import MorningGreet, NightGreet
 from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
@@ -16,11 +17,12 @@ from plugins.signIn import SignIn
 from plugins.stocks import *
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.genshin import GenshinCookieBind, GenshinDailyNote
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
+from plugins.groupBan import GroupBan
+
 try:
     from plugins.chatWithNLP import ChatWithNLP
 except:
@@ -40,6 +42,8 @@ from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLi
 from plugins.sjtuHesuan import SjtuHesuan
 from plugins.groupActReport import ActReportPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
+from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
+from plugins.sjtuClassroom import SjtuClassroom
 
 #### not published plugins ####
 # try:
@@ -78,6 +82,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     GetPermission(), 
     PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
+    PluginGroupManager([GroupCalendarHelper(), GroupCalendarManager()], 'calendar'),
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
     PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace()], 'superemoji'), # 超级表情
@@ -85,14 +90,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuHesuan(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
     PluginGroupManager([GetJwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
                         PluginGroupManager([SjtuDektMonitor()], 'dekt')], 'jwc'), 
-    PluginGroupManager([GenshinCookieBind(), GenshinDailyNote()],'genshin'), # 原神绑定与实时便笺
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
     # PluginGroupManager([GoBangPlugin()],'gobang'),
@@ -102,6 +106,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
     PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
     PluginGroupManager([ActReportPlugin(), wordCloudPlugin(), PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
+    PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
@@ -113,7 +118,6 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), #SubscribeJwc(), 
     GetSjtuNews(),
-    GenshinCookieBind(), GenshinDailyNote(),
     LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(),
@@ -121,6 +125,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjmcLive(), GetFduMcLive(),
     GetMddStatus(),#SubscribeMdd(),
     SjtuHesuan(),
+    RandomNum(), ThreeKingdomsRandom(), TarotRandom()
 ]
 
 helper.updatePluginList(GroupPluginList, PrivatePluginList)

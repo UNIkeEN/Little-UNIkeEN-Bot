@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Union, Tuple, Any, List
 from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig, getGroupAdmins
-from threading import Timer, Semaphore
 import re
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class StandardPlugin(ABC):
     """接收‘正常私聊消息或群消息’的接口"""
@@ -45,6 +45,14 @@ class StandardPlugin(ABC):
         """
         raise NotImplementedError
 
+    def onStateChange(self, nextState:bool, data:Any)->None:
+        """插件的状态（开启或关闭）改变时会调用此接口
+        @nextState: 
+            if True, plugin will open next
+            if False, plugin will close next
+        @data: all the message data, including group_id or user_id
+        """
+
 class EmptyPlugin(StandardPlugin):
     """空插件"""
     def __init__(self, *args, **kwargs) -> None:
@@ -76,31 +84,43 @@ class GroupUploadStandardPlugin(ABC):
     @abstractmethod
     def uploadFile(self, data)->Union[str, None]:
         raise NotImplementedError
-    
-class CronStandardPlugin(ABC):
-    def __init__(self) -> None:
-        self.timer = None
-        self.intervalTime = 180
+
+class BaseTimeSchedulePlugin(ABC):
+    """定时任务基类，参考apscheduler文档"""
+    scheduler = BackgroundScheduler()
+    scheduler.start()
+
     @abstractmethod
     def tick(self,)->None:
         """每次触发任务所做的事情"""
         raise NotImplementedError
-    def _tick(self)->None:
-        self.timer.cancel()
-        self.timer = Timer(self.intervalTime, self._tick)
-        self.timer.start()
+    
+    def _tick(self,)->None:
         try:
             self.tick()
         except BaseException as e:
-            warning('base exception in CronStandardPlugin: {}'.format(e))
+            warning('exception in ScheduleStandardPlugin: {}'.format(e))
+
+class ScheduleStandardPlugin(BaseTimeSchedulePlugin):
+    """固定每日时刻执行"""
+    def schedule(self, hour:Union[str, int]=0, minute:Union[str, int]=0)->None:
+        """可以重写此方法
+        @hour: 
+        @minute:
+        e.g:
+            hour: (str)'1-3', minute: None ---- 每天 1:00, 2:00, 3:00 运行
+            hour: (int)0, minute: (int)1   ---- 每天 0:01 运行
+        """
+        BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'cron', hour=hour, minute=minute)
+
+class CronStandardPlugin(BaseTimeSchedulePlugin):
+    """间隔固定时长执行"""
     def start(self, startTime:float, intervalTime:float)->None:
-        """开始执行
-        @startTime: 从调用此函数开始过多久触发第一次任务，单位：秒
+        """开始执行，可以重写此方法
+        @startTime: deprecated
         @intervalTime: 间隔多久执行一次任务，单位：秒
         """
-        self.timer = Timer(startTime, self._tick)
-        self.intervalTime = intervalTime
-        self.timer.start()
+        BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'interval', seconds=intervalTime)
 
 class PluginGroupManager(StandardPlugin):
     def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
@@ -158,16 +178,12 @@ class PluginGroupManager(StandardPlugin):
         if self.readyPlugin in ['enable', 'disable']:
             enabled = self.readyPlugin == 'enable'
             self.readyPlugin = None
-            groupId = data["group_id"]
+            self.onStateChange(enabled, data)
             if msg[-1] == '*':
-                self.recursiveSetEnabled(groupId, enabled)
                 return None
-            if enabled:
-                self.setEnabled(groupId, enabled)
             else:
-                self.recursiveSetEnabled(groupId, enabled)
-            send(data['group_id'], "[CQ:reply,id=%d]OK"%data['message_id'])
-            return "OK"
+                send(data['group_id'], "[CQ:reply,id=%d]OK"%data['message_id'])
+                return "OK"
         else:
             try:
                 result = self.readyPlugin.executeEvent(msg, data)
@@ -187,11 +203,13 @@ class PluginGroupManager(StandardPlugin):
         if self.queryEnabled(groupId) != enabled:
             writeGlobalConfig(groupId, self.groupName + '.enable', enabled)
             self.enabledDict[groupId] = enabled
-    def recursiveSetEnabled(self, groupId: int, enabled: bool):
-        self.setEnabled(groupId, enabled)
-        for p in self.getPlugins():
-            if issubclass(type(p), PluginGroupManager):
-                p: PluginGroupManager
-                p.recursiveSetEnabled(groupId, enabled)
+
     def getPlugins(self)->List[StandardPlugin]:
         return self.plugins
+
+    def onStateChange(self, nextState:bool, data:Any) -> None:
+        group_id = data['group_id']
+        if nextState ^ self.queryEnabled(group_id):
+            self.setEnabled(group_id, nextState)
+            for p in self.plugins:
+                p.onStateChange(nextState, data)

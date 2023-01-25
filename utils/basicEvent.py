@@ -160,7 +160,7 @@ def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->li
     except requests.JSONDecodeError as e:
         warning('json decode error in get_group_msg_history: {}'.format(e))
     except BaseException as e:
-        warning('error in get_group_msg_history, error: [}'.format(e))
+        warning('error in get_group_msg_history, error: {}'.format(e))
     return []
 def get_essence_msg_list(group_id: int)->list:
     """获取精华消息列表
@@ -315,6 +315,16 @@ def get_group_member_info(group_id: int, user_id: int, no_cache: bool=False)->Un
         warning("base exception in get_group_member_info: {}".format(e))
     return None
 
+def isGroupOwner(group_id:int, user_id:int)->bool:
+    """判断该成员是否为群主
+    @group_id: 群号
+    @user_id:  待判断的成员QQ
+
+    @return:   是否为群主
+    """
+    memberInfo = get_group_member_info(group_id, user_id)
+    return memberInfo != None and memberInfo.get('role', '') == 'owner'
+
 def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
     """获取群成员列表
     @group_id: 群号
@@ -363,7 +373,25 @@ def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, Non
     except BaseException as e:
         warning("base exception in get_group_file_url: {}".format(e))
     return None
-    
+
+def set_group_ban(group_id:int, user_id:int, duration:int)->None:
+    """群组单人禁言
+    @group_id: 群号
+    @user_id:  用户QQ号
+    @duration: 禁言时间，单位：秒
+    参考链接： https://docs.go-cqhttp.org/api/#%E7%BE%A4%E7%BB%84%E5%8D%95%E4%BA%BA%E7%A6%81%E8%A8%80
+    """
+    url = HTTP_URL+"/set_group_ban"
+    params = {
+        "group_id": group_id,
+        "user_id": user_id,
+        "duration": duration,
+    }
+    try:
+        requests.get(url, params=params)
+    except BaseException as e:
+        warning("base exception in set_group_ban: {}".format(e))
+
 def warning(what:str)->None:
     """warning to admins"""
     stack = traceback.format_exc()

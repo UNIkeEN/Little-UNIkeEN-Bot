@@ -165,7 +165,7 @@ def update_answer(group_id:int, question:str, answer:str, data:Any, tag:str = ''
             escape_string(answer),
             data['user_id'],
             data['time'],
-            'true' if delete else False,
+            'true' if delete else 'false',
             escape_string(tag)
         ))
     except mysql.connector.Error as e:
@@ -180,7 +180,7 @@ def update_answer(group_id:int, question:str, answer:str, data:Any, tag:str = ''
     return True
 class AskFAQ(StandardPlugin):
     def __init__(self):
-        self.pattern = re.compile(r'^(问|q)\s+([^\s]+)$')
+        self.pattern = re.compile(r'^(问|q)\s+(\S+)$')
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return self.pattern.match(msg) != None and data['message_type']=='group'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -215,7 +215,7 @@ class AskFAQ(StandardPlugin):
         }
 class MaintainFAQ(StandardPlugin):
     def __init__(self):
-        self.findModPattern = re.compile(r"^faq\s+([^\s]+)\s*(.*)$")
+        self.findModPattern = re.compile(r"^\-?faq\s+(\S+)\s*(.*)$")
         self.modMap = {
             'show': MaintainFAQ.faqShow,
             'ls': MaintainFAQ.faqShow,
@@ -288,7 +288,7 @@ class MaintainFAQ(StandardPlugin):
         
     @staticmethod
     def faqAdd(cmd: str, data):
-        pattern = re.compile(r'^([^\s]+)\s*(.*)$')
+        pattern = re.compile(r'^(\S+)\s*(.*)$')
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -307,7 +307,7 @@ class MaintainFAQ(StandardPlugin):
             
     @staticmethod
     def faqEdit(cmd: str, data):
-        pattern = re.compile(r'^([^\s]+)\s*(.*)$')
+        pattern = re.compile(r'^(\S+)\s*(.*)$')
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -325,7 +325,7 @@ class MaintainFAQ(StandardPlugin):
                     send(groupId, '[CQ:reply,id=%d]更新失败'%data['message_id'])
     @staticmethod
     def faqCp(cmd: str, data):
-        pattern = re.compile(r'^([^\s]+)\s+([^\s]+)$')
+        pattern = re.compile(r'^(\S+)\s+(\S+)$')
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -343,7 +343,7 @@ class MaintainFAQ(StandardPlugin):
                     send(groupId, '[CQ:reply,id=%d]问题复制失败'%data['message_id'])
     @staticmethod
     def faqDel(cmd: str, data):
-        pattern = re.compile(r'^([^\s]+)\s*$')
+        pattern = re.compile(r'^(\S+)\s*$')
         question = pattern.findall(cmd)
         groupId = data['group_id']
         if len(question) == 0:
@@ -362,7 +362,7 @@ class MaintainFAQ(StandardPlugin):
                     send(groupId, "[CQ:reply,id=%d]问题删除失败"%(data['message_id']))
     @staticmethod
     def faqAppend(cmd: str, data):
-        pattern = re.compile(r'^([^\s]+)\s(.*)$')
+        pattern = re.compile(r'^(\S+)\s(.*)$')
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -381,7 +381,7 @@ class MaintainFAQ(StandardPlugin):
                     send(groupId, '[CQ:reply,id=%d]更新失败'%data['message_id'])
     @staticmethod
     def faqTag(cmd: str, data):
-        pattern = re.compile(r'^([^\s]+)\s+([^\s]+)$')
+        pattern = re.compile(r'^(\S+)\s+(\S+)$')
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -400,7 +400,7 @@ class MaintainFAQ(StandardPlugin):
     @staticmethod
     def faqRollBack(cmd: str, data):
         groupId = data['group_id']
-        pattern = re.compile(r'^([^\s]+)$')
+        pattern = re.compile(r'^(\S+)$')
         question = pattern.findall(cmd)
         if len(question) == 0:
             send(groupId, '语法有误，支持语句为: faq rollback <key>')
@@ -417,7 +417,7 @@ class MaintainFAQ(StandardPlugin):
     @staticmethod
     def faqHistory(cmd: str, data):
         groupId = data['group_id']
-        pattern = re.compile(r'^([^\s]+)$')
+        pattern = re.compile(r'^(\S+)$')
         question = pattern.findall(cmd)
         if len(question) == 0:
             send(groupId, '语法有误，支持语句为: faq history <key>')

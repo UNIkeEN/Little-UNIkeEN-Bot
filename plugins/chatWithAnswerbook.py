@@ -28,7 +28,7 @@ class ChatWithAnswerbook(StandardPlugin): # 答案之书
         return {
             'name': 'ChatWithAnswerbook',
             'description': '答案之书',
-            'commandDescription': '小 :unicorn: ，',
+            'commandDescription': '小🦄，[...]',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

@@ -31,7 +31,7 @@ class AddAssignedCoins(StandardPlugin): # 测试时使用，给指定用户增�
         self.cqAtPattern = re.compile(r'\[CQ\:at\,qq=(\d+)\]')
         self.numPattern = re.compile(r'^\d+$')
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return (self.pattern.match(msg) != None and data['user_id'] in ROOT_ADMIN_ID)
+        return self.pattern.match(msg) != None and data['user_id'] in ROOT_ADMIN_ID
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         num_id, num_append, _ = self.pattern.findall(msg)[0]
@@ -50,7 +50,7 @@ class AddAssignedCoins(StandardPlugin): # 测试时使用，给指定用户增�
     def getPluginInfo(self, )->Any:
         return {
             'name': 'AddAssignedCoins',
-            'description': '给指定用户增加金币,仅管理员可用',
+            'description': '给指定用户增加金币（仅限ROOT使用）',
             'commandDescription': '-addcoins [user_id]',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,

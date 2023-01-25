@@ -10,7 +10,7 @@ from pymysql.converters import escape_string
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, PluginGroupManager
+from utils.standardPlugin import StandardPlugin, PluginGroupManager, ScheduleStandardPlugin
 from utils.accountOperation import get_user_coins, update_user_coins
 
 CMD_LOTTERY=['祈愿','祈愿帮助']
@@ -23,12 +23,21 @@ HELP_LOTTERY=(f"""【祈愿帮助】
 21时，神明将默念三个数字，数字有对应者将得到神明的认可，
 按所中个数1-3分别赠予{PRIZE_NUM[1:]}💰赐礼""")
 
-class _lottery():
+class LotteryReminder(ScheduleStandardPlugin):
+    s = Semaphore()
+    def __init__(self) -> None:
+        if LotteryReminder.s.acquire(blocking=False):
+            self.schedule(hour=20, minute=50)
+    def tick(self) -> None:
+        for group_id in getPluginEnabledGroups('lottery'):
+            send(group_id, '🌈🎫本轮祈愿还有10分钟公布~\n - 关于玩法，请发送【祈愿帮助】')
+
+class _lottery(ScheduleStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self):
-        self.timer=Timer(1,self.drawing)
+        self.reminder = LotteryReminder()
         if _lottery.monitorSemaphore.acquire(blocking=False):
-            self.timer.start()
+            self.schedule(hour=21)
 
     def buyLottery(self,qq, msg):
         if get_user_coins(qq)<PRICE_NUM:
@@ -67,56 +76,32 @@ class _lottery():
         update_user_coins(qq,-PRICE_NUM, '祈愿')
         return (f"祈愿成功！花费【{PRICE_NUM}】💰，剩余【{get_user_coins(qq)}】💰")
 
-    def drawing(self): # 判断时间并开奖
-        #global auto_timer
-        now_time = datetime.now()
-        h_m = datetime.strftime(now_time,'%H:%M')
-        self.timer.cancel()
-        self.timer=Timer(60,self.drawing)
-        self.timer.start()
-        #print(h_m)
-        if h_m in ['20:50']:
-            for group_id in APPLY_GROUP_ID:
-                if group_id in getPluginEnabledGroups('lottery'):
-                    send(group_id, '🌈🎫本轮祈愿还有10分钟公布~\n - 关于玩法，请发送【祈愿帮助】')
-        if h_m in ['21:00']:
-        #if True:
-            key_list=[]
-            win_list=[]
+    def tick(self): # 开奖
+        key_list = sorted(random.sample(range(1, 11), 3))
+
+        mydb = mysql.connector.connect(**sqlConfig)
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT record FROM BOT_DATA.lotteries")
+        lot_base=list(mycursor)
+
+        win_list=[]
+        for _record in lot_base:
+            record = json.loads(_record[0])
+            num_in = 0
             for i in range(3):
-                while True:
-                    tmp=random.randint(1,10)
-                    #print(str(tmp)+';')
-                    if tmp not in key_list:
-                        key_list.append(tmp)
-                        break
-            key_list.sort()
-            #print(key_list)
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
-            mycursor.execute("SELECT record FROM BOT_DATA.lotteries")
-            lot_base=list(mycursor)
-            for _record in lot_base:
-                record = json.loads(_record[0])
-                num_in = 0
-                for i in range(3):
-                    if key_list[i]==record['num_list'][i]:
-                        num_in+=1
-                record['prize']=num_in
-                if num_in>0:
-                    win_list.append(record)
-                    update_user_coins(record['qq'], PRIZE_NUM[num_in], '祈愿成真')
-            mycursor.execute("TRUNCATE TABLE BOT_DATA.lotteries;")
-            #mydb.commit()
-            win_list = sorted(win_list,key=lambda x:x['prize'],reverse=True)
-            card_path=self.make_card(key_list, win_list)
-            r_path=os.path.dirname(os.path.realpath(__file__))
-            pic_path=(f'file:///{r_path}/'[:-8]+card_path)
-            for group_id in APPLY_GROUP_ID:
-                #print(check_config(group_id, 'Lottery'))
-                if group_id in getPluginEnabledGroups('lottery'):
-                    send(group_id, f'[CQ:image,file={pic_path}]')
-        return
+                if key_list[i]==record['num_list'][i]:
+                    num_in+=1
+            record['prize']=num_in
+            if num_in>0:
+                win_list.append(record)
+                update_user_coins(record['qq'], PRIZE_NUM[num_in], '祈愿成真')
+        mycursor.execute("TRUNCATE TABLE BOT_DATA.lotteries;")
+        win_list = sorted(win_list,key=lambda x:x['prize'],reverse=True)
+        card_path=self.make_card(key_list, win_list)
+        r_path=os.path.dirname(os.path.realpath(__file__))
+        pic_path=(f'file:///{r_path}/'[:-8]+card_path)
+        for group_id in getPluginEnabledGroups('lottery'):
+            send(group_id, f'[CQ:image,file={pic_path}]')
         
     def make_card(self, key_list, win_list):
         BACK_CLR = {'r':(255, 232, 236, 255),'g':(219, 255, 228, 255),'h':(234, 234, 234, 255),'o':(254, 232, 199, 255)}

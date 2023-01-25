@@ -365,7 +365,7 @@ class ChatWithNLP(StandardPlugin): # NLP对话插件
         return {
             'name': 'ChatWithNLP',
             'description': 'NLP对话',
-            'commandDescription': '小马，',
+            'commandDescription': '小马，[...]',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
