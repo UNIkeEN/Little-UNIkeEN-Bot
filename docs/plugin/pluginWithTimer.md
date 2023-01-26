@@ -33,6 +33,7 @@ class BaseTimeSchedulePlugin(ABC):
         """每次触发任务所做的事情"""
         raise NotImplementedError
     
+    @final
     def _tick(self,)->None:
         try:
             self.tick()
