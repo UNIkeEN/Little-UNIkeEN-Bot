@@ -9,7 +9,7 @@ import re
 class ShowHelp(StandardPlugin): 
     def __init__(self) -> None:
         self.pattern = re.compile(r'^\-help\s*(.*)$')
-        self.subdevidePattern = re.compile(r'^([^\s]+)\s+([^\s].*)$')
+        self.subdevidePattern = re.compile(r'^(\S+)\s+(\S.*)$')
         self.pluginList = []
         self.pluginListPrivate = []
     def judgeTrigger(self, msg:str, data:Any) -> bool:

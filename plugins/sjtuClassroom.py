@@ -63,7 +63,7 @@ def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
     东中1-105 => (东中院, 东中院1-105)
     你好 => None
     """
-    pattern1 = re.compile(r'^(上|中|下|东上|东下|)院?\s*(\d{3})$')
+    pattern1 = re.compile(r'^(上|中|下|东上|东下)院?\s*(\d{3})$')
     if pattern1.match(roomStr) != None:
         building, roomCode = pattern1.findall(roomStr)[0]
         building += '院'

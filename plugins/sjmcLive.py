@@ -33,7 +33,7 @@ class GetFduMcLive(StandardPlugin):
         if roomInfo['live_status'] == 1:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive-%d.png'%target)
             genLivePic(roomInfo, '基岩社直播间状态', savePath)
-            send(target, f'[CQ:image,file=files://{savePath},id=40000]', data['message_type'])
+            send(target, f'[CQ:image,file=files://{savePath}]', data['message_type'])
         else:
             send(target, '当前时段未开播哦', data['message_type'])
         return "OK"
@@ -83,7 +83,7 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
                 for group in getPluginEnabledGroups('mclive'):
                     savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive.png')
                     send(group, '检测到基岩社B站开播，基岩社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                    genLivePic(roomInfo, '基岩社直播间状态', savePath)
+                    genLivePic(roomInfo, '基岩社直播间状态', savePath, useCover=True)
                     send(group, f'[CQ:image,file=files://{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
@@ -122,7 +122,7 @@ class GetSjmcLive(StandardPlugin):
         if roomInfo['live_status'] == 1:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive-%d.png'%target)
             genLivePic(roomInfo, 'sjmc直播间状态', savePath)
-            send(target, f'[CQ:image,file=files://{savePath},id=40000]', data['message_type'])
+            send(target, f'[CQ:image,file=files://{savePath}]', data['message_type'])
         else:
             send(target, '当前时段未开播哦', data['message_type'])
         return "OK"
@@ -173,7 +173,7 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
                 for group in getPluginEnabledGroups('mclive'):
                     send(group, '检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/%d'%self.liveId)
                     savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive.png')
-                    genLivePic(roomInfo, 'sjmc直播间状态', savePath)
+                    genLivePic(roomInfo, 'sjmc直播间状态', savePath, useCover=True)
                     send(group, f'[CQ:image,file=files://{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
@@ -190,7 +190,15 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
-def genLivePic(roomInfo, title, savePath)->str:
+def genLivePic(roomInfo, title, savePath, useCover=False)->str:
+    """
+    @roomInfo: Dict
+    @title:    card title
+    @savePath: card image save path
+    @useCover:
+        if True: then gen card using roomInfo['cover']
+        else:    then gen card using roomInfo['keyframe']
+    """
     img = ResponseImage(
         theme = 'unicorn',
         title = title, 
@@ -206,7 +214,7 @@ def genLivePic(roomInfo, title, savePath)->str:
                                                 "开播时间  %Y-%m-%d %H:%M:%S"),
             keyword = '直播分区： '+roomInfo['area_name'],
             body = roomInfo['description'],
-            illustration = roomInfo['keyframe'],
+            illustration = roomInfo['cover'] if useCover else roomInfo['keyframe'],
         )
     )
     img.generateImage(savePath)

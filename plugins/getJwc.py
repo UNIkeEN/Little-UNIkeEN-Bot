@@ -126,10 +126,16 @@ def getJwc()->list:
             year, month = sj.p.contents[0].split('.')
             day = sj.h2.contents[0]
             content = n.find(class_='wz')
-            title:str = content.h2.contents[0]
+            try:
+                title:str = content.h2.contents[0]
+            except:
+                title = None
             link:str = content.a.get('href')
             link = urljoin(pageUrl, link)
-            detail:str = content.p.contents[0]
+            try:
+                detail:str = content.p.contents[0]
+            except:
+                detail = None
             newsList.append({
                 'year': year,
                 'month': month,

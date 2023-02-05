@@ -43,6 +43,12 @@ def get_login_info()->dict:
         warning("key error in get_login_info: {}".format(e))
     return 0, ''
 
+def gocqQuote(text:str)->str:
+    """go-cqhttp文本转义
+    参考链接： https://docs.go-cqhttp.org/cqcode/#%E8%BD%AC%E4%B9%89
+    """
+    return text.replace('&','&amp;').replace('[','&#91;').replace(']','&#93;').replace(',','&#44;')
+
 def send(id: int, message: str, type:str='group')->None:
     """发送消息
     id: 群号或者私聊对象qq号

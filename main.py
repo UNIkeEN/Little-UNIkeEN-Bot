@@ -5,14 +5,16 @@ from enum import IntEnum
 
 from utils.basicEvent import send
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin
+from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin, PokeStandardPlugin
 
+from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
 from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
 from plugins.greetings import MorningGreet, NightGreet
 from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
-from plugins.news import ShowNews
+from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
+from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
 from plugins.signIn import SignIn
 from plugins.stocks import *
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
@@ -22,7 +24,7 @@ from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan
-
+from plugins.bilibiliSubscribe import createBilibiliTable, BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
 try:
     from plugins.chatWithNLP import ChatWithNLP
 except:
@@ -86,9 +88,11 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
     PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace()], 'superemoji'), # 超级表情
-    PluginGroupManager([ShowNews()],'news'),  # 新闻
+    PluginGroupManager([ShowNews(), YesterdayNews(), 
+                        PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
+    PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SignIn()], 'signin'),  # 签到
-    PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
+    # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
@@ -107,12 +111,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
     PluginGroupManager([ActReportPlugin(), wordCloudPlugin(), PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
+    PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
     ShowStatus(),ServerMonitor(),
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
-    ShowNews(),
+    ShowNews(), YesterdayNews(),
     MorningGreet(), NightGreet(),
     SignIn(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
@@ -127,7 +132,9 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     SjtuHesuan(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom()
 ]
-
+GroupPokeList:List[PokeStandardPlugin] = [
+    AutoRepoke(), # 自动回复拍一拍
+]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 
 app = Flask(__name__)
@@ -192,18 +199,18 @@ def post_data():
     elif flag==NoticeType.PrivateMessage:
         msg=data['message'].strip()
         for event in PrivatePluginList:
-            event: StandardPlugin
             if event.judgeTrigger(msg, data):
-                ret = event.executeEvent(msg, data)
-                if ret != None:
-                    return ret
+                if event.executeEvent(msg, data)!=None:
+                    break
     elif flag == NoticeType.GroupUpload:
         for event in [GroupFileRecorder()]:
             event.uploadFile(data)
     # 群内拍一拍回拍
     elif flag==NoticeType.GroupPoke: 
-        if data['target_id'] == data['self_id']:
-            send(data['group_id'], f"[CQ:poke,qq={data['sender_id']}]")
+        for p in GroupPokeList:
+            if p.judgeTrigger(data):
+                if p.pokeMessage(data)!=None:
+                    break
             
     # 自动加好友
     elif flag==NoticeType.AddPrivate:
@@ -212,6 +219,7 @@ def post_data():
 def initialize():
     createGlobalConfig()
     createFaqDb()
+    createBilibiliTable()
     for group in get_group_list():
         groupId = group['group_id']
         createFaqTable(str(groupId))

@@ -12,6 +12,7 @@ from threading import Timer, Semaphore, Thread
 import datetime
 import os
 from matplotlib import colors
+import numpy as np
 
 def wc_save_path(group_id:int, yesterday_str:str)->str:
     return os.path.join(ROOT_PATH, SAVE_TMP_PATH, f'{group_id}_{yesterday_str}_wordcloud.png')
@@ -45,7 +46,7 @@ class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
             img = Image.new('RGBA', (860, 670), PALETTE_WHITE)
             draw = ImageDraw.Draw(img)
             draw.rectangle((0,0,859,669), fill=PALETTE_WHITE, outline=PALETTE_GREY_BORDER, width=2)
-            img.paste(wcPic, (30,30))
+            img.paste(wcPic.resize((800, 540)), (30,30))
             size0 = draw.textsize('昨 日 词 云', font=FONT_SYHT_M42)
             draw.text((30,590), '昨 日 词 云', fill=PALETTE_BLACK, font=FONT_SYHT_M42)
             draw.text((30+size0[0]+10, 595), '🦄', fill=(209,113,183,255), font=FONT_SYHT_M24)
@@ -95,7 +96,21 @@ class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
                                 min_font_size=6,
                                 max_words=110,stopwords=self.stopwords,
                                 colormap=colormap)
-
+            
+            # # MC群专属
+            # if group_id == 712514518:
+            #     mask_img = np.array(Image.open('resources/images/genshin/2.png'))
+            #     color_func = wordcloud.ImageColorGenerator(mask_img)
+            #     wc = wordcloud.WordCloud(font_path="resources/fonts/汉仪文黑.ttf",
+            #                         width = 2133,
+            #                         height = 1440,
+            #                         background_color='white',
+            #                         min_font_size=2,max_font_size=150,relative_scaling=0.4,
+            #                         max_words=600,stopwords=self.stopwords,
+            #                         colormap=colormap,
+            #                         color_func=color_func,
+            #                         mask=mask_img)
+                                    
             wc.generate(' '.join(text))
             im = wc.to_image()
             return im

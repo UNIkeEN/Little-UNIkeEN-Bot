@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Union, Tuple, Any, List
+from typing import Union, Tuple, Any, List, final
 from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig, getGroupAdmins
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.job import Job
 
 class StandardPlugin(ABC):
     """接收‘正常私聊消息或群消息’的接口"""
@@ -73,6 +74,18 @@ class EmptyPlugin(StandardPlugin):
             'author': 'Unicorn',
         }
 
+class PokeStandardPlugin(ABC):
+    """接收‘拍一拍’消息"""
+    @abstractmethod
+    def judgeTrigger(self, data:Any)->bool:
+        """判断插件是否触发"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def pokeMessage(self, data:Any)->Union[str, None]:
+        """接收‘戳一戳’消息的接口"""
+        raise NotImplementedError
+
 class RecallMessageStandardPlugin(ABC):
     """接收‘撤回类型’消息的接口"""
     @abstractmethod
@@ -95,6 +108,7 @@ class BaseTimeSchedulePlugin(ABC):
         """每次触发任务所做的事情"""
         raise NotImplementedError
     
+    @final
     def _tick(self,)->None:
         try:
             self.tick()
@@ -103,24 +117,28 @@ class BaseTimeSchedulePlugin(ABC):
 
 class ScheduleStandardPlugin(BaseTimeSchedulePlugin):
     """固定每日时刻执行"""
-    def schedule(self, hour:Union[str, int]=0, minute:Union[str, int]=0)->None:
+    def schedule(self, hour:Union[str, int]=0, minute:Union[str, int]=0)->Job:
         """可以重写此方法
         @hour: 
         @minute:
         e.g:
             hour: (str)'1-3', minute: None ---- 每天 1:00, 2:00, 3:00 运行
             hour: (int)0, minute: (int)1   ---- 每天 0:01 运行
+        
+        @return: this job
         """
-        BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'cron', hour=hour, minute=minute)
+        return BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'cron', hour=hour, minute=minute)
 
 class CronStandardPlugin(BaseTimeSchedulePlugin):
     """间隔固定时长执行"""
-    def start(self, startTime:float, intervalTime:float)->None:
+    def start(self, startTime:float, intervalTime:float)->Job:
         """开始执行，可以重写此方法
         @startTime: deprecated
         @intervalTime: 间隔多久执行一次任务，单位：秒
+
+        @return: this job
         """
-        BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'interval', seconds=intervalTime)
+        return BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'interval', seconds=intervalTime)
 
 class PluginGroupManager(StandardPlugin):
     def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
@@ -134,6 +152,7 @@ class PluginGroupManager(StandardPlugin):
         self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
         self._checkGroupInfo()
 
+    @final
     def _checkGroupInfo(self):
         # check group name
         if 'name' not in self.groupInfo.keys():
