@@ -827,6 +827,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3_5">
@@ -1191,6 +1195,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/bilibiliSubscribePlugin/" class="md-nav__link">
+        B站订阅
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/hotSearchPlugin/" class="md-nav__link">
+        热搜
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1338,7 +1370,7 @@
 <p>Little-UNIkeEN-Bot 通过插件机制实现功能的开发，通过维护插件列表实现功能的增减。</p>
 <h1 id="1-standardplugin">1. 聊天插件 - StandardPlugin</h1>
 <h2 id="_1">插件逻辑</h2>
-<p>所有接收私聊消息和群消息的插件都必须继承于 <code>StandardPlugin</code> 类，并实现以下三个接口函数：</p>
+<p>所有接收私聊消息和群消息的插件都必须继承于 <code>StandardPlugin</code> 类，并实现以下四个接口函数（前三个必须实现，最后一个可选）：</p>
 <table>
 <thead>
 <tr>
@@ -1366,6 +1398,12 @@
 <td><code>None</code></td>
 <td><code>dict</code></td>
 <td>返回插件信息</td>
+</tr>
+<tr>
+<td>onStateChange</td>
+<td><code>@nextState</code>: 下一个状态，<code>bool</code>类型<br><code>@data</code>: 消息所包括的所有信息，<code>dict</code>类型</td>
+<td><code>None</code></td>
+<td>在开关插件的时候出发插件特定逻辑</td>
 </tr>
 </tbody>
 </table>
