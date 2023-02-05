@@ -415,7 +415,14 @@
     最新版本
   </a>
   
-    <nav class="md-nav" aria-label="最新版本">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    历史版本
+  </a>
+  
+    <nav class="md-nav" aria-label="历史版本">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -431,19 +438,6 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    历史版本
-  </a>
-  
-    <nav class="md-nav" aria-label="历史版本">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#102-20221030" class="md-nav__link">
@@ -1426,6 +1420,24 @@
 <li>暂无明确计划</li>
 </ul>
 <h2 id="_2">最新版本</h2>
+<p>功能更新：</p>
+<ol>
+<li>添加“水群报告”插件，统计并展示群内成员的活跃程度、与 Bot 的互动次数等</li>
+<li>添加“昨日词云”插件，总结昨日群聊中的高频热词并生成词云</li>
+<li>添加“SJTU 教室查询”插件，获取交大主要教学楼的实时人数、环境参数</li>
+<li>添加“随机助手”插件，提供骰子、三国杀判定、塔罗牌占卜等功能</li>
+<li>更新“群功能设置”插件，优化群管理员开关功能的操作</li>
+</ol>
+<p>优化修复：</p>
+<ol>
+<li>全局优化定时任务的实现方式，编写统一的定时触发函数</li>
+<li>优化部分插件的正则表达式触发逻辑</li>
+<li>优化部分插件的帮助提示文本、插件使用的语料库</li>
+<li>优化 responseImage 库对于不同格式的参数传入方式与实现方式</li>
+<li>弃用如“原神实时便笺”插件中米游社接口等已失效的 API 及插件</li>
+</ol>
+<p>修复其他若干已知问题</p>
+<h2 id="_3">历史版本</h2>
 <h3 id="110-20221217">1.1.0 - 2022/12/17</h3>
 <p>功能更新：</p>
 <ol>
@@ -1463,7 +1475,6 @@
 <li>修复 responseImage 库中字体显示错误的问题</li>
 <li>修复了若干其他已知问题</li>
 </ol>
-<h2 id="_3">历史版本</h2>
 <h3 id="102-20221030">1.0.2 - 2022/10/30</h3>
 <ol>
 <li>重写了faq插件，支持问题列表图像化</li>
