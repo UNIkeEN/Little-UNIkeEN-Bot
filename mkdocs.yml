@@ -50,6 +50,8 @@ nav:
         - '水群报告': 'plugin/plugins/myactPlugin.md'
         - '昨日词云': 'plugin/plugins/wordcloudPlugin.md'
         - '随机数': 'plugin/plugins/randomNumPlugin.md'
+        - 'B站订阅': 'plugin/plugins/bilibiliSubscribePlugin.md'
+        - '热搜': 'plugin/plugins/hotSearchPlugin.md'
     - API:
       - '驱动器对接': 'api/send.md'
       - '运行时警告': 'api/warning.md'

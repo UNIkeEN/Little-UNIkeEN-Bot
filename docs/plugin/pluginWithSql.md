@@ -16,3 +16,4 @@
 - [SJTU canvas 插件](./plugins/canvasIcsPlugin.md) （ics url 的存取）
 - [聊天记录存档插件](./plugins/messageRecorderPlugin.md)（聊天记录的存储）
 - [accountOperation API](../api/account-operation.md) 金币系统
+- [B站订阅](./plugins/bilibiliSubscribePlugin.md) （存储订阅信息和up主上次上传视频信息）

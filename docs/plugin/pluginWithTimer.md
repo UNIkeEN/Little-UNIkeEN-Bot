@@ -9,6 +9,22 @@
 | tick | - | `None` | 做每次触发任务所做的事情 |
 | start | _, intervalTime | `None` | 开始计时 |
 
+!!! warning "注意：start接口首个参数弃用，留作占位符"
+    由于历史原因，`CronStandardPlugin`类的`start`接口第一个参数"startTime"弃用
+
+!!! warning "注意：CronStandardPlugin名称中的cron实际上对应apschedule的interval"
+    由于历史原因，`CronStandardPlugin`类的"cron"实际上对应apschedule的"interval"
+
+
+关于 `CronStandardPlugin` 类的使用，可参考:
+
+- [B站订阅](./plugins/bilibiliSubscribePlugin.md) （轮询up主信息）
+- [第二课堂](./plugins/sjtuDektPlugin.md) （轮询第二课堂信息）
+- [SJTU教务处](./plugins/sjtuJwcPlugin.md) （轮询教务通知）
+- [新闻](./plugins/newsPlugin.md) （轮询新闻更新信息）
+- [SJMC直播间状态](./plugins/sjmcLivePlugin.md) （轮询SJMC直播间状态）
+- [SJTU麦当劳](./plugins/sjtuMddPlugin.md) （轮询交大闵行麦当劳餐厅状态）
+
 # 2. 锚定固定时刻触发插件
 
 锚定固定时刻触发的插件推荐继承于 `ScheduleStandardPlugin` 类，继承此类后，定时任务执行过程中所抛出的异常会被自动warning。
@@ -17,6 +33,14 @@
 | ---- | ---- | ---- | ---- |
 | tick | - | `None` | 做每次触发任务所做的事情 |
 | schedule | hour, minute | `None` | 开始计时 |
+
+!!! warning "注意：ScheduleStandardPlugin名称中的schedule实际上对应apschedule的cron"
+    由于历史原因，`ScheduleStandardPlugin`类的"schedule"实际上对应apschedule的"cron"
+
+关于 `ScheduleStandardPlugin` 类的使用，可参考：
+
+- [昨日词云](./plugins/wordcloudPlugin.md) （每天0点定时更新词云）
+- [彩票](./plugins/lotteryPlugin.md) （每天定时开奖）
 
 # 代码分析
 

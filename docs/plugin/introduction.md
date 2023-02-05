@@ -4,13 +4,14 @@ Little-UNIkeEN-Bot 通过插件机制实现功能的开发，通过维护插件�
 
 ## 插件逻辑
 
-所有接收私聊消息和群消息的插件都必须继承于 `StandardPlugin` 类，并实现以下三个接口函数：
+所有接收私聊消息和群消息的插件都必须继承于 `StandardPlugin` 类，并实现以下四个接口函数（前三个必须实现，最后一个可选）：
 
 | 接口名称 | 参数 | 返回值类型 | 作用 |
 | ---- | ---- | ---- | ---- |
 | judgeTrigger | `@msg`: 消息文本，`str`类型<br>`@data`: 消息所包括的所有信息，`dict`类型 | `bool` | 判断此插件是否会触发 |
 | executeEvent | `@msg`: 消息文本，`str`类型<br>`@data`: 消息所包括的所有信息，`dict`类型 | `str` 或者 `None` | 执行插件逻辑 |
 | getPluginInfo |  `None` | `dict` | 返回插件信息 |
+| onStateChange | `@nextState`: 下一个状态，`bool`类型<br>`@data`: 消息所包括的所有信息，`dict`类型 | `None` | 在开关插件的时候出发插件特定逻辑 |
 
 开发者在 `main.py` 中 `import` 功能插件，并维护 `main.py` 中的插件列表以增减插件，关于插件的具体示例请见下一节。
 

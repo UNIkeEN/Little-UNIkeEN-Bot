@@ -52,6 +52,8 @@ bot> ${教务处通知的图片}
 
 ## 3. 代码分析
 
+代码位于 `plugins/getJwc.py`
+
 ```python
 from utils.standardPlugin import StandardPlugin, Any, Union, CronStandardPlugin
 from utils.responseImage import *
