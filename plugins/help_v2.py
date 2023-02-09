@@ -50,8 +50,12 @@ class ShowHelp(StandardPlugin):
             'name': 'ShowHelp',
             'description': '帮助',
             'commandDescription': '-help [...]?'
-                '\n开启插件组:  -grpcfg enable <group name>'
-                '\n关闭插件组:  -grpcfg disable <group name>',
+                '\n群主权限标识: 👑'
+                '\nROOT权限标识: 🔒'
+                '\n群BOT管理权限标识: 🔑'
+                '\n开启插件组[🔑]:  -grpcfg enable <组名>'
+                '\n关闭插件组[🔑]:  -grpcfg disable <组名>'
+                ,
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

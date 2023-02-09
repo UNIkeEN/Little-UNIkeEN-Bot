@@ -26,7 +26,7 @@ class Show2cyPIC(StandardPlugin):
     def getPluginInfo(self, )->Any:
         return {
             'name': 'Show2cyPIC',
-            'description': '来点图图',
+            'description': '发送二次元图片',
             'commandDescription': '来点图图',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,

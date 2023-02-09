@@ -23,6 +23,19 @@ def get_avatar_pic(id: int)->Union[None, bytes]:
     else:
         return url_avatar.content
 
+def get_group_avatar_pic(id: int)->Union[None, bytes]:
+    """获取群头像
+    @id: 群号
+    @return:
+        None if 群头像获取失败
+        bytes if 群头像获取成功
+    """
+    url_avatar = requests.get(f'https://p.qlogo.cn/gh/{id}/{id}/100/')
+    if url_avatar.status_code != requests.codes.ok:
+        return None
+    else:
+        return url_avatar.content
+
 def get_login_info()->dict:
     """获取登录号信息
     @return: {

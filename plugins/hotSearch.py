@@ -1,7 +1,7 @@
 import requests
 from lxml import etree
 from PIL import Image, ImageDraw, ImageFont
-import datetime
+from datetime import datetime
 from pathlib import Path
 import re
 from typing import Union, Any, Optional, Dict, List
@@ -9,6 +9,23 @@ from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from threading import Semaphore
+from utils.hotSearchImage import HotSearchImage, Colors, Fonts
+from utils.responseImage_beta import ResponseImage
+
+def plotHotSearch(meta:List[Dict[str, Any]], width:int, imgPath:str)->None:
+    """
+    @meta: List[
+        {
+            "text": str,
+            "color": Union[None, Colors],
+            "font": Union[None, Fonts],
+        }
+    ]
+    @imgPath: path to save image
+    """
+    generator = HotSearchImage(meta, width, Colors.PALETTE_BLACK, Fonts.FONT_SYHT_M24, Colors.PALETTE_WHITE)
+    img = generator.draw()
+    img.save(imgPath)
 
 def getWeiboHotSearch()->Optional[List[Dict[str, Any]]]:
     """
@@ -64,21 +81,25 @@ def getWeiboHotSearch()->Optional[List[Dict[str, Any]]]:
 
 class WeiboHotSearch(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg in ['微博热搜','热搜','wbrs']
+        return msg in ['微博热搜','热搜','wbrs','-wbrs']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         wbhs = getWeiboHotSearch()
         if wbhs == None:
             send(target, "[CQ:reply,id={}]微博热搜获取失败".format(data['message_id']), data['message_type'])
         else:
-            hsWord = '\n'.join(['【%d】%s'%(hs['rank'], hs['word']) for hs in wbhs])
-            send(target, hsWord, data['message_type'])
+            # hsWord = '\n'.join(['【%d】%s'%(hs['rank'], hs['word']) for hs in wbhs])
+            # send(target, hsWord, data['message_type'])
+            meta = [{'text':hs['word']} for hs in wbhs]
+            imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wbrs_%s_%d.png'%(data['message_type'], target))
+            img = plotHotSearch(meta, 550, imgPath)
+            send(target, f'[CQ:image,file=files://{imgPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
             'name': 'WeiboHotSearch',
             'description': '微博热搜',
-            'commandDescription': '热搜/微博热搜/wbrs',
+            'commandDescription': '热搜/微博热搜/wbrs/-wbrs',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
@@ -100,21 +121,25 @@ def getBaiduHotSearch()->Optional[List[Dict[str, Any]]]:
 
 class BaiduHotSearch(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg in ['百度热搜', 'bdrs']
+        return msg in ['百度热搜', 'bdrs', '-bdrs']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         bdhs = getBaiduHotSearch()
         if bdhs == None:
             send(target, "[CQ:reply,id={}]百度热搜获取失败".format(data['message_id']), data['message_type'])
         else:
-            hsWord = '\n'.join(['【%d】%s'%(rank+1, hs['word']) for rank, hs in enumerate(bdhs)])
-            send(target, hsWord, data['message_type'])
+            # hsWord = '\n'.join(['【%d】%s'%(rank+1, hs['word']) for rank, hs in enumerate(bdhs)])
+            # send(target, hsWord, data['message_type'])
+            meta = [{'text':hs['word']} for hs in bdhs]
+            imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'bdrs_%s_%d.png'%(data['message_type'], target))
+            img = plotHotSearch(meta, 550, imgPath)
+            send(target, f'[CQ:image,file=files://{imgPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
             'name': 'BaiduHotSearch',
             'description': '百度热搜',
-            'commandDescription': '百度热搜/bdrs',
+            'commandDescription': '百度热搜/bdrs/-bdrs',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
@@ -136,21 +161,44 @@ def getZhihuHotSearch()->Optional[List[Dict[str, Any]]]:
 
 class ZhihuHotSearch(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg in ['知乎热搜', 'zhrs']
+        return msg in ['知乎热搜', 'zhrs', '-zhrs']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         zhrs = getZhihuHotSearch()
         if zhrs == None:
             send(target, "[CQ:reply,id={}]知乎热搜获取失败".format(data['message_id']), data['message_type'])
         else:
-            hsWord = '\n'.join(['【%d】%s'%(rank, hs['target']['excerpt']) for rank, hs in enumerate(zhrs[:5])])
-            send(target, hsWord, data['message_type'])
+            a = ResponseImage(
+                title='知乎热搜', 
+                titleColor=Colors.PALETTE_SJTU_RED, 
+                primaryColor=Colors.PALETTE_SJTU_RED, 
+                footer='update at %s'%datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M"),
+                layout='normal'
+            )
+            for rank, hs in enumerate(zhrs[:10]):
+                try:
+                    icon = hs['children'][0]['thumbnail']
+                except:
+                    icon = None
+                a.addCard({
+                    'style': 'normal',
+                    'title': hs['target']['title'],
+                    'keyword': str(datetime.fromtimestamp(hs['target']['created'])),
+                    'body': hs['target']['excerpt'],
+                    'icon': icon
+                })
+            imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'zhrs_%s_%d.png'%(data['message_type'], target))
+            a.generateImage(imgPath)
+            send(target, f'[CQ:image,file=files://{imgPath}]', data['message_type'])
+
+            # hsWord = '\n'.join(['【%d】%s'%(rank, hs['target']['excerpt']) for rank, hs in enumerate(zhrs[:5])])
+            # send(target, hsWord, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
             'name': 'ZhihuHotSearch',
             'description': '知乎热搜',
-            'commandDescription': '知乎热搜/zhrs',
+            'commandDescription': '知乎热搜/zhrs/-zhrs',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

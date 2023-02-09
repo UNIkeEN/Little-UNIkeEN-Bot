@@ -474,7 +474,7 @@ class ResponseImage():
                                 clrback = PALETTE_LIGHTRED
                         self.drawRoundedRectangle(x_l, y_top, x_r, y_top+SPACE_ROW, fill=clrback, r=3.5)
                         if line[1]>0:
-                            self.drawRoundedRectangle(x_l, y_top, x_l+(x_r-x_l)*line[1], y_top+SPACE_ROW, fill=clrfront, r=3.5)
+                            self.drawRoundedRectangle(x_l, y_top, x_l+(x_r-x_l)*(line[1] if line[1]>=0.01 else 0.01), y_top+SPACE_ROW, fill=clrfront, r=3.5)
                         y_top += (3*SPACE_ROW)
                         continue
                     if line[0] in ['illustration']:

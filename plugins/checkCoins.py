@@ -50,8 +50,8 @@ class AddAssignedCoins(StandardPlugin): # 测试时使用，给指定用户增�
     def getPluginInfo(self, )->Any:
         return {
             'name': 'AddAssignedCoins',
-            'description': '给指定用户增加金币（仅限ROOT使用）',
-            'commandDescription': '-addcoins [user_id]',
+            'description': '给指定用户增加金币[🔒]',
+            'commandDescription': '-addcoins @{..} <money>',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

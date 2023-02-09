@@ -1,6 +1,6 @@
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
-from utils.basicEvent import send, warning, startswith_in, get_avatar_pic
-from typing import Union, Tuple, Any, List
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, BOT_SELF_QQ
+from utils.basicEvent import send, warning, startswith_in, get_avatar_pic, get_group_avatar_pic, isGroupOwner, getGroupAdmins
+from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin
 from PIL import Image, ImageDraw, ImageFont
 import mysql.connector
@@ -10,6 +10,7 @@ import datetime
 from copy import deepcopy
 from io import BytesIO
 import re
+import random
 
 BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
             '-help','-st','-lib','-hs','-mdd',
@@ -20,15 +21,18 @@ BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
             '新闻', '-sjtu news', '交大新闻',
             '来点图图',
             '决斗','接受决斗','ttzf','izf',
-            '-myact', '-wc']
+            '-myact', '-wc', '-actrank']
 
 class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-myact' and data['message_type'] == 'group'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         imgPath = getMyActivity(data['user_id'], data['group_id'])
-        imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-        send(data['group_id'], '[CQ:image,file=files://%s]'%imgPath, data['message_type'])
+        if imgPath == None:
+            send(data['group_id'], '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
+        else:
+            imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+            send(data['group_id'], '[CQ:image,file=files://%s]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -41,8 +45,40 @@ class ActReportPlugin(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
+class ActRankPlugin(StandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg == '-actrank' and data['message_type'] == 'group' and \
+            (isGroupOwner(data['group_id'], data['user_id']) or data['user_id'] in getGroupAdmins(data['group_id']))
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        imgPath = getGroupActivityRank(data['group_id'])
+        if imgPath == None:
+            send(data['group_id'], '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
+        else:
+            imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+            send(data['group_id'], '[CQ:image,file=files://%s]'%imgPath, data['message_type'])
+        return "OK"
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'ActRank',
+            'description': '水群排行榜[👑🔑]',
+            'commandDescription': '-actrank',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }   
     
-def getMyActivity(user_id, group_id):
+def getMyActivity(user_id:int, group_id:int)->Optional[str]:
+    """生成并绘制水群报告
+    @user_id: 用户QQ
+    @group_id: 群
+
+    @return:
+        if str:     生成成功，返回图片存储地址
+        elif None:  生成失败
+    """
     messageNumber = 0
     messageWithBotNumber = 0
     messageDescript = ''
@@ -231,3 +267,93 @@ def getMyActivity(user_id, group_id):
         warning("mysql error in getMyActivity: {}".format(e))
     except BaseException as e:
         warning("error in getMyActivity: {}".format(e))
+
+def getGroupActivityRank(group_id:int)->Optional[str]:
+    """生成并绘制水群排行
+    @group_id: 群号
+    
+    @return:
+        if str:     生成成功，返回图片存储地址
+        elif None:  生成失败
+    """
+    try:
+        mydb = mysql.connector.connect(**sqlConfig)
+        mycursor = mydb.cursor()
+        # mycursor.execute("SELECT ANY_VALUE(nickname), ANY_VALUE(card), user_id, COUNT(*) FROM BOT_DATA.messageRecord WHERE group_id=%d and user_id!=%d GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 15;"%(group_id, BOT_SELF_QQ))
+        mycursor.execute("use BOT_DATA")
+        randNum = random.randint(1e9, 1e10-1)
+        tempTableName = 'actRank_'+str(randNum)+'_'+str(group_id)
+        tempProcName = 'getNick_'+str(randNum)+'_'+str(group_id)
+        mycursor.execute('drop temporary table if exists %s'%(tempTableName))
+        mycursor.execute("""
+        create temporary table %s 
+        select user_id as u, count(*) as c from BOT_DATA.messageRecord 
+        where group_id=%d and user_id != %d group by user_id
+        order by count(user_id) desc limit 15"""%(tempTableName, group_id, BOT_SELF_QQ))
+        mycursor.execute("alter table %s add column n varchar(50)"%(tempTableName))
+        mycursor.execute("drop procedure if exists %s"%tempProcName)
+        mycursor.execute("""create procedure %s()
+        begin
+        declare nick varchar(50);
+        declare uid bigint unsigned;
+        declare done bool default false;
+        declare cur cursor for select u from %s;
+        declare continue handler for sqlstate '02000' set done = true;
+        open cur;
+        repeat
+        fetch cur into uid;
+        select if(card = '', nickname, card) into nick
+        FROM BOT_DATA.messageRecord  
+        WHERE message_seq = ( 
+            select max(message_seq) from BOT_DATA.messageRecord 
+            where user_id = uid and group_id = %d
+        )  and group_id = %d;
+        update %s set n = nick where u = uid;
+        until done = true
+        end repeat;
+        close cur;
+        end; """%(tempProcName, tempTableName, group_id, group_id, tempTableName))
+        mycursor.execute("call %s()"%tempProcName)
+        mycursor.execute("select n, u, c from %s"%(tempTableName))
+        result=list(mycursor)
+        card_content = []
+        max_num = result[0][2]
+        for index, (nickname, user_id, count) in enumerate(result):
+            text = "%d. %s : %d条"%(index+1, nickname, count)
+            if index <= 3:
+                card_content.append(('subtitle',text))
+                card_content.append(('progressBar', count/max_num, PALETTE_ORANGE, PALETTE_LIGHTORANGE))
+            else:
+                card_content.append(('body',text))
+                card_content.append(('progressBar', count/max_num, PALETTE_GREEN, PALETTE_LIGHTGREEN))
+
+        img_avatar = Image.open(BytesIO(get_group_avatar_pic(group_id)))
+        ActRankCards = ResponseImage(
+            titleColor = PALETTE_SJTU_BLUE,
+            title = '水群排行榜',
+            footer = '* 数据统计仅包含小🦄1.0.0版本更新后群内消息',
+            layout = 'normal',
+            width = 880,
+            cardSubtitleFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 27),
+            cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        )
+        ActRankCards.addCardList([
+            ResponseImage.RichContentCard(
+                raw_content=[
+                    ('keyword','群 : %d'%(group_id)),
+                    ('separator',),
+                    ('subtitle','截至 : '+datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d %H:%M:%S'))
+                ],
+                icon = img_avatar
+            ),
+            ResponseImage.RichContentCard(
+                raw_content = card_content
+            )
+        ])
+        save_path = (os.path.join(SAVE_TMP_PATH, f'{group_id}_actRank.png'))
+        ActRankCards.generateImage(save_path)
+        return save_path
+    except mysql.connector.Error as e:
+        warning("mysql error in getGroupActivityRank: {}".format(e))
+    except BaseException as e:
+        warning("error in getGroupActivityRank: {}".format(e))

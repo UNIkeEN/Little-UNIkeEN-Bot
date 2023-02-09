@@ -21,7 +21,7 @@ class GetPermission(StandardPlugin):
     def getPluginInfo(self) -> dict:
         return {
             'name': 'GetPermission',
-            'description': '获取群bot管理权限（仅限root和群主使用）',
+            'description': '获取🔑权限[👑🔒]',
             'commandDescription': '-sudo',
             'usePlace': ['group'],
             'showInHelp': True,
@@ -51,8 +51,8 @@ class AddPermission(StandardPlugin):
     def getPluginInfo(self) -> dict:
         return {
             'name': 'AddPermission',
-            'description': '添加用户群bot管理权限（仅限root和群主使用）',
-            'commandDescription': '-addadmin @{某群成员}',
+            'description': '添加🔑权限[👑🔒]',
+            'commandDescription': '-addadmin @{..}',
             'usePlace': ['group'],
             'showInHelp': True,
             'pluginConfigTableNames': [],
@@ -80,8 +80,8 @@ class DelPermission(StandardPlugin):
     def getPluginInfo(self) -> dict:
         return {
             'name': 'DelPermission',
-            'description': '删除用户群bot管理权限（仅限root和群主使用）',
-            'commandDescription': '-deladmin @{某群成员}',
+            'description': '删除🔑权限[👑🔒]',
+            'commandDescription': '-deladmin @{..}',
             'usePlace': ['group'],
             'showInHelp': True,
             'pluginConfigTableNames': [],
@@ -99,7 +99,7 @@ class ShowPermission(StandardPlugin):
     def getPluginInfo(self) -> dict:
         return {
             'name': 'ShowPermission',
-            'description': '展示群bot管理',
+            'description': '展示🔑权限拥有者',
             'commandDescription': '-showadmin/-getadmin',
             'usePlace': ['group'],
             'showInHelp': True,
@@ -125,7 +125,7 @@ class AddGroupAdminToBotAdmin(StandardPlugin):
     def getPluginInfo(self) -> dict:
         return {
             'name': 'AddGroupAdminToBotAdmin',
-            'description': '添加群主和管理为bot管理（仅限root和群主使用）',
+            'description': '注册群主和群管为🔑[👑🔒]',
             'commandDescription': '-autoconf',
             'usePlace': ['group'],
             'showInHelp': True,
