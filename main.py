@@ -45,7 +45,8 @@ from plugins.sjtuHesuan import SjtuHesuan
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
-from plugins.sjtuClassroom import SjtuClassroom
+from plugins.sjtuClassroom import SjtuClassroom,SjtuClassroomRecommend
+from plugins.makeJoke import MakeJoke
 
 #### not published plugins ####
 # try:
@@ -68,6 +69,8 @@ try:
     ShowEE0502Comments()
 except:
     ShowEE0502Comments = EmptyPlugin
+from plugins.gocqWatchDog import GocqWatchDog
+
 ###### end not published plugins
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -75,6 +78,7 @@ RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 
 # 特殊插件需要复用的放在这里
 helper = ShowHelp() # 帮助插件
+gocqWatchDog = GocqWatchDog(60)
 groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
 
 
@@ -87,14 +91,14 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([GroupCalendarHelper(), GroupCalendarManager()], 'calendar'),
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
-    PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace()], 'superemoji'), # 超级表情
+    PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace(), MakeJoke()], 'superemoji'), # 超级表情
     PluginGroupManager([ShowNews(), YesterdayNews(), 
                         PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(),SjtuClassroomRecommend(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
@@ -130,7 +134,8 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjmcLive(), GetFduMcLive(),
     GetMddStatus(),#SubscribeMdd(),
     SjtuHesuan(),
-    RandomNum(), ThreeKingdomsRandom(), TarotRandom()
+    RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
+    MakeJoke()
 ]
 GroupPokeList:List[PokeStandardPlugin] = [
     AutoRepoke(), # 自动回复拍一拍
@@ -138,9 +143,11 @@ GroupPokeList:List[PokeStandardPlugin] = [
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 
 app = Flask(__name__)
+
 class NoticeType(IntEnum):
     NoProcessRequired = 0
     GroupMessageNoProcessRequired = 1
+    GocqHeartBeat = 5
     GroupMessage = 11
     GroupPoke = 12
     GroupRecall = 13
@@ -153,6 +160,8 @@ class NoticeType(IntEnum):
 
 def eventClassify(json_data: dict)->NoticeType: 
     """事件分类"""
+    if json_data['post_type'] == 'meta_event' and json_data['meta_event_type'] == 'heartbeat':
+        return NoticeType.GocqHeartBeat
     if json_data['post_type'] == 'message' and json_data['message_type'] == 'group':
         if json_data['group_id'] in APPLY_GROUP_ID:
             return NoticeType.GroupMessage
@@ -197,6 +206,7 @@ def post_data():
 
     # 私聊消息处理
     elif flag==NoticeType.PrivateMessage:
+        # print(data)
         msg=data['message'].strip()
         for event in PrivatePluginList:
             if event.judgeTrigger(msg, data):
@@ -215,6 +225,8 @@ def post_data():
     # 自动加好友
     elif flag==NoticeType.AddPrivate:
         set_friend_add_request(data['flag'], True)
+    elif flag==NoticeType.GocqHeartBeat:
+        gocqWatchDog.feed()
     return "OK"
 def initialize():
     createGlobalConfig()
@@ -238,6 +250,8 @@ def initialize():
         if 'private' not in infoDict['usePlace']:
             print("plugin [{}] can not be used in private talk!".format(infoDict['name']))
             exit(1)
+    gocqWatchDog.start()
+
 if __name__ == '__main__':
     initialize()
     app.run(host="127.0.0.1", port=5986)

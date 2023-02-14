@@ -4,6 +4,7 @@ from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig,
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.job import Job
+from threading import Timer
 
 class StandardPlugin(ABC):
     """接收‘正常私聊消息或群消息’的接口"""
@@ -232,3 +233,47 @@ class PluginGroupManager(StandardPlugin):
             self.setEnabled(group_id, nextState)
             for p in self.plugins:
                 p.onStateChange(nextState, data)
+
+class WatchDog(ABC):
+    def __init__(self, intervalTime:float):
+        """@intervalTime: how long (in seconds) will the dog hungry
+        """
+        self.intervalTime = intervalTime
+        self.timer:Optional[Timer] = None
+
+    def start(self):
+        if self.timer == None:
+            self.timer = Timer(self.intervalTime, self._onHungry)
+        self.timer.start()
+
+    def resume(self):
+        """resume if watchdog was paused or hungry previously"""
+        if self.timer == None:
+            self.timer = Timer(self.intervalTime, self._onHungry)
+            self.timer.start()
+
+    def pause(self):
+        """pause the watchdog"""
+        if self.timer != None:
+            self.timer.cancel()
+            self.timer = None
+
+    def feed(self):
+        """feed the dog"""
+        if self.timer != None:
+            self.timer.cancel()
+        self.timer = Timer(self.intervalTime, self._onHungry)
+        self.timer.start()
+
+    def _onHungry(self,):
+        try:
+            self.onHungry()
+        except BaseException as e:
+            warning('except in watch dog: {}'.format(e))
+        finally:
+            self.timer = None
+
+    @abstractmethod
+    def onHungry(self):
+        """If dog is hungry, what should you do? Do it here!"""
+        raise NotImplementedError

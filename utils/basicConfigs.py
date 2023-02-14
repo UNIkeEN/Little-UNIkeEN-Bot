@@ -7,6 +7,13 @@ APPLY_GROUP_ID=[
     # apply group id list
 ]
 
+# about watch dog, see plugins/gocqWatchdog
+WARNING_ADMIN_ID = [
+    # watchdog warning to whom
+]
+MAIL_USER = 'xxxxx@qq.com'# see qq mail smtp protocal
+MAIL_PASS = 'abcdabcdabcdabcd'
+
 # used for sjtu-dekt
 JAC_COOKIE = ''
 
@@ -14,7 +21,7 @@ ROOT_ADMIN_ID=[] # root admins
 
 BOT_SELF_QQ=0 # TODO:
 
-VERSION_TXT="""version：开源1.0.1版本
+VERSION_TXT="""version：开源1.1.1版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
 sqlConfig = { # configs for connecting to mysql server

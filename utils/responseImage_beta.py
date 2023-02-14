@@ -396,7 +396,10 @@ class ResponseImage():
                 url_ = requests.get(url)
                 img_ = Image.open(BytesIO(url_.content))
             else:
-                img_ = Image.open(url)
+                try:
+                    img_ = Image.open(url)
+                except BaseException as e:
+                    raise RuntimeError('unknow url str: {}'.format(url))
             return img_
         raise RuntimeError('unknow url format')
 

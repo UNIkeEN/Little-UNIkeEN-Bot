@@ -177,7 +177,9 @@ class ZhihuHotSearch(StandardPlugin):
             )
             for rank, hs in enumerate(zhrs[:10]):
                 try:
-                    icon = hs['children'][0]['thumbnail']
+                    icon:str = hs['children'][0]['thumbnail']
+                    if not isinstance(icon, str) or not icon.startswith('http'):
+                        icon = None
                 except:
                     icon = None
                 a.addCard({
@@ -185,7 +187,7 @@ class ZhihuHotSearch(StandardPlugin):
                     'title': hs['target']['title'],
                     'keyword': str(datetime.fromtimestamp(hs['target']['created'])),
                     'body': hs['target']['excerpt'],
-                    'icon': icon
+                    'icon': icon,
                 })
             imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'zhrs_%s_%d.png'%(data['message_type'], target))
             a.generateImage(imgPath)
