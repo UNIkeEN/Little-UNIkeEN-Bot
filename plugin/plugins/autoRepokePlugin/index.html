@@ -13,7 +13,7 @@
     
     
       
-        <title>SJMC 直播间状态 - Little-UNIkeEN-Bot</title>
+        <title>群内自动回拍 - Little-UNIkeEN-Bot</title>
       
     
     
@@ -99,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              SJMC 直播间状态
+              群内自动回拍
             
           </span>
         </div>
@@ -604,12 +604,14 @@
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" checked>
       
       
       
@@ -730,11 +732,62 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../autoRepokePlugin/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          群内自动回拍
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         群内自动回拍
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    1. 插件简介
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    2. 样例分析
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    3. 代码分析
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -751,14 +804,12 @@
               
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_5" type="checkbox" id="__nav_3_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_5" type="checkbox" id="__nav_3_5" >
       
       
       
@@ -1017,62 +1068,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          SJMC 直播间状态
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../sjmcLivePlugin/" class="md-nav__link">
         SJMC 直播间状态
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    1. 插件简介
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    2. 示范样例
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 代码分析
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1404,7 +1404,7 @@
                   
 
 
-  <h1>SJMC 直播间状态</h1>
+  <h1>群内自动回拍</h1>
 
 <h2 id="1">1. 插件简介</h2>
 <table>
@@ -1419,133 +1419,62 @@
 </thead>
 <tbody>
 <tr>
-<td>SjmcLiveStatus</td>
-<td>StandardPlugin</td>
-<td>'-mclive' / '-sjmclive'</td>
+<td>AutoRepoke</td>
+<td>PokeStandardPlugin</td>
+<td>[群内拍一拍消息]</td>
 <td>None</td>
-<td>获取交大mc社B站直播状态，监测sjmc直播间信息，并在特定群广播开播消息</td>
-</tr>
-<tr>
-<td>FduMcLiveStatus</td>
-<td>StandardPlugin</td>
-<td>'-fdmclive'</td>
-<td>None</td>
-<td>获取复旦基岩社B站直播状态，监测基岩社直播间信息，并在特定群广播开播消息</td>
+<td>回复拍一拍</td>
 </tr>
 </tbody>
 </table>
-<h2 id="2">2. 示范样例</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>MC社B站未开播
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="m">111</span>&gt; -sjmclive
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>bot&gt; 当前时段未开播哦
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>MC社B站开播
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>bot&gt; 检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/25567444
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>bot&gt; 【sjmc直播间信息图片】
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="m">333</span>&gt; -sjmc
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>bot&gt; 【sjmc直播间信息图片】
+<div class="admonition tip">
+<p class="admonition-title">设计初衷 —— 安全地回戳</p>
+<p>在群聊中往往存在多个机器人，某机器人接收“戳@{..}”格式的消息会戳一戳被at的人，同时该机器人被戳时会自动回戳。如果Little-Unicorn-Bot是被 “戳@{..}” at的目标，那么Little-Unicorn-Bot和该机器人会不停地互戳，直到被腾讯限制。设计此插件的初衷就是为了安全地回戳。</p>
+</div>
+<h2 id="2">2. 样例分析</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="m">111</span>&gt; 【戳一戳bot】
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>bot&gt; 【戳一戳111】
 </code></pre></div>
-<p>sjmc直播间信息图片:
-<img alt="" src="../../../images/plugins/sjmcLive.png" /> </p>
 <h2 id="3">3. 代码分析</h2>
-<p>代码位于 plugins/sjmcLive.py</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span> <span class="nc">SjmcLiveStatus</span><span class="p">(</span><span class="n">StandardPlugin</span><span class="p">):</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">monitorSemaphore</span> <span class="o">=</span> <span class="n">Semaphore</span><span class="p">()</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="nd">@staticmethod</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">def</span> <span class="nf">dumpSjmcStatus</span><span class="p">(</span><span class="n">status</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="n">exactPath</span> <span class="o">=</span> <span class="s1">&#39;data/sjmcLive.json&#39;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">exactPath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;1&#39;</span> <span class="k">if</span> <span class="n">status</span> <span class="k">else</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="nd">@staticmethod</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="k">def</span> <span class="nf">loadSjmcStatus</span><span class="p">()</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">exactPath</span> <span class="o">=</span> <span class="s1">&#39;data/sjmcLive.json&#39;</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">exactPath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>            <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">liveId</span> <span class="o">=</span> <span class="mi">25567444</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">liveRoom</span> <span class="o">=</span> <span class="n">LiveRoom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">liveId</span><span class="p">)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sjmcMonitor</span><span class="p">)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="k">if</span> <span class="n">SjmcLiveStatus</span><span class="o">.</span><span class="n">monitorSemaphore</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">exactPath</span> <span class="o">=</span> <span class="s1">&#39;data/sjmcLive.json&#39;</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">prevStatus</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># false: 未开播, true: 开播</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">sjmcQqGroup</span> <span class="o">=</span> <span class="mi">712514518</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exactPath</span><span class="p">):</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>            <span class="n">SjmcLiveStatus</span><span class="o">.</span><span class="n">dumpSjmcStatus</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">prevStatus</span> <span class="o">=</span> <span class="n">SjmcLiveStatus</span><span class="o">.</span><span class="n">loadSjmcStatus</span><span class="p">()</span>
-<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="k">def</span> <span class="nf">sjmcMonitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        <span class="c1"># print(&#39;mctick&#39;)</span>
-<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
-<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sjmcMonitor</span><span class="p">)</span>
-<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        <span class="n">prevStatus</span> <span class="o">=</span> <span class="n">SjmcLiveStatus</span><span class="o">.</span><span class="n">loadSjmcStatus</span><span class="p">()</span>
-<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>        <span class="n">roomInfo</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">liveRoom</span><span class="o">.</span><span class="n">get_room_info</span><span class="p">())[</span><span class="s1">&#39;room_info&#39;</span><span class="p">]</span>
-<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>        <span class="n">currentStatus</span> <span class="o">=</span> <span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;live_status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>        <span class="k">if</span> <span class="n">currentStatus</span> <span class="o">!=</span> <span class="n">prevStatus</span><span class="p">:</span>
-<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>            <span class="n">SjmcLiveStatus</span><span class="o">.</span><span class="n">dumpSjmcStatus</span><span class="p">(</span><span class="n">currentStatus</span><span class="p">)</span>
-<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>            <span class="k">if</span> <span class="n">currentStatus</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sjmcQqGroup</span> <span class="ow">in</span> <span class="n">getPluginEnabledGroups</span><span class="p">(</span><span class="s1">&#39;sjmc&#39;</span><span class="p">):</span>
-<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>                <span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sjmcQqGroup</span><span class="p">,</span> <span class="s1">&#39;检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/</span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">liveId</span><span class="p">)</span>
-<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>                <span class="n">savePath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ROOT_PATH</span><span class="p">,</span> <span class="n">SAVE_TMP_PATH</span><span class="p">,</span> <span class="s1">&#39;sjmcLive.png&#39;</span><span class="p">)</span>
-<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>                <span class="n">genLivePic</span><span class="p">(</span><span class="n">roomInfo</span><span class="p">,</span> <span class="s1">&#39;sjmc直播间状态&#39;</span><span class="p">,</span> <span class="n">savePath</span><span class="p">)</span>
-<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>                <span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sjmcQqGroup</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;[CQ:image,file=files://</span><span class="si">{</span><span class="n">savePath</span><span class="si">}</span><span class="s1">,id=40000]&#39;</span><span class="p">)</span>
-<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>
-<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>        <span class="k">return</span> <span class="n">msg</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;-mclive&#39;</span><span class="p">,</span> <span class="s1">&#39;-sjmclive&#39;</span><span class="p">]</span>
-<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>    <span class="k">def</span> <span class="nf">executeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;group&#39;</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
-<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>            <span class="n">roomInfo</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">liveRoom</span><span class="o">.</span><span class="n">get_room_info</span><span class="p">())[</span><span class="s1">&#39;room_info&#39;</span><span class="p">]</span>
-<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>        <span class="k">except</span> <span class="n">LiveException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>            <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;sjmc bilibili api exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>            <span class="k">return</span>
-<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>        <span class="k">except</span> <span class="n">ApiException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>            <span class="n">warning</span><span class="p">(</span><span class="s1">&#39;bilibili api exception: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>            <span class="k">return</span> 
-<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>            <span class="n">warning</span><span class="p">(</span><span class="s1">&#39;base exception in sjmclive: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>            <span class="k">return</span>
-<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>        <span class="k">if</span> <span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;live_status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>            <span class="n">savePath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ROOT_PATH</span><span class="p">,</span> <span class="n">SAVE_TMP_PATH</span><span class="p">,</span> <span class="s1">&#39;sjmcLive-</span><span class="si">%d</span><span class="s1">.png&#39;</span><span class="o">%</span><span class="n">target</span><span class="p">)</span>
-<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>            <span class="n">genLivePic</span><span class="p">(</span><span class="n">roomInfo</span><span class="p">,</span> <span class="s1">&#39;sjmc直播间状态&#39;</span><span class="p">,</span> <span class="n">savePath</span><span class="p">)</span>
-<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>            <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;[CQ:image,file=files://</span><span class="si">{</span><span class="n">savePath</span><span class="si">}</span><span class="s1">,id=40000]&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
-<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>            <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;当前时段未开播哦&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_type&#39;</span><span class="p">])</span>
-<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
-<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>    <span class="k">def</span> <span class="nf">getPluginInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>        <span class="k">return</span> <span class="p">{</span>
-<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;sjmclive&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;交大MC社B站直播间状态&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>            <span class="s1">&#39;commandDescription&#39;</span><span class="p">:</span> <span class="s1">&#39;-mclive/-sjmclive&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>            <span class="s1">&#39;usePlace&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="p">],</span>
-<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>            <span class="s1">&#39;showInHelp&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>            <span class="s1">&#39;pluginConfigTableNames&#39;</span><span class="p">:</span> <span class="p">[],</span>
-<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.3&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>            <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="s1">&#39;Unicorn&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>        <span class="p">}</span>
-<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a><span class="k">def</span> <span class="nf">genLivePic</span><span class="p">(</span><span class="n">roomInfo</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">savePath</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>    <span class="n">img</span> <span class="o">=</span> <span class="n">ResponseImage</span><span class="p">(</span>
-<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>        <span class="n">theme</span> <span class="o">=</span> <span class="s1">&#39;unicorn&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>        <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="p">,</span> 
-<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>        <span class="n">titleColor</span> <span class="o">=</span> <span class="n">PALETTE_SJTU_GREEN</span><span class="p">,</span> 
-<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>        <span class="n">primaryColor</span> <span class="o">=</span> <span class="n">PALETTE_SJTU_RED</span><span class="p">,</span> 
-<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>        <span class="n">footer</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;当前时间 %Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">),</span>
-<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>        <span class="n">layout</span> <span class="o">=</span> <span class="s1">&#39;normal&#39;</span>
-<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>    <span class="p">)</span>
-<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>    <span class="n">img</span><span class="o">.</span><span class="n">addCard</span><span class="p">(</span>
-<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>        <span class="n">ResponseImage</span><span class="o">.</span><span class="n">NoticeCard</span><span class="p">(</span>
-<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a>            <span class="n">title</span> <span class="o">=</span> <span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span>
-<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>            <span class="n">subtitle</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;live_start_time&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
-<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>                                                <span class="s2">&quot;开播时间  %Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">),</span>
-<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a>            <span class="n">keyword</span> <span class="o">=</span> <span class="s1">&#39;直播分区： &#39;</span><span class="o">+</span><span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;area_name&#39;</span><span class="p">],</span>
-<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>            <span class="n">body</span> <span class="o">=</span> <span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
-<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>            <span class="n">illustration</span> <span class="o">=</span> <span class="n">roomInfo</span><span class="p">[</span><span class="s1">&#39;keyframe&#39;</span><span class="p">],</span>
-<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>        <span class="p">)</span>
-<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>    <span class="p">)</span>
-<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>    <span class="n">img</span><span class="o">.</span><span class="n">generateImage</span><span class="p">(</span><span class="n">savePath</span><span class="p">)</span>
-<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>    <span class="k">return</span> <span class="n">savePath</span>
+<p>代码位于 <code>plugins/autoRepoke.py</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span> <span class="nc">AutoRepoke</span><span class="p">(</span><span class="n">PokeStandardPlugin</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">fullResource</span> <span class="o">=</span> <span class="n">Semaphore</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">emptyResource</span> <span class="o">=</span> <span class="n">Semaphore</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">job</span> <span class="o">=</span> <span class="n">BaseTimeSchedulePlugin</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">add_job</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_feedThread</span><span class="p">,</span> <span class="s1">&#39;interval&#39;</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">def</span> <span class="nf">_acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">canPoke</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullResource</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>            <span class="n">canPoke</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">emptyResource</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="k">return</span> <span class="n">canPoke</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="k">def</span> <span class="nf">_release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptyResource</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">fullResource</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>            <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="k">return</span> <span class="n">result</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="k">def</span> <span class="nf">_feedThread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_release</span><span class="p">():</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">job</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="k">def</span> <span class="nf">judgeTrigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;target_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;self_id&#39;</span><span class="p">]</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="k">def</span> <span class="nf">pokeMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">Any</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>        
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire</span><span class="p">():</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>            <span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;[CQ:poke,qq=</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">job</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>        <span class="k">return</span> <span class="s2">&quot;OK&quot;</span>
 </code></pre></div>
-<p>为了确保实例化多个 <code>SjmcLiveStatus</code> 插件时只有一个监测广播mc社直播间状态，因此作者选用threading.Semaphore来保护监测线程入口</p>
 
 
 
@@ -1571,7 +1500,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../sjmcPlugin/" class="md-footer__link md-footer__link--prev" aria-label="Previous: SJMC 服务器状态" rel="prev">
+        <a href="../gocqWatchDogPlugin/" class="md-footer__link md-footer__link--prev" aria-label="Previous: gocq离线警告" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1580,20 +1509,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              SJMC 服务器状态
+              gocq离线警告
             </div>
           </div>
         </a>
       
       
         
-        <a href="../sjtuJwcPlugin/" class="md-footer__link md-footer__link--next" aria-label="Next: SJTU 教务" rel="next">
+        <a href="../superEmojiPlugin/" class="md-footer__link md-footer__link--next" aria-label="Next: 超级表情" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              SJTU 教务
+              超级表情
             </div>
           </div>
           <div class="md-footer__button md-icon">
