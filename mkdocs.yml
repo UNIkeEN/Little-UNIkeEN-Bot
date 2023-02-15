@@ -25,6 +25,7 @@ nav:
         - '群消息记录': 'plugin/plugins/messageRecorderPlugin.md'
         - '群文件记录': 'plugin/plugins/fileRecorderPlugin.md'
         - 'gocq离线警告': 'plugin/plugins/gocqWatchDogPlugin.md'
+        - '群内自动回拍': 'plugin/plugins/autoRepokePlugin.md'
       - 功能插件:
         - '超级表情':   'plugin/plugins/superEmojiPlugin.md'
         - '早安晚安':   'plugin/plugins/greetingsPlugin.md'
