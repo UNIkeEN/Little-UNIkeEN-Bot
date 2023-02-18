@@ -45,7 +45,7 @@ from plugins.sjtuHesuan import SjtuHesuan
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
-from plugins.sjtuClassroom import SjtuClassroom,SjtuClassroomRecommend
+from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
 from plugins.makeJoke import MakeJoke
 
 #### not published plugins ####
@@ -98,7 +98,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(),SjtuClassroomRecommend(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
+                        SjtuClassroomRecommend(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
@@ -135,7 +136,8 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetMddStatus(),#SubscribeMdd(),
     SjtuHesuan(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
-    MakeJoke()
+    MakeJoke(),
+    SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(),
 ]
 GroupPokeList:List[PokeStandardPlugin] = [
     AutoRepoke(), # 自动回复拍一拍

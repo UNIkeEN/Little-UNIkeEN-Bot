@@ -1,7 +1,7 @@
 import re
 import mysql.connector
 import requests, json
-from utils.basicConfigs import HTTP_URL
+from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
 from PIL import Image, ImageDraw, ImageFont
 from utils.basicConfigs import *
 import time
@@ -475,7 +475,7 @@ def send_genshin_voice(sentence):
 # insert into `globalConfig` values (1234, '{"test1": {"name": "ftc", "enable": false}, "test2": {"name": "syj", "enable": true}}', '[]');
 # insert into `globalConfig` values (8888, '{"test1": {"name": "ftc", "enable": true}, "test2": {"name": "syj", "enable": false}}', '[]');
 def createGlobalConfig():
-    """创建global config的sql table"""
+    """创建global config的sql table, 移除不在APPLY_GROUP_ID中的群号"""
     mydb = mysql.connector.connect(**sqlConfig)
     mycursor = mydb.cursor()
     mydb.autocommit = True
@@ -489,6 +489,10 @@ def createGlobalConfig():
         `groupAdmins` json,
         primary key (`groupId`)
     );""")
+    mycursor.execute("select groupId from BOT_DATA.globalConfig")
+    groupNeedToBeRemoved = set([x for x, in list(mycursor)]) - set(APPLY_GROUP_ID)
+    for groupId in groupNeedToBeRemoved:
+        mycursor.execute("delete from BOT_DATA.globalConfig where groupId = %d"%groupId)
 
 def readGlobalConfig(groupId: Union[None, int], pluginName: str)->Union[dict, Any, None]:
     """读global config
