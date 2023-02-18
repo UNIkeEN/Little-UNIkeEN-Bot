@@ -1440,48 +1440,48 @@
 <td>-</td>
 <td><code>None</code></td>
 <td>创建用于记录群bot管理和插件开关情况的sql表</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 <tr>
 <td>readGlobalConfig</td>
 <td><code>@groupId</code>: 群号, <code>int</code>或<code>None</code>类型<br><code>@pluginName</code>: 插件名称, <code>str</code>类型</td>
 <td>config值, <code>Union[dict,Any,None]</code>类型</td>
 <td>读取<code>BOT_DATA.globalConfig</code>:<br>如果<code>@groupId</code>是<code>None</code>, 那么读取所有群的config, 并返回<code>Dict[群号, config]</code><br>如果<code>@groupId</code>是<code>int</code>, 那么读取对应群的config, 并返回<code>Any</code><br>其余情况warning并返回<code>None</code></td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 <tr>
 <td>writeGlobalConfig</td>
 <td><code>@groupId</code>: 群号, <code>int</code>或<code>None</code>类型<br><code>@pluginName</code>: 插件名称, <code>str</code>类型<br><code>@value</code>: 要写入的值, 可json化的<code>Any</code>类型</td>
 <td><code>None</code></td>
 <td>写入<code>BOT_DATA.globalConfig</code>:<br>如果<code>@groupId</code>是<code>None</code>, 那么写所有群的config<br>如果<code>@groupId</code>是<code>int</code>, 那么写对应群的config<br>其余情况warning</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 <tr>
 <td>getPluginEnabledGroups</td>
 <td><code>@pluginName</code>: 插件名称, <code>str</code>类型</td>
 <td>开启插件的群列表, <code>List[int]</code>类型</td>
 <td>获取开启插件的群聊id列表</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 <tr>
 <td>getGroupAdmins</td>
 <td><code>@groupId</code>: 群号, <code>int</code>类型</td>
 <td>群bot管理的qq号列表, <code>List[int]</code>类型</td>
 <td>获取群bot管理列表</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 <tr>
 <td>addGroupAdmin</td>
 <td><code>@groupId</code>: 群号, <code>int</code>类型<br><code>@adminId</code>: 待添加的qq号, <code>int</code>类型</td>
 <td><code>None</code></td>
 <td>把某个qq添加到群bot管理</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 <tr>
 <td>setGroupAdmin</td>
 <td><code>@groupId</code>: 群号, <code>int</code>类型<br><code>@adminIds</code>: 设定的qq号列表, <code>List[int]</code>类型</td>
 <td>设置群bot管理列表设为给定list</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 <td></td>
 </tr>
 <tr>
@@ -1489,7 +1489,7 @@
 <td><code>@groupId</code>: 群号, <code>int</code>类型<br><code>@adminId</code>: 待删除的qq号, <code>int</code>类型</td>
 <td><code>None</code></td>
 <td>把某qq号从群bot管理列表中删除</td>
-<td><code>utils.basicConfigs</code></td>
+<td><code>utils.basicEvent</code></td>
 </tr>
 </tbody>
 </table>
@@ -1501,7 +1501,7 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">writeGlobalConfig</span><span class="p">(</span><span class="n">groupId</span><span class="p">,</span> <span class="s1">&#39;superemoji.enable&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="3">3. 代码分析</h2>
-<p>代码位于 <code>utils.basicConfigs</code></p>
+<p>代码位于 <code>utils.basicEvent</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span> <span class="nf">createGlobalConfig</span><span class="p">():</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="sd">&quot;&quot;&quot;创建global config的sql table, 移除不在APPLY_GROUP_ID中的群号&quot;&quot;&quot;</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">mydb</span> <span class="o">=</span> <span class="n">mysql</span><span class="o">.</span><span class="n">connector</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="o">**</span><span class="n">sqlConfig</span><span class="p">)</span>
