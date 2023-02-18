@@ -4,14 +4,14 @@
 
 | 函数名 | 参数 | 返回值 | 功能 | 代码位置 |
 | ---- | ---- | ---- | ---- | ---- |
-| createGlobalConfig | - | `None` | 创建用于记录群bot管理和插件开关情况的sql表 | `utils.basicConfigs` |
-| readGlobalConfig | `@groupId`: 群号, `int`或`None`类型<br>`@pluginName`: 插件名称, `str`类型 | config值, `Union[dict,Any,None]`类型 | 读取`BOT_DATA.globalConfig`:<br>如果`@groupId`是`None`, 那么读取所有群的config, 并返回`Dict[群号, config]`<br>如果`@groupId`是`int`, 那么读取对应群的config, 并返回`Any`<br>其余情况warning并返回`None` | `utils.basicConfigs` |
-| writeGlobalConfig | `@groupId`: 群号, `int`或`None`类型<br>`@pluginName`: 插件名称, `str`类型<br>`@value`: 要写入的值, 可json化的`Any`类型 | `None` | 写入`BOT_DATA.globalConfig`:<br>如果`@groupId`是`None`, 那么写所有群的config<br>如果`@groupId`是`int`, 那么写对应群的config<br>其余情况warning | `utils.basicConfigs` |
-| getPluginEnabledGroups | `@pluginName`: 插件名称, `str`类型 | 开启插件的群列表, `List[int]`类型 | 获取开启插件的群聊id列表 | `utils.basicConfigs` |
-| getGroupAdmins | `@groupId`: 群号, `int`类型 | 群bot管理的qq号列表, `List[int]`类型 | 获取群bot管理列表 | `utils.basicConfigs` |
-| addGroupAdmin | `@groupId`: 群号, `int`类型<br>`@adminId`: 待添加的qq号, `int`类型 | `None` | 把某个qq添加到群bot管理 | `utils.basicConfigs` |
-| setGroupAdmin | `@groupId`: 群号, `int`类型<br>`@adminIds`: 设定的qq号列表, `List[int]`类型 | 设置群bot管理列表设为给定list | `utils.basicConfigs` |
-| delGroupAdmin | `@groupId`: 群号, `int`类型<br>`@adminId`: 待删除的qq号, `int`类型 | `None` | 把某qq号从群bot管理列表中删除 | `utils.basicConfigs` |
+| createGlobalConfig | - | `None` | 创建用于记录群bot管理和插件开关情况的sql表 | `utils.basicEvent` |
+| readGlobalConfig | `@groupId`: 群号, `int`或`None`类型<br>`@pluginName`: 插件名称, `str`类型 | config值, `Union[dict,Any,None]`类型 | 读取`BOT_DATA.globalConfig`:<br>如果`@groupId`是`None`, 那么读取所有群的config, 并返回`Dict[群号, config]`<br>如果`@groupId`是`int`, 那么读取对应群的config, 并返回`Any`<br>其余情况warning并返回`None` | `utils.basicEvent` |
+| writeGlobalConfig | `@groupId`: 群号, `int`或`None`类型<br>`@pluginName`: 插件名称, `str`类型<br>`@value`: 要写入的值, 可json化的`Any`类型 | `None` | 写入`BOT_DATA.globalConfig`:<br>如果`@groupId`是`None`, 那么写所有群的config<br>如果`@groupId`是`int`, 那么写对应群的config<br>其余情况warning | `utils.basicEvent` |
+| getPluginEnabledGroups | `@pluginName`: 插件名称, `str`类型 | 开启插件的群列表, `List[int]`类型 | 获取开启插件的群聊id列表 | `utils.basicEvent` |
+| getGroupAdmins | `@groupId`: 群号, `int`类型 | 群bot管理的qq号列表, `List[int]`类型 | 获取群bot管理列表 | `utils.basicEvent` |
+| addGroupAdmin | `@groupId`: 群号, `int`类型<br>`@adminId`: 待添加的qq号, `int`类型 | `None` | 把某个qq添加到群bot管理 | `utils.basicEvent` |
+| setGroupAdmin | `@groupId`: 群号, `int`类型<br>`@adminIds`: 设定的qq号列表, `List[int]`类型 | 设置群bot管理列表设为给定list | `utils.basicEvent` |
+| delGroupAdmin | `@groupId`: 群号, `int`类型<br>`@adminId`: 待删除的qq号, `int`类型 | `None` | 把某qq号从群bot管理列表中删除 | `utils.basicEvent` |
 
 ## 2. 样例分析
 
@@ -25,7 +25,7 @@ writeGlobalConfig(groupId, 'superemoji.enable', True)
 
 ## 3. 代码分析
 
-代码位于 `utils.basicConfigs`
+代码位于 `utils.basicEvent`
 
 ```python
 def createGlobalConfig():
