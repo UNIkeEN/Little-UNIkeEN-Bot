@@ -1,6 +1,6 @@
 aiohttp
 beautifulsoup4
-bilibili-api
+bilibili-api-python
 browsermob_proxy
 Flask
 fuzzywuzzy
