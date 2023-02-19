@@ -47,13 +47,6 @@ from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
 from plugins.makeJoke import MakeJoke
-
-#### not published plugins ####
-# try:
-#     from plugins.notPublished.dropOut import DropOut
-#     DropOut()
-# except:
-#     DropOut = EmptyPlugin
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except:
@@ -72,6 +65,16 @@ except:
 from plugins.gocqWatchDog import GocqWatchDog
 
 ###### end not published plugins
+
+def sqlInit():
+    createGlobalConfig()
+    create_account_sql()
+    createFaqDb()
+    createBilibiliTable()
+    for group in get_group_list():
+        groupId = group['group_id']
+        createFaqTable(str(groupId))
+sqlInit()
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
@@ -230,14 +233,8 @@ def post_data():
     elif flag==NoticeType.GocqHeartBeat:
         gocqWatchDog.feed()
     return "OK"
-def initialize():
-    createGlobalConfig()
-    create_account_sql()
-    createFaqDb()
-    createBilibiliTable()
-    for group in get_group_list():
-        groupId = group['group_id']
-        createFaqTable(str(groupId))
+
+def initCheck():
     # do some check
     for p in GroupPluginList:
         infoDict = p.getPluginInfo()
@@ -256,5 +253,5 @@ def initialize():
     gocqWatchDog.start()
 
 if __name__ == '__main__':
-    initialize()
+    initCheck()
     app.run(host="127.0.0.1", port=5986)
