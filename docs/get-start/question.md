@@ -13,7 +13,8 @@
 > ps：该错误目前出现在Windows系统中，Linux未知
 
 2. 运行main.py时报错，涉及bilibili_api的插件全部报错
-> 解决方法：注意安装的是`bilibili-api`包而不是`bilibili_api`包，两个不一样
+> 解决方法：注意安装的是`bilibili-api-python`包而不是`bilibili_api`包，两个不一样
+> `bilibili-api-python` [项目链接](https://github.com/Nemo2011/bilibili-api)
 
 3. mysql_connector版本错误
 > 报错，pip重装非unpackaged的包后报错消失，也可能是没装sql的问题。Windows上装mysql可参考[https://blog.csdn.net/qq_52232736/article/details/123407099](https://blog.csdn.net/qq_52232736/article/details/123407099)
