@@ -1,6 +1,6 @@
 aiohttp
 beautifulsoup4
-bilibili_api
+bilibili-api
 browsermob_proxy
 Flask
 fuzzywuzzy
@@ -24,3 +24,6 @@ tinydb
 tinyrecord
 tqdm
 ujson
+apscheduler
+matplotlib
+wordcloud

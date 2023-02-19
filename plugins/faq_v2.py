@@ -48,7 +48,7 @@ class HelpFAQ(StandardPlugin):
         group_id = data['group_id']
         picPath = draw_help_pic(group_id)
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(group_id, '[CQ:image,file=files://%s]'%picPath)
+        send(group_id, '[CQ:image,file=files:///%s]'%picPath)
         return "OK"
     def getPluginInfo(self)->Any:
         return {
@@ -269,7 +269,7 @@ class MaintainFAQ(StandardPlugin):
             questions = [q[0] for q in list(mycursor)]
             picPath = drawQuestionCardByPinyin(questions, groupId)
             picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-            send(groupId, '[CQ:image,file=files://%s,id=40000]'%picPath)
+            send(groupId, '[CQ:image,file=files:///%s]'%picPath)
         elif cmd == '-2':
             mycursor.execute("""select `group_tag`, `question` from `BOT_FAQ_DATA`.`%d`
             where latest = true and deleted = false
@@ -282,7 +282,7 @@ class MaintainFAQ(StandardPlugin):
                     questions[tag].append(q)
             picPath = drawQuestionCardByTag(questions, groupId)
             picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-            send(groupId, '[CQ:image,file=files://%s,id=40000]'%picPath)
+            send(groupId, '[CQ:image,file=files:///%s]'%picPath)
         else:
             send(groupId, "语法有误，支持语句为: faq show(/ -1/ -2)")
         
@@ -428,13 +428,13 @@ class MaintainFAQ(StandardPlugin):
                 question = question[0]
                 picPath = draw_answer_history(groupId, question)
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-                send(groupId, '[CQ:image,file=files://%s,id=40000]'%picPath)
+                send(groupId, '[CQ:image,file=files:///%s]'%picPath)
     @staticmethod
     def faqHelp(cmd: str, data):
         groupId = data['group_id']
         picPath = draw_help_pic(groupId)
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(groupId, '[CQ:image,file=files://%s]'%picPath)
+        send(groupId, '[CQ:image,file=files:///%s]'%picPath)
 
 def drawQuestionCardByPinyin(questions: List[str], group_id: int)->str:
     """绘制问答列表图像

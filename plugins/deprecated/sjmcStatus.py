@@ -21,7 +21,7 @@ class ShowSjmcStatus(StandardPlugin):
         try:
             imgPath = draw_sjmc_info(aio_get_sjmc_info_v2())
             imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-            send(target, '[CQ:image,file=files://%s,id=40000]'%imgPath, data['message_type'])
+            send(target, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
         except BaseException as e:
             send(target, "internal error while getting sjmc", data['message_type'])
             warning("basic exception in ShowSjmcStatus: {}".format(e))

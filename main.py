@@ -4,7 +4,7 @@ from flask import Flask, request
 from enum import IntEnum
 
 from utils.basicEvent import send
-from utils.basicConfigs import *
+from utils.accountOperation import create_account_sql
 from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin, PokeStandardPlugin
 
 from plugins.autoRepoke import AutoRepoke
@@ -232,6 +232,7 @@ def post_data():
     return "OK"
 def initialize():
     createGlobalConfig()
+    create_account_sql()
     createFaqDb()
     createBilibiliTable()
     for group in get_group_list():

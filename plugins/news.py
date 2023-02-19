@@ -18,7 +18,7 @@ class ShowNews(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         today_exist, today_pic_str = get_news_pic_path(datetime.date.today())
         if today_exist:
-            send(target, f'[CQ:image,file=files://{today_pic_str}]', data['message_type'])
+            send(target, f'[CQ:image,file=files:///{today_pic_str}]', data['message_type'])
         else:
             send(target, "获取失败\n新闻源尚未更新本日新闻", data['message_type'])
         return "OK"
@@ -41,7 +41,7 @@ class YesterdayNews(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         today_exist, today_pic_str = get_news_pic_path(datetime.date.today() + datetime.timedelta(days=-1))
         if today_exist:
-            send(target, f'[CQ:image,file=files://{today_pic_str}]', data['message_type'])
+            send(target, f'[CQ:image,file=files:///{today_pic_str}]', data['message_type'])
         else:
             send(target, "bot开小差了，昨日新闻没保存QAQ", data['message_type'])
         return "OK"
@@ -75,7 +75,7 @@ class UpdateNewsAndReport(StandardPlugin, CronStandardPlugin):
         if today_pic_str != None:
             for group_id in getPluginEnabledGroups('newsreport'):
                 send(group_id, f'今日新闻已更新:')
-                send(group_id, f'[CQ:image,file=files://{today_pic_str}]')
+                send(group_id, f'[CQ:image,file=files:///{today_pic_str}]')
                 
     def getPluginInfo(self) -> dict:
         return {

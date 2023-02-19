@@ -84,7 +84,7 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
                 picPath = NewActlistPic()
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 for group_id in getPluginEnabledGroups('dekt'):
-                    send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files://{picPath},id=40000]')
+                    send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files:///{picPath}]')
         except json.JSONDecodeError as e:
             warning("dekt json parse error {}".format(e))
         except KeyError as e:
@@ -110,7 +110,7 @@ class SjtuDekt(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         picPath = NewActlistPic()
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(target, '[CQ:image,file=files://%s,id=40000]'%(picPath), data['message_type'])
+        send(target, '[CQ:image,file=files:///%s]'%(picPath), data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

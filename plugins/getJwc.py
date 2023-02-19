@@ -172,7 +172,7 @@ class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
                 broadcastWord = '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link']
                 for group_id in getPluginEnabledGroups('jwc'):
                     send(group_id, broadcastWord)
-                    send(group_id, '[CQ:image,file=files://%s,id=40000]'%pic)
+                    send(group_id, '[CQ:image,file=files:///%s]'%pic)
                 # time.sleep(3)
                 # for user_id in SubscribeJwc.getJwcSubscribers():
                 #     send(user_id, broadcastWord, 'private')
@@ -301,7 +301,7 @@ class GetSjtuNews(StandardPlugin):
         pic_path = pic_path if os.path.isabs(pic_path) else os.path.join(ROOT_PATH, pic_path)
         if not os.path.isfile(pic_path):
             drawSjtuNews()
-        send(target, '[CQ:image,file=files://%s,id=40000]'%pic_path, data['message_type'])
+        send(target, '[CQ:image,file=files:///%s]'%pic_path, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

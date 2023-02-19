@@ -83,7 +83,7 @@ def send(id: int, message: str, type:str='group')->None:
         }
     print(params)
     # ###
-    # pic=(re.findall("files://(.*?)]",message))
+    # pic=(re.findall("files:///(.*?)]",message))
     # if len(pic)!=0:
     #     try:
     #         for f in pic:      
@@ -91,7 +91,7 @@ def send(id: int, message: str, type:str='group')->None:
     #             img.convert('L').save(f)
     #     except:
     #         pass
-    # pic=(re.findall("files://(.*?),",message))
+    # pic=(re.findall("files:///(.*?),",message))
     # if len(pic)!=0:
     #     try:
     #         for f in pic:      

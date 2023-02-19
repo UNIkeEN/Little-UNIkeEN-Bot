@@ -423,7 +423,7 @@ class SjtuClassroom(StandardPlugin):
         if courseImgPath == None:
             send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在该教室', data['message_type'])
         else:
-            send(target, '[CQ:image,file=file://%s]'%courseImgPath, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -448,7 +448,7 @@ class SjtuClassroomRecommend(StandardPlugin):
         if courseImgPath == None:
             send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室', data['message_type'])
         else:
-            send(target, '[CQ:image,file=file://%s]'%courseImgPath, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -533,7 +533,7 @@ class SjtuClassroomPeopleNum(StandardPlugin):
         # save response image
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'classroomPeopleNum-%d.png'%target)
         card.generateImage(savePath)
-        send(target, '[CQ:image,file=file://%s]'%savePath, data['message_type'])
+        send(target, '[CQ:image,file=file:///%s]'%savePath, data['message_type'])
         return 'OK'
     def getPluginInfo(self, )->Any:
         return {
@@ -557,7 +557,7 @@ class SjtuClassroomPeopleNum(StandardPlugin):
 #         if courseImgPath == None:
 #             send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室', data['message_type'])
 #         else:
-#             send(target, '[CQ:image,file=file://%s]'%courseImgPath, data['message_type'])
+#             send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
 #         return "OK"
 #     def getPluginInfo(self, )->Any:
 #         return {
