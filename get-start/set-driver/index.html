@@ -13,7 +13,7 @@
     
     
       
-        <title>配置驱动器 - Little-UNIkeEN-Bot</title>
+        <title>配置 gocqhttp - Little-UNIkeEN-Bot</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#go-cqhttp" class="md-skip">
           Skip to content
         </a>
       
@@ -99,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              配置驱动器
+              配置 gocqhttp
             
           </span>
         </div>
@@ -428,6 +428,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_2">
@@ -449,7 +451,21 @@
   
     <li class="md-nav__item">
       <a href="../installation/" class="md-nav__link">
-        安装
+        安装向导
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../set-python/" class="md-nav__link">
+        配置 python
       </a>
     </li>
   
@@ -472,12 +488,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          配置驱动器
+          配置 gocqhttp
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        配置驱动器
+        配置 gocqhttp
       </a>
       
         
@@ -496,29 +512,29 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#go-cqhttp" class="md-nav__link">
-    安装 go-cqhttp
+  <a href="#1-go-cqhttp" class="md-nav__link">
+    1. 安装 go-cqhttp
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#go-cqhttp_1" class="md-nav__link">
-    配置 go-cqhttp
+  <a href="#2-go-cqhttp" class="md-nav__link">
+    2. 配置 go-cqhttp
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#go-cqhttp_2" class="md-nav__link">
-    启动 go-cqhttp
+  <a href="#3-go-cqhttp" class="md-nav__link">
+    3. 启动 go-cqhttp
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    登录问题
+  <a href="#4" class="md-nav__link">
+    4. 登录问题
   </a>
   
 </li>
@@ -1429,11 +1445,11 @@
                   
 
 
-<h1 id="_1">配置驱动器</h1>
+<h1 id="go-cqhttp">配置 go-cqhttp</h1>
 <p>Little-UNIkeEN-Bot 是 QQ 机器人前端，只能处理交互逻辑，不能直接实现 QQ 机器人的所有功能。我们需要额外安装驱动器来实现与QQ服务器的信息收发与交互。</p>
-<h2 id="go-cqhttp">安装 go-cqhttp</h2>
+<h2 id="1-go-cqhttp">1. 安装 go-cqhttp</h2>
 <p>本 Bot 默认使用 go-cqhttp 作为驱动器，这是一个优秀的无头 QQ 客户端，关于其安装请见 <a href="https://docs.go-cqhttp.org/guide/quick_start.html#%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B">go-cqhttp官网 - 安装</a> 。</p>
-<h2 id="go-cqhttp_1">配置 go-cqhttp</h2>
+<h2 id="2-go-cqhttp">2. 配置 go-cqhttp</h2>
 <p>安装完成后，第一次打开 go-cqhttp 时请选择“HTTP通信”，然后修改生成的 <code>config.yml</code> 文件如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">account</span><span class="p">:</span><span class="w"> </span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">uin</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">YOUR_BOT_QQ</span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># 作为机器人的QQ账号</span><span class="w"></span>
@@ -1458,7 +1474,7 @@
 </code></pre></div>
 <p>请记住两处高亮处您设置的端口号，在"部署 Bot"一节，我们将再次用到。</p>
 <p>配置文件中的其余部分（如账号登陆状态，消息发送重试次数等），你均可以参考注释，按需更改。</p>
-<h2 id="go-cqhttp_2">启动 go-cqhttp</h2>
+<h2 id="3-go-cqhttp">3. 启动 go-cqhttp</h2>
 <p>完成上述配置后，您可以启动 go-cqhttp。</p>
 <p>Windows 环境下直接运行 go-cqhttp.bat</p>
 <p>Linux 环境下，在 go-cqhttp 目录下输入以下命令以运行</p>
@@ -1468,7 +1484,7 @@
 <p class="admonition-title">提示：后台运行与多终端管理</p>
 <p>Linux环境下，推荐使用 tmux 管理终端，并在 tmux 中新建一个 session 以后台运行 go-cqhttp</p>
 </div>
-<h2 id="_2">登录问题</h2>
+<h2 id="4">4. 登录问题</h2>
 <p>在使用 go-cqhttp 登录你的 Bot 账号时，可能会遇到安全验证。</p>
 <ul>
 <li>
@@ -1503,7 +1519,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 安装" rel="prev">
+        <a href="../set-python/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 配置 python" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1512,7 +1528,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              安装
+              配置 python
             </div>
           </div>
         </a>
