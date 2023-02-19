@@ -1,12 +1,12 @@
-# 配置驱动器
+# 配置 go-cqhttp
 
 Little-UNIkeEN-Bot 是 QQ 机器人前端，只能处理交互逻辑，不能直接实现 QQ 机器人的所有功能。我们需要额外安装驱动器来实现与QQ服务器的信息收发与交互。
 
-## 安装 go-cqhttp
+## 1. 安装 go-cqhttp
 
 本 Bot 默认使用 go-cqhttp 作为驱动器，这是一个优秀的无头 QQ 客户端，关于其安装请见 [go-cqhttp官网 - 安装](https://docs.go-cqhttp.org/guide/quick_start.html#%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B) 。
 
-## 配置 go-cqhttp
+## 2. 配置 go-cqhttp
 
 安装完成后，第一次打开 go-cqhttp 时请选择“HTTP通信”，然后修改生成的 `config.yml` 文件如下：
 
@@ -37,7 +37,7 @@ servers:
 
 配置文件中的其余部分（如账号登陆状态，消息发送重试次数等），你均可以参考注释，按需更改。
 
-## 启动 go-cqhttp
+## 3. 启动 go-cqhttp
 
 完成上述配置后，您可以启动 go-cqhttp。
 
@@ -52,7 +52,7 @@ Linux 环境下，在 go-cqhttp 目录下输入以下命令以运行
 !!! tip "提示：后台运行与多终端管理"
     Linux环境下，推荐使用 tmux 管理终端，并在 tmux 中新建一个 session 以后台运行 go-cqhttp
 
-## 登录问题
+## 4. 登录问题
 
 在使用 go-cqhttp 登录你的 Bot 账号时，可能会遇到安全验证。
 

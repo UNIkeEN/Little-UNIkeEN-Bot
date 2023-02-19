@@ -9,8 +9,9 @@ nav:
       - '更新日志': 'update-plan.md'
       - '授权许可': 'license.md'
     - 开始:
-      - '安装': 'get-start/installation.md'
-      - '配置驱动器': 'get-start/set-driver.md'
+      - '安装向导': 'get-start/installation.md'
+      - '配置 python': 'get-start/set-python.md'
+      - '配置 gocqhttp': 'get-start/set-driver.md'
       - '配置 SQL': 'get-start/set-sql.md'
       - '部署 Bot': 'get-start/deployment.md'
       - '遇到问题': 'get-start/question.md'

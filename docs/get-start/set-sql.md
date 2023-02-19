@@ -4,7 +4,9 @@ Little-UNIkeEN-Bot 关于用户数据、功能配置等数据存储均是基于 
 
 关于 MySQL 的安装，可以参见如下教程 [eg1](https://cloud.tencent.com/developer/article/1863236) ，[eg2](https://www.runoob.com/mysql/mysql-install.html)。
 
-具体来说，首先到 [MySQL官网](https://downloads.mysql.com/archives/community/) 下载对应操作系统的包，搜索条件如下（ProductVersion 选择最新，OsVersion 选择相应系统版本）：
+## 1. Linux上安装mysql
+
+首先到 [MySQL官网](https://downloads.mysql.com/archives/community/) 下载对应操作系统的包，搜索条件如下（ProductVersion 选择最新，OsVersion 选择相应系统版本）：
 
 ![](../images/mysqlSearch.png)
 
@@ -37,3 +39,7 @@ mysql -u root -p
 
 !!! warning "注意：旧的数据存储格式"
     一些内测时期的旧版功能插件可能使用 JSON 文件存储用户数据，你可以自行选择修改为 SQL 存储。出于性能与统一化考量，我们推荐您使用 SQL 存储。
+
+## 2. windows上安装mysql
+
+请自行百度
