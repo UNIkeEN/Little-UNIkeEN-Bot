@@ -148,6 +148,25 @@ def standarlizingBuildingStr(buildingStr:str)->Optional[str]:
         return building
     return None
 
+
+def standarlizingBuildingTimeStr(Str:str)->Optional[str]:
+    """
+    东上 3 5 => (东上院,3,5)
+    东中 3 5 => (东中院,3,5)
+    你好 => None
+    """
+    pattern1 = re.compile(r'^(上|中|下|东上|东中|东下)院?\s*(\d+)\s+(\d+)$')
+    if pattern1.match(Str) != None:
+        building,startSection,endSection = pattern1.findall(Str)[0]
+        building +='院'
+        return building,startSection,endSection
+    pattern2 = re.compile(r'^(陈瑞球楼?|球楼?)\s*(\d+)\s+(\d+)$')
+    if pattern2.match(Str) != None:
+        building = '陈瑞球楼'
+        _,startSection,endSection = pattern2.findall(Str)[0]
+        return building,startSection,endSection
+    return None
+
 def getWeekDay(targetDate:datetime.date)->str:
     return '星期' + ['一','二','三','四','五','六','日'][targetDate.weekday()]
 
@@ -231,6 +250,9 @@ def getRoomInfo(building:str, room_name:str, savePath:str)->Optional[str]:
 def getRoomRecommend(building:str,startSection:int,endSection:int):
     today = datetime.date.today()
     recommendDict = {}
+
+    if(startSection>=endSection or startSection<0 or endSection>14):
+        return None
     # 1.get infomation
     buildingInfo = getSjtuBuilding(building)
     if buildingInfo == None: return None
@@ -288,7 +310,7 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
                 recommendCard.append(('separator', ))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:
-                    warning('base exception in getRoomrecommend: {}'.format(e))
+                    warning('base exception in getRoomRecommend: {}'.format(e))
             count += 1
     else:
         for room_name,roomInfo in recommendDict.items():
@@ -306,7 +328,7 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
     return savePath
 
 
-def getRoomRecommend():
+def getRoomrecommend():
     # get room recommend info
 
     today = datetime.date.today()
@@ -400,7 +422,7 @@ def getRoomRecommend():
                     warning('base exception in getRoomRecommend: {}'.format(e))
 
     rimg.addCard(ResponseImage.RichContentCard(raw_content=recommendCard, ))
-    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'RoomRecommend.png')
+    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'Roomrecommend.png')
     rimg.generateImage(savePath)
     return savePath
 
@@ -439,14 +461,22 @@ class SjtuClassroom(StandardPlugin):
 
 class SjtuClassroomRecommend(StandardPlugin):
     def __init__(self) -> None:
-        self.triggerPattern = re.compile(r'教室推荐\s+(.*)\s+(.*)$')
+        self.triggerPattern = re.compile(r'(推荐|教室推荐)\s+(.*)$')
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return self.triggerPattern.match(msg) != None
     def executeEvent(self,msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        courseImgPath = getRoomRecommend()
+        _,Str = self.triggerPattern.findall(msg)[0]
+        result = standarlizingBuildingTimeStr(Str)
+        if result == None:
+            send(target, '教室推荐参数解析错误，请重新输入查询参数，例如：\n"教室推荐 东上 3 5"、"教室推荐 东下 5 8"', data['message_type'])
+            return "OK"
+        building,startSection,endSection = result
+        startSection = int(startSection)
+        endSection = int(endSection)
+        courseImgPath = getRoomRecommend(building,startSection,endSection)
         if courseImgPath == None:
-            send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室', data['message_type'])
+            send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室或命令格式错误', data['message_type'])
         else:
             send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
         return "OK"
@@ -454,12 +484,12 @@ class SjtuClassroomRecommend(StandardPlugin):
         return {
             'name': 'SjtuClassroomRecommend',
             'description': '教室推荐',
-            'commandDescription': '教室推荐',
+            'commandDescription': '教室推荐 东上 3 5',
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
             'version': '1.0.0',
-            'author': 'Unicorn',
+            'author': 'jmh',
         }
 
 class SjtuClassroomPeopleNum(StandardPlugin):
@@ -546,28 +576,4 @@ class SjtuClassroomPeopleNum(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-# class SjtuClassroomRecommend2(StandardPlugin):
-#         def __init__(self) -> None:
-#         self.triggerPattern = re.compile(r'^教室推荐')
-#     def judgeTrigger(self, msg:str, data:Any) -> bool:
-#         return self.triggerPattern.match(msg) != None
-#     def executeEvent(self,msg:str, data:Any) -> Union[None, str]:
-#         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-#         courseImgPath = getRoomRecommend()
-#         if courseImgPath == None:
-#             send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室', data['message_type'])
-#         else:
-#             send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
-#         return "OK"
-#     def getPluginInfo(self, )->Any:
-#         return {
-#             'name': 'SjtuClassroomRecommend',
-#             'description': '教室推荐',
-#             'commandDescription': '教室推荐',
-#             'usePlace': ['group', 'private', ],
-#             'showInHelp': True,
-#             'pluginConfigTableNames': [],
-#             'version': '1.0.0',
-#             'author': 'Unicorn',
-#         }
     

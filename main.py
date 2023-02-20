@@ -20,7 +20,7 @@ from plugins.stocks import *
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
 from plugins.roulette import RoulettePlugin
-from plugins.lottery import LotteryPlugin
+from plugins.lottery import LotteryPlugin, createLotterySql
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan
@@ -71,6 +71,7 @@ def sqlInit():
     create_account_sql()
     createFaqDb()
     createBilibiliTable()
+    createLotterySql()
     for group in get_group_list():
         groupId = group['group_id']
         createFaqTable(str(groupId))

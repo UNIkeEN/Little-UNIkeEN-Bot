@@ -22,7 +22,16 @@ HELP_LOTTERY=(f"""【祈愿帮助】
 系统会自动按从小到大排列并按位置匹配，
 21时，神明将默念三个数字，数字有对应者将得到神明的认可，
 按所中个数1-3分别赠予{PRIZE_NUM[1:]}💰赐礼""")
-
+def createLotterySql():
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
+    mydb.autocommit = True
+    mycursor.execute("""create table if not exists `BOT_DATA`.`lotteries`(
+        `id` bigint unsigned not null auto_increment,
+        `timestp` timestamp default null,
+        `record` text default null, 
+        primary key (`id`)
+    )charset=utf8mb4, collate=utf8mb4_unicode_ci""")
 class LotteryReminder(ScheduleStandardPlugin):
     s = Semaphore()
     def __init__(self) -> None:
