@@ -184,7 +184,7 @@ class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
         return {
             'name': 'SjtuJwcMonitor',
             'description': '教务通知更新广播',
-            'commandDescription': 'None',
+            'commandDescription': '[-grpcfg驱动]',
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

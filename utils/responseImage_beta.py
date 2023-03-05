@@ -13,6 +13,7 @@ SAVE_TMP_PATH = 'data/tmp'
 # 字体预定义常量
 FONT_SYHT_M42 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 42)
 FONT_SYHT_M32 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 32)
+FONT_SYHT_M28 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 28)
 FONT_SYHT_M24 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24)
 FONT_SYHT_M18 = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 18)
 FONT_HYWH_36 = ImageFont.truetype(os.path.join(FONTS_PATH, '汉仪文黑.ttf'), 36)
@@ -42,7 +43,7 @@ PALETTE_CYAN = (0, 150, 136, 255)
 PALETTE_INDIGO = (69, 84, 164, 255)
 
 PALETTE_GREY_BORDER = (213, 213, 213, 255)
-PALETTE_GERY_BACK = (240, 240, 240, 255)
+PALETTE_GREY_BACK = (240, 240, 240, 255)
 PALETTE_GREY_SUBTITLE = (95, 95, 95, 255)
 PALETTE_GREY_CONTENT = (125, 125, 125, 255)
 
@@ -67,7 +68,7 @@ class ResponseImage():
         title: str = '响应卡片', # 卡片标题
         titleColor = None, # 卡片标题栏颜色
         primaryColor: tuple = PALETTE_BLUE, # 主题色
-        backColor: tuple = PALETTE_GERY_BACK, # 背景色
+        backColor: tuple = PALETTE_GREY_BACK, # 背景色
         footer: str = '',
         cardTitleFont: ImageFont.FreeTypeFont = FONT_SYHT_M32, # 前景卡片标题字体
         cardSubtitleFont: ImageFont.FreeTypeFont = FONT_SYHT_M24, # 前景卡片副标题字体

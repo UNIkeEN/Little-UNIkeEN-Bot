@@ -95,7 +95,7 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
         return {
             'name': 'SjtuDektMonitor',
             'description': '第二课堂更新广播',
-            'commandDescription': 'None',
+            'commandDescription': '[-grpcfg驱动]',
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],

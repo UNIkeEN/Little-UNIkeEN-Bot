@@ -3,6 +3,7 @@ from utils.basicConfigs import sqlConfig
 from utils.basicEvent import send, warning, gocqQuote
 import re
 from typing import List, Tuple, Optional, Union, Dict, Any, Set
+from bilibili_api import sync
 from bilibili_api.user import User
 from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
 import asyncio
@@ -137,7 +138,7 @@ class BilibiliSubscribe(StandardPlugin):
             uid = int(uid)
             try:
                 u = User(uid)
-                userInfo = asyncio.run(u.get_user_info())
+                userInfo = sync(u.get_user_info())
                 self.subscribeBilibili(group_id, uid)
                 name = gocqQuote(userInfo['name'])
                 send(group_id, f'订阅成功！\nname: {name}\nuid: {uid}')
@@ -156,7 +157,7 @@ class BilibiliSubscribe(StandardPlugin):
                 send(group_id, '[CQ:reply,id=%d]本群还没有订阅up哦~'%data['message_id'])
             else:
                 try:
-                    metas = asyncio.run(asyncio.wait([up.get_user_info() for up in ups]))
+                    metas = sync(asyncio.wait([up.get_user_info() for up in ups]))
                     metas = [m.result() for m in metas[0]]
                     metas = [f"name: {m['name']}\nuid: {m['mid']}" for m in metas]
                     send(group_id,f'本群订阅的up有：\n\n'+'\n----------\n'.join(metas))
@@ -215,7 +216,7 @@ class BilibiliMonitor(CronStandardPlugin):
         while videos == None and attempts < 3:
             attempts += 1
             try:
-                videos = asyncio.run(self.bUser.get_videos())
+                videos = sync(self.bUser.get_videos())
             except BaseException as e:
                 videos = None
         if videos == None: 

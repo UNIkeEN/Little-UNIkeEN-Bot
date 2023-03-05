@@ -130,8 +130,8 @@ class HotSearchImage():
         self.width = width
         self.unit:List[HotSearchUnit] = [HotSearchUnit(
             m['text'],
-            m['color'] if 'color' in m.keys() else defaultColor,
-            m['font'] if 'font' in m.keys() else defaultFont,
+            m.get('color', defaultColor),
+            m.get('font', defaultFont),
             width,
             index+1
         ) for index, m in enumerate(meta)]

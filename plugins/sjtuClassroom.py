@@ -257,14 +257,15 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
     buildingInfo = getSjtuBuilding(building)
     if buildingInfo == None: return None
     try:
-        buildingInfo = {room['name']: room for room in buildingInfo['roomList']} 
+        buildingInfo = {room['name']: room for room in buildingInfo['roomList']}  
     except BaseException as e:
         warning('base exception in getRoomRecommend: {}'.format(e))
         return None
     buildingCourse = getRoomCourse(building, today)
     if buildingCourse == None: return None
     try:
-        buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children'] }
+        roomStudents = {room['roomId']: room['actualStuNum'] for floor in buildingCourse['floorList'] for room in floor.get('roomStuNumbs', [])} 
+        buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children'] } 
     except BaseException as e:
         warning('base exception in getRoomRecommend-buildingCourse: {}'.format(e))
         return None
@@ -275,6 +276,7 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
         flag = True # judge if there is class
         getBuildingCourse = buildingCourse.get(room_name, None)
         getBuildingInfo = buildingInfo.get(room_name, None)
+        roomStudentNum = roomStudents.get(getBuildingCourse['id'], None)
         if getBuildingInfo == None or getBuildingCourse == None:
             return None
         for course in getBuildingCourse.get('roomCourseList',[]):
@@ -285,6 +287,7 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
                 break
         if flag:
             roomInfo = {}
+            roomInfo['People'] = roomStudentNum if roomStudentNum != None else '--'            
             roomInfo['CO2']=getBuildingInfo.get('sensorCo2', '--')
             roomInfo['Temp']=getBuildingInfo.get('sensorTemp', '--')
             roomInfo['Hum']=getBuildingInfo.get('sensorHum', '--')
@@ -306,7 +309,7 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
             if(count>25):break
             try:
                 recommendTxt = f"所选教学楼在第{startSection}-{endSection}节有空闲教室：{room_name}\n" \
-                            f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
+                            f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}，室内人数为{roomInfo['People']}\n"
                 recommendCard.append(('separator', ))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:
@@ -316,7 +319,7 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
         for room_name,roomInfo in recommendDict.items():
             try:
                 recommendTxt = f"所选教学楼在第{startSection}-{endSection}节有空闲教室：{room_name}\n" \
-                            f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
+                            f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}，室内人数为{roomInfo['People']}\n"
                 recommendCard.append(('separator', ))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:

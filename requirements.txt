@@ -9,7 +9,6 @@ icalendar
 jieba
 loguru
 lxml
-mysql_connector_repackaged
 numpy
 pandas
 Pillow

@@ -1,11 +1,9 @@
 import os
-import traceback
 from flask import Flask, request
 from enum import IntEnum
 
-from utils.basicEvent import send
 from utils.accountOperation import create_account_sql
-from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin, PokeStandardPlugin
+from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin, PokeStandardPlugin, AddGroupStandardPlugin, EmptyAddGroupPlugin
 
 from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
@@ -24,6 +22,7 @@ from plugins.lottery import LotteryPlugin, createLotterySql
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan
+from plugins.privateControl import PrivateControl
 from plugins.bilibiliSubscribe import createBilibiliTable, BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
 try:
     from plugins.chatWithNLP import ChatWithNLP
@@ -35,10 +34,12 @@ try:
 except:
     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
+from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor, createBwcSql
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
 from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
+from plugins.addGroupRecorder import AddGroupRecorder
 from plugins.fileRecorder import GroupFileRecorder
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
 from plugins.sjtuHesuan import SjtuHesuan
@@ -47,6 +48,7 @@ from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
 from plugins.makeJoke import MakeJoke
+from plugins.uniAgenda import GetUniAgenda
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except:
@@ -57,11 +59,18 @@ try:
     GetMddStatus()
 except:
     GetMddStatus, MonitorMddStatus = EmptyPlugin, EmptyPlugin
+
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
     ShowEE0502Comments()
 except:
     ShowEE0502Comments = EmptyPlugin
+
+try:
+    from plugins.notPublished.sjtuPlusGroupingVerication import SjtuPlusGroupingVerify
+except:
+    SjtuPlusGroupingVerify = EmptyAddGroupPlugin
+
 from plugins.gocqWatchDog import GocqWatchDog
 
 ###### end not published plugins
@@ -72,6 +81,7 @@ def sqlInit():
     createFaqDb()
     createBilibiliTable()
     createLotterySql()
+    createBwcSql()
     for group in get_group_list():
         groupId = group['group_id']
         createFaqTable(str(groupId))
@@ -99,28 +109,30 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowNews(), YesterdayNews(), 
                         PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
-    PluginGroupManager([SignIn()], 'signin'),  # 签到
-    # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
-    PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         SjtuClassroomRecommend(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
+    # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
+    PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
+    PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
-    PluginGroupManager([GetJwc(), #SubscribeJwc() ,
+    PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
-                        PluginGroupManager([SjtuDektMonitor()], 'dekt')], 'jwc'), 
+                        PluginGroupManager([SjtuDektMonitor()], 'dekt'),
+                        PluginGroupManager([SjtuBwcMonitor()], 'bwcreport'),], 'jwc'), 
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
     # PluginGroupManager([GoBangPlugin()],'gobang'),
     PluginGroupManager([Show2cyPIC()], 'anime'), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
-    PluginGroupManager([GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
+    PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
     PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
     PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
+    PrivateControl(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
@@ -130,7 +142,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MorningGreet(), NightGreet(),
     SignIn(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), #SubscribeJwc(), 
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), SjtuBwc(), #SubscribeJwc(), 
     GetSjtuNews(),
     LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
@@ -142,9 +154,14 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(),
+    PrivateControl(),
 ]
 GroupPokeList:List[PokeStandardPlugin] = [
     AutoRepoke(), # 自动回复拍一拍
+]
+AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
+    AddGroupRecorder(), # place this plugin to the first place
+    SjtuPlusGroupingVerify('test',[123, 456]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 
@@ -168,23 +185,31 @@ def eventClassify(json_data: dict)->NoticeType:
     """事件分类"""
     if json_data['post_type'] == 'meta_event' and json_data['meta_event_type'] == 'heartbeat':
         return NoticeType.GocqHeartBeat
-    if json_data['post_type'] == 'message' and json_data['message_type'] == 'group':
-        if json_data['group_id'] in APPLY_GROUP_ID:
-            return NoticeType.GroupMessage
-        else:
-            return NoticeType.GroupMessageNoProcessRequired
-    if json_data['post_type'] == 'message' and json_data['message_type'] == 'private':
-        return NoticeType.PrivateMessage
-    if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'notify' and json_data['sub_type'] == "poke":
-        if 'group_id' in json_data.keys() and json_data['group_id'] in APPLY_GROUP_ID:
-            return NoticeType.GroupPoke
-    if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'group_recall':
-        return NoticeType.GroupRecall
-    if json_data['post_type'] == 'notice' and json_data['notice_type'] == 'group_upload':
-        return NoticeType.GroupUpload
-    if json_data['post_type'] == 'request' and json_data['request_type'] == 'friend':
-        return NoticeType.AddPrivate
-    return NoticeType.NoProcessRequired
+    elif json_data['post_type'] == 'message':
+        if json_data['message_type'] == 'group':
+            if json_data['group_id'] in APPLY_GROUP_ID:
+                return NoticeType.GroupMessage
+            else:
+                return NoticeType.GroupMessageNoProcessRequired
+        elif json_data['message_type'] == 'private':
+            return NoticeType.PrivateMessage
+    elif json_data['post_type'] == 'notice':
+        if json_data['notice_type'] == 'notify':
+            if json_data['sub_type'] == "poke":
+                if json_data.get('group_id', None) in APPLY_GROUP_ID:
+                    return NoticeType.GroupPoke
+        elif json_data['notice_type'] == 'group_recall':
+            return NoticeType.GroupRecall
+        elif json_data['notice_type'] == 'group_upload':
+            return NoticeType.GroupUpload
+    elif json_data['post_type'] == 'request':
+        print(json_data)
+        if json_data['request_type'] == 'friend':
+            return NoticeType.AddPrivate
+        elif json_data['request_type'] == 'group':
+            return NoticeType.AddGroup
+    else:
+        return NoticeType.NoProcessRequired
 
 @app.route('/', methods=["POST"])
 def post_data():
@@ -211,13 +236,20 @@ def post_data():
             plugin.recallMessage(data)
 
     # 私聊消息处理
-    elif flag==NoticeType.PrivateMessage:
+    elif flag == NoticeType.PrivateMessage:
         # print(data)
         msg=data['message'].strip()
         for event in PrivatePluginList:
             if event.judgeTrigger(msg, data):
                 if event.executeEvent(msg, data)!=None:
                     break
+
+    elif flag == NoticeType.AddGroup:
+        for p in AddGroupVerifyPluginList:
+            if p.judgeTrigger(data):
+                if p.addGroupVerication(data) != None:
+                    break
+    # 上传文件处理
     elif flag == NoticeType.GroupUpload:
         for event in [GroupFileRecorder()]:
             event.uploadFile(data)

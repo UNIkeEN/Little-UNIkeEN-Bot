@@ -1,12 +1,12 @@
 import re
 import mysql.connector
-import requests, json
+import requests, requests.exceptions, json
 from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
 from PIL import Image, ImageDraw, ImageFont
 from utils.basicConfigs import *
 import time
 import random
-from typing import Dict, List, Union, Tuple, Any
+from typing import Dict, List, Union, Tuple, Any, Optional
 from pymysql.converters import escape_string
 import traceback
 import aiohttp, asyncio
@@ -410,6 +410,53 @@ def set_group_ban(group_id:int, user_id:int, duration:int)->None:
         requests.get(url, params=params)
     except BaseException as e:
         warning("base exception in set_group_ban: {}".format(e))
+
+def get_group_system_msg()->Optional[Dict[str, List[Dict[str, Any]]]]:
+    """获取群系统消息（加群信息、邀请加群信息）
+    @return: Optional[{
+        'invited_requests': [{'request_id'}, ...]
+    }]
+    参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E7%B3%BB%E7%BB%9F%E6%B6%88%E6%81%AF
+    """
+    url = HTTP_URL+"/get_group_system_msg"
+    try:
+        req = requests.get(url)
+        if req.status_code != requests.codes.ok:
+            warning('requests code!=200 in get_group_system_msg')
+            return None
+        req = req.json()
+        if req['retcode'] != 0:
+            warning('retcode != 0 in get_group_system_msg')
+            return None
+        return req['data']
+    except requests.exceptions.JSONDecodeError as e:
+        warning('json decode error in get_group_system_msg: {}'.format(e))
+    except BaseException as e:
+        warning('base exception in get_group_system_msg: {}'.format(e))
+    return None
+
+def set_group_add_request(flag: str, sub_type: str, approve: bool, reason: str="")->None:
+    """处理加群请求/处理加群邀请
+    @flag: 加群请求的 flag（需从上报的数据中获得）
+    @sub_type: 'add' 或 'invite', 需要和上报消息中的 sub_type 字段相符
+    @approve: 是否同意
+    @reason: 拒绝理由，仅approve == False时生效
+    参考链接： https://docs.go-cqhttp.org/api/#%E5%A4%84%E7%90%86%E5%8A%A0%E7%BE%A4%E8%AF%B7%E6%B1%82-%E9%82%80%E8%AF%B7
+    """
+    if sub_type not in ['add', 'invite']:
+        warning('sub_type should either `add` or `invite`, but: {}'.format(sub_type))
+        return
+    url = HTTP_URL+"/set_group_add_request"
+    params = {
+        'flag': flag,
+        'sub_type': sub_type,
+        'approve': approve,
+        'reason': reason,
+    }
+    try:
+        requests.get(url, params=params)
+    except BaseException as e:
+        warning('base exception in set_group_add_request: {}'.format(e))
 
 def warning(what:str)->None:
     """warning to admins"""

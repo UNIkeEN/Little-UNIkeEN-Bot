@@ -8,9 +8,9 @@ from threading import Timer, Semaphore
 from bilibili_api.live import LiveRoom
 from bilibili_api.exceptions.LiveException import LiveException
 from bilibili_api.exceptions.ApiException import ApiException
+from bilibili_api import sync
 from datetime import datetime
 import os.path
-import asyncio
 class GetFduMcLive(StandardPlugin):
     def __init__(self) -> None:
         self.liveId = 24716629
@@ -20,7 +20,7 @@ class GetFduMcLive(StandardPlugin):
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         try:
-            roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
+            roomInfo = sync(self.liveRoom.get_room_info())['room_info']
         except LiveException as e:
             warning("sjmc bilibili api exception: {}".format(e))
             return
@@ -74,7 +74,7 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
             self.start(5, 30)
 
     def tick(self):
-        roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
+        roomInfo = sync(self.liveRoom.get_room_info())['room_info']
         currentStatus = roomInfo['live_status'] == 1
         if currentStatus != self.prevStatus:
             self.prevStatus = currentStatus
@@ -109,7 +109,7 @@ class GetSjmcLive(StandardPlugin):
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         try:
-            roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
+            roomInfo = sync(self.liveRoom.get_room_info())['room_info']
         except LiveException as e:
             warning("sjmc bilibili api exception: {}".format(e))
             return
@@ -164,7 +164,7 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
 
 
     def tick(self):
-        roomInfo = asyncio.run(self.liveRoom.get_room_info())['room_info']
+        roomInfo = sync(self.liveRoom.get_room_info())['room_info']
         currentStatus = roomInfo['live_status'] == 1
         if currentStatus != self.prevStatus:
             self.prevStatus = currentStatus

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Tuple, Any, List, final
+from typing import Union, Tuple, Any, List, final, Optional, Callable
 from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig, getGroupAdmins
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -84,20 +84,65 @@ class PokeStandardPlugin(ABC):
 
     @abstractmethod
     def pokeMessage(self, data:Any)->Union[str, None]:
-        """接收‘戳一戳’消息的接口"""
+        """接收‘戳一戳’消息的接口
+        @data: all the message data, from gocqhttp
+        @return: 
+            if None, 继续调用后续插件
+            if "OK", 停止调用后续插件
+        """
         raise NotImplementedError
 
 class RecallMessageStandardPlugin(ABC):
-    """接收‘撤回类型’消息的接口"""
+    """接收‘撤回类型’消息"""
     @abstractmethod
     def recallMessage(self, data:Any)->Union[str, None]:
+        """接收‘撤回类型’消息的接口
+        @data: all the message data, from gocqhttp
+        @return: 
+            if None, 继续调用后续插件
+            if "OK", 停止调用后续插件
+        """
         raise NotImplementedError
 
 class GroupUploadStandardPlugin(ABC):
-    """接收‘上传文件’消息的接口"""
+    """接收‘上传文件’消息"""
     @abstractmethod
     def uploadFile(self, data)->Union[str, None]:
+        """接收‘上传文件’消息的接口
+        @data: all the message data, from gocqhttp
+        @return: 
+            if None, 继续调用后续插件
+            if "OK", 停止调用后续插件
+        """
         raise NotImplementedError
+
+class AddGroupStandardPlugin(ABC):
+    """接收‘加群申请’消息"""
+    @abstractmethod
+    def judgeTrigger(self, data: Any)->bool:
+        """判断插件是否被触发：
+            如果触发，则调用addGroupVerication方法
+            否则继续往下遍历插件列表
+        @data: all the message data, from gocqhttp
+        @return: True or False, 代表是否触发
+        """
+
+    @abstractmethod
+    def addGroupVerication(self, data: Any)->Union[str, None]:
+        """接收‘加群申请’消息的接口
+        @data: all the message data, from gocqhttp
+        @return: 
+            if None, 继续调用后续插件
+            if "OK", 停止调用后续插件
+        """
+
+class EmptyAddGroupPlugin(AddGroupStandardPlugin):
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+    def judgeTrigger(self, data) -> bool:
+        return False
+    def addGroupVerication(self, data) -> Union[str, None]:
+        return None
 
 class BaseTimeSchedulePlugin(ABC):
     """定时任务基类，参考apscheduler文档"""
@@ -142,6 +187,7 @@ class CronStandardPlugin(BaseTimeSchedulePlugin):
         return BaseTimeSchedulePlugin.scheduler.add_job(self._tick, 'interval', seconds=intervalTime)
 
 class PluginGroupManager(StandardPlugin):
+    refreshPluginStatusHandles:List[Tuple[str, Callable]] = []
     def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
         self.plugins = plugins
         self.groupName = groupName
@@ -152,7 +198,7 @@ class PluginGroupManager(StandardPlugin):
         self.onPattern = re.compile(r'^\-grpcfg\s+enable\s+(%s|\*)$'%self.groupName)
         self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
         self._checkGroupInfo()
-
+        PluginGroupManager.refreshPluginStatusHandles.append((groupName, self._refreshPluginStatus))
     @final
     def _checkGroupInfo(self):
         # check group name
@@ -233,6 +279,26 @@ class PluginGroupManager(StandardPlugin):
             self.setEnabled(group_id, nextState)
             for p in self.plugins:
                 p.onStateChange(nextState, data)
+    
+    def _refreshPluginStatus(self):
+        self.enabledDict = readGlobalConfig(None, self.groupName+'.enable')
+    
+    @staticmethod
+    def refreshPluginStatus(groupName:Union[str, None]):
+        """刷新内存缓存
+        if groupName == None:
+            刷新所有注册在PluginGroupManager.refreshPluginStatusHandles
+            的group缓存
+        else:
+            刷新注册在PluginGroupManager.refreshPluginStatusHandles
+            且groupName与输入值相同的group的缓存
+        """
+        if groupName == None:
+            for _, handle in PluginGroupManager.refreshPluginStatusHandles:
+                handle()
+        else:
+            for grpn, handle in PluginGroupManager.refreshPluginStatusHandles:
+                if grpn == groupName: handle()
 
 class WatchDog(ABC):
     def __init__(self, intervalTime:float):
