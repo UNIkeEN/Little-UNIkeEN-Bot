@@ -21,8 +21,8 @@ from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
-# from plugins.signIn import SignIn
-from plugins.signIn_v2 import SignIn
+from plugins.signIn import SignIn
+# from plugins.signIn_v2 import SignIn
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
