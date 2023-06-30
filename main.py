@@ -21,8 +21,8 @@ from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
-from plugins.signIn import SignIn
-# from plugins.signIn_v2 import SignIn
+# from plugins.signIn import SignIn
+from plugins.signIn_v2 import SignIn
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
@@ -92,6 +92,14 @@ except NotPublishedException as e:
 
 from plugins.gocqWatchDog import GocqWatchDog
 
+from plugins.notPublished.sjtuSql import (
+    SearchSjtuSqlAllPrivate,
+    SearchSjtuSqlAll,
+    SearchSjtuSql,
+    SearchSjtuSqlPIC,
+)
+from plugins.notPublished.sjtuSqlGroupingVerication import SjtuSqlGroupingVerify
+
 ###### end not published plugins
 
 def sqlInit():
@@ -154,6 +162,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
+    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(), 
     PrivateControl(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
@@ -172,6 +181,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetFduMcLive(),
     GetMddStatus(), IcolaUserBind(),#SubscribeMdd(),
+    SearchSjtuSqlAllPrivate(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(),
@@ -186,7 +196,8 @@ GroupPokeList:List[PokeStandardPlugin] = [
 AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     AddGroupRecorder(), # place this plugin to the first place
     SjtuPlusGroupingVerify('dytwzzb',[]),
-    SjtuPlusGroupingVerify('test',[]),
+    SjtuPlusGroupingVerify('test',[604329164,613024311]),
+    SjtuSqlGroupingVerify([604329164,613024311]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 
