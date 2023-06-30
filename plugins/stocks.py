@@ -1,9 +1,7 @@
 from typing import Union, Any
 from unittest import result
 from utils.basicEvent import *
-from utils.basicConfigs import TXT_PERMISSION_DENIED, ROOT_ADMIN_ID
 from utils.standardPlugin import StandardPlugin
-from utils.accountOperation import get_user_coins, update_user_coins
 from utils.basicConfigs import sqlConfig
 import mysql.connector
 from pymysql.converters import escape_string

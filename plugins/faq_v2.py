@@ -1,5 +1,6 @@
 from typing import Dict, Union, Any, List, Tuple
-from utils.basicEvent import getGroupAdmins, send, warning
+from utils.basicEvent import send, warning
+from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 from utils.responseImage import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont

@@ -4,6 +4,7 @@ from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin, ScheduleStandardPlugin
 import mysql.connector
 from utils.responseImage_beta import *
+from utils.configAPI import getPluginEnabledGroups
 import wordcloud
 import jieba
 from io import BytesIO

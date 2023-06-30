@@ -1,5 +1,5 @@
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, BOT_SELF_QQ
-from utils.basicEvent import send, warning, startswith_in, get_avatar_pic, get_group_avatar_pic, isGroupOwner, getGroupAdmins
+from utils.basicEvent import send, warning, startswith_in, get_avatar_pic, get_group_avatar_pic
 from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin
 from PIL import Image, ImageDraw, ImageFont
@@ -21,7 +21,8 @@ BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
             '新闻', '-sjtu news', '交大新闻',
             '来点图图',
             '决斗','接受决斗','ttzf','izf',
-            '-myact', '-wc', '-actrank']
+            '-myact', '-wc', '-actrank','-bwc',
+            '-bwrs','-bdrs','-zhrs', '-actclear']
 
 class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -48,8 +49,7 @@ class ActReportPlugin(StandardPlugin):
 
 class ActRankPlugin(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg == '-actrank' and data['message_type'] == 'group' and \
-            (isGroupOwner(data['group_id'], data['user_id']) or data['user_id'] in getGroupAdmins(data['group_id']))
+        return msg == '-actrank' and data['message_type'] == 'group' 
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         imgPath = getGroupActivityRank(data['group_id'])
         if imgPath == None:
@@ -61,7 +61,7 @@ class ActRankPlugin(StandardPlugin):
     def getPluginInfo(self, )->Any:
         return {
             'name': 'ActRank',
-            'description': '水群排行榜[👑🔑]',
+            'description': '水群排行榜',
             'commandDescription': '-actrank',
             'usePlace': ['group', ],
             'showInHelp': True,
@@ -88,7 +88,14 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
     try:
         mydb = mysql.connector.connect(**sqlConfig)
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT time, message FROM BOT_DATA.messageRecord where user_id=%d and group_id=%d"%(user_id, group_id))
+        mycursor.execute("SELECT message_seq from `BOT_DATA`.`clearChatLog` where user_id = %d and group_id = %d"%(user_id, group_id))
+        result=list(mycursor)
+        minSeq = None if len(result) == 0 else result[0][0]
+        if minSeq == None:
+            mycursor.execute("SELECT time, message FROM BOT_DATA.messageRecord where user_id=%d and group_id=%d"%(user_id, group_id))
+        else:
+            mycursor.execute("SELECT time, message FROM BOT_DATA.messageRecord where user_id=%d and group_id=%d and message_seq > %d"%(user_id, group_id, minSeq))
+
         result=list(mycursor)
         # 消息数量
         messageNumber = len(result)
@@ -279,6 +286,9 @@ def getGroupActivityRank(group_id:int)->Optional[str]:
     try:
         mydb = mysql.connector.connect(**sqlConfig)
         mycursor = mydb.cursor()
+        # 获取群里删除过act的人数
+        mycursor.execute('select count(*) from `BOT_DATA`.`clearChatLog` where group_id=%d'%group_id)
+        queryPeopleNum = list(mycursor)[0][0] + 15
         # mycursor.execute("SELECT ANY_VALUE(nickname), ANY_VALUE(card), user_id, COUNT(*) FROM BOT_DATA.messageRecord WHERE group_id=%d and user_id!=%d GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 15;"%(group_id, BOT_SELF_QQ))
         mycursor.execute("use BOT_DATA")
         randNum = random.randint(1e9, 1e10-1)
@@ -289,13 +299,14 @@ def getGroupActivityRank(group_id:int)->Optional[str]:
         create temporary table %s 
         select user_id as u, count(*) as c from BOT_DATA.messageRecord 
         where group_id=%d and user_id != %d group by user_id
-        order by count(user_id) desc limit 15"""%(tempTableName, group_id, BOT_SELF_QQ))
+        order by count(user_id) desc limit %d"""%(tempTableName, group_id, BOT_SELF_QQ, queryPeopleNum))
         mycursor.execute("alter table %s add column n varchar(50)"%(tempTableName))
         mycursor.execute("drop procedure if exists %s"%tempProcName)
         mycursor.execute("""create procedure %s()
         begin
         declare nick varchar(50);
         declare uid bigint unsigned;
+        declare cleared bool;
         declare done bool default false;
         declare cur cursor for select u from %s;
         declare continue handler for sqlstate '02000' set done = true;
@@ -309,13 +320,28 @@ def getGroupActivityRank(group_id:int)->Optional[str]:
             where user_id = uid and group_id = %d
         )  and group_id = %d;
         update %s set n = nick where u = uid;
+        
+        select count(*) > 0 from `BOT_DATA`.`clearChatLog` 
+        where group_id = %d and user_id = uid into cleared;
+        if cleared then
+            update %s set c = (
+                select count(*) from messageRecord 
+                where group_id = %d and user_id = uid and message_seq > (
+                    select `message_seq` from `BOT_DATA`.`clearChatLog`
+                    where group_id = %d and user_id = uid
+                )
+            )where u = uid;
+        end if;
+
         until done = true
         end repeat;
         close cur;
-        end; """%(tempProcName, tempTableName, group_id, group_id, tempTableName))
+        end; """%(tempProcName, tempTableName, group_id, group_id, tempTableName,
+        group_id, tempTableName, group_id, group_id))
         mycursor.execute("call %s()"%tempProcName)
         mycursor.execute("select n, u, c from %s"%(tempTableName))
         result=list(mycursor)
+        result = sorted(result, key=lambda x:x[2], reverse=True)[:15]
         card_content = []
         max_num = result[0][2]
         for index, (nickname, user_id, count) in enumerate(result):

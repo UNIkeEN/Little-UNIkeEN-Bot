@@ -3,19 +3,30 @@ import json
 import time
 from datetime import datetime
 from typing import Union, Any
-from utils.basicEvent import *
+from utils.basicEvent import send, warning, init_image_template, draw_rounded_rectangle
+from utils.channelAPI import send_guild_channel_msg
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
+import requests
+from utils.configAPI import getPluginEnabledGroups
+from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
-from selenium import webdriver
-from selenium.webdriver import ChromeOptions
-from browsermobproxy import Server
 from threading import Timer, Semaphore
+try:
+    from selenium import webdriver
+    from selenium.webdriver import ChromeOptions
+    from browsermobproxy import Server
+except ImportError as e:
+    raise NotPublishedException(str(e))
 
 DEKT_SOURCE_DIR = os.path.join(ROOT_PATH, 'data/dektSource/')
+BROWSERMOB_SERVER_PATH = '/home/ubuntu/dektFetcher/browsermob-proxy-2.1.4/bin/browsermob-proxy'
+if not os.path.isfile(BROWSERMOB_SERVER_PATH):
+    raise NotPublishedException("browsermob-proxy尚未安装")
+if not isinstance(JAC_COOKIE, str) or len(JAC_COOKIE) < 10:
+    raise NotPublishedException("JAC_COOKIE尚未填写")
 def DownloadActlist():
-    server = Server('/home/ubuntu/dektFetcher/browsermob-proxy-2.1.4/bin/browsermob-proxy')
+    server = Server(BROWSERMOB_SERVER_PATH)
     server.start()
     proxy = server.create_proxy()
     edgeOptions = ChromeOptions()
@@ -83,8 +94,11 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
             if data_1['data'][0]['id'] != data_2['data'][0]['id']:
                 picPath = NewActlistPic()
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
+                txt = f'已发现第二课堂活动更新:[CQ:image,file=files:///{picPath}]'
+                send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['dekt'], txt)
                 for group_id in getPluginEnabledGroups('dekt'):
-                    send(group_id, f'已发现第二课堂活动更新:[CQ:image,file=files:///{picPath}]')
+                    send(group_id, txt, 'group')
+                    time.sleep(1)
         except json.JSONDecodeError as e:
             warning("dekt json parse error {}".format(e))
         except KeyError as e:

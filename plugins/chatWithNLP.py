@@ -11,7 +11,7 @@ import torch.nn.utils as utils
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
+from utils.standardPlugin import StandardPlugin, NotPublishedException
 jieba.setLogLevel(logging.INFO) #关闭jieba输出信息
 
 class NLP_Config:
@@ -265,7 +265,10 @@ class CorpusDataset(dataimport.Dataset):
 
     def __init__(self, conf):
         self.conf = conf
-        self._data = torch.load(conf.corpus_data_path)
+        try:
+            self._data = torch.load(conf.corpus_data_path)
+        except NotPublishedException as e:
+            raise NotPublishedException("utils.chatWithNLP.CorpusDataset data not found")
         self.word2ix = self._data['word2ix']
         self.corpus = self._data['corpus']
         self.padding = self.word2ix.get(self._data.get('pad'))
@@ -307,8 +310,10 @@ class EvalModel():
 
         self.encoder = Encoder_RNN(self.conf, self.len_vocab)
         self.decoder = Decoder_RNN(self.conf, self.len_vocab)
-
-        checkpoint = torch.load(self.conf.load_checkpoint, map_location='cpu')
+        try:
+            checkpoint = torch.load(self.conf.load_checkpoint, map_location='cpu')
+        except:
+            raise NotPublishedException("utils.chatWithNLP.EvalModel ckpt not found")
         self.encoder.load_state_dict(checkpoint['encoder'])
         self.decoder.load_state_dict(checkpoint['decoder'])
 

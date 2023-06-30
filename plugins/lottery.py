@@ -6,6 +6,7 @@ import json
 from io import BytesIO
 from threading import Timer, Semaphore
 import mysql.connector
+from utils.configAPI import getPluginEnabledGroups
 from pymysql.converters import escape_string
 from typing import Union, Any
 from utils.basicEvent import *
@@ -169,9 +170,6 @@ class LotteryPlugin(StandardPlugin):
         return startswith_in(msg,CMD_LOTTERY)
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        if data['message_type']=='group' and data['group_id'] not in getPluginEnabledGroups('lottery'):
-            send(target, TXT_PERMISSION_DENIED)
-            return "OK"
         if msg=='祈愿帮助':
             send(target, HELP_LOTTERY, data['message_type'])
         else:

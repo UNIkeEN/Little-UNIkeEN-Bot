@@ -26,3 +26,5 @@ ujson
 apscheduler
 matplotlib
 wordcloud
+mysql-connector-python
+pyjsparser

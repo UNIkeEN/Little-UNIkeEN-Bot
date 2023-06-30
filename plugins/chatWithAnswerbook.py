@@ -7,7 +7,7 @@ import random
 from time import sleep
 
 book_path = 'resources/corpus/answerbook.json'
-with open(book_path, "r") as f:
+with open(book_path, "r", encoding='utf-8') as f:
     BOOK_DICT = json.load(f)
 
 class ChatWithAnswerbook(StandardPlugin): # 答案之书

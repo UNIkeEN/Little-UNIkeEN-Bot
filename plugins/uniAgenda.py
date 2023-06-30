@@ -14,6 +14,13 @@ from typing import Optional, Dict, List
 # 开始时间占位符（当日程不提供开始时间时占位）
 TIME_BEGIN_PLSHOLDER=datetime.datetime(1980, 1, 1, 0, 0, 0)
 
+'''列表项示例
+example_event = [title, subtitle, time_begin, time_end, font_color, back_color, icon_path]
+'''
+
+# 预置全局事件项（可用于公告/活动）
+preset_eventlist = [['麦当劳每日免费雪碧', '发送命令【-icola】了解如何用小马自动领券~  (技术支持: Teruteru)',datetime.datetime(2023, 6, 28, 10, 00, 00), datetime.datetime(2023, 9, 5, 23, 59, 59), (35,210,137,255), (214,255,238,255), None],]
+
 TEXT_WEEK_LIST=['一','二','三','四','五','六','日']
 
 class GetUniAgenda(StandardPlugin): 
@@ -48,6 +55,7 @@ def makeAgenda(qq_id:int)->Tuple[bool, str]:
     @return: (成功状态，图片地址）
     """
     events = []
+    events.extend(preset_eventlist)
     canvasEvent = syncCanvas(qq_id)
     if canvasEvent == None:
         return False, 'canvas事件获取失败'

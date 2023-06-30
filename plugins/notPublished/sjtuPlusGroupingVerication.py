@@ -1,10 +1,13 @@
-from resources.api.sjtuPlusKey import SJTU_PLUS_GROUP_VERIFY_KEYS
-from utils.standardPlugin import StandardPlugin, AddGroupStandardPlugin
+from utils.standardPlugin import StandardPlugin, AddGroupStandardPlugin, NotPublishedException
 from utils.basicEvent import send, warning, set_group_add_request
 from typing import Any, Union, List, Dict, Tuple, Optional
 import requests, requests.exceptions
 import re
-
+try:
+    from resources.api.sjtuPlusKey import SJTU_PLUS_GROUP_VERIFY_KEYS
+except ImportError:
+    raise NotPublishedException("sjtu plus key is secret")
+    
 class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
     @staticmethod
     def commentToCode(comment:str)->str:

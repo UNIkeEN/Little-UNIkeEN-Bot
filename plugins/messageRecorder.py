@@ -145,7 +145,7 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
             else:
                 card = data['sender']['card']
             mycursor.execute("""
-                insert into `BOT_DATA`.`messageRecord`
+                insert ignore into `BOT_DATA`.`messageRecord`
                 (`message_id`, `message_seq`, `time`, `user_id`,
                 `message`, `group_id`, `nickname`, `card`) 
                 values (%d, %d, from_unixtime(%d), %d, '%s', %d, '%s', '%s')"""%(

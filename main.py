@@ -1,9 +1,17 @@
 import os
 from flask import Flask, request
 from enum import IntEnum
-
+from typing import List, Tuple, Any, Dict
+from utils.standardPlugin import NotPublishedException
+from utils.basicConfigs import APPLY_GROUP_ID, APPLY_GUILD_ID
 from utils.accountOperation import create_account_sql
-from utils.standardPlugin import StandardPlugin, PluginGroupManager, EmptyPlugin, PokeStandardPlugin, AddGroupStandardPlugin, EmptyAddGroupPlugin
+from utils.standardPlugin import (
+    StandardPlugin, PluginGroupManager, EmptyPlugin,
+    PokeStandardPlugin, AddGroupStandardPlugin, 
+    EmptyAddGroupPlugin,GuildStandardPlugin
+)
+from utils.configAPI import createGlobalConfig
+from utils.basicEvent import get_group_list, warning, set_friend_add_request
 
 from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
@@ -14,7 +22,8 @@ from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, 
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
 from plugins.signIn import SignIn
-from plugins.stocks import *
+# from plugins.signIn_v2 import SignIn
+from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
 from plugins.roulette import RoulettePlugin
@@ -26,14 +35,16 @@ from plugins.privateControl import PrivateControl
 from plugins.bilibiliSubscribe import createBilibiliTable, BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
 try:
     from plugins.chatWithNLP import ChatWithNLP
-except:
+except NotPublishedException as e:
     ChatWithNLP = EmptyPlugin
+    print('ChatWithNLP not imported: {}'.format(e))
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
 try:
     from plugins.getDekt import SjtuDekt, SjtuDektMonitor
-except:
+except NotPublishedException as e:
     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
-from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
+    print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
+from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor, GetJwcForGuild#, SubscribeJwc
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor, createBwcSql
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
@@ -42,34 +53,42 @@ from plugins.messageRecorder import GroupMessageRecorder
 from plugins.addGroupRecorder import AddGroupRecorder
 from plugins.fileRecorder import GroupFileRecorder
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
-from plugins.sjtuHesuan import SjtuHesuan
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
+from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
 from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
+from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
+from plugins.zsmCorups import ZsmGoldSentence
+# from plugins.notPublished.getMddTea import IcokeUserBind
+from plugins.notPublished.getMddCola import IcolaUserBind
+from plugins.apexStatus import ApexStatusPlugin
+from plugins.clearRecord import ClearRecord, RestoreRecord
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
-except:
+except NotPublishedException as e:
     Chai_Jile = EmptyPlugin
     Yuan_Jile = EmptyPlugin
+    print('Chai_Jile, Yuan_Jile not imported: {}'.format(e))
 try:
     from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
-    GetMddStatus()
-except:
+except NotPublishedException as e:
     GetMddStatus, MonitorMddStatus = EmptyPlugin, EmptyPlugin
+    print('GetMddStatus, MonitorMddStatus not imported: {}'.format(e))
 
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
-    ShowEE0502Comments()
-except:
+except NotPublishedException as e:
     ShowEE0502Comments = EmptyPlugin
+    print('ShowEE0502Comments not imported: {}'.format(e))
 
 try:
     from plugins.notPublished.sjtuPlusGroupingVerication import SjtuPlusGroupingVerify
-except:
+except NotPublishedException as e:
     SjtuPlusGroupingVerify = EmptyAddGroupPlugin
+    print('SjtuPlusGroupingVerify not imported: {}'.format(e))
 
 from plugins.gocqWatchDog import GocqWatchDog
 
@@ -94,7 +113,7 @@ RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 helper = ShowHelp() # 帮助插件
 gocqWatchDog = GocqWatchDog(60)
 groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
-
+sjtuClassroomRecorder = SjtuClassroomRecorder()
 
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder,
@@ -109,8 +128,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowNews(), YesterdayNews(), 
                         PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
-                        SjtuClassroomRecommend(), GetMddStatus(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(), DrawClassroomPeopleCount(),
+                        SjtuClassroomRecommend(), GetMddStatus(), IcolaUserBind(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
@@ -128,10 +147,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
-    PluginGroupManager([ShowEE0502Comments()], 'izf'), # 张峰
-    PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
+    PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence()], 'izf'), # 张峰
+    PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), ClearRecord(), RestoreRecord(),
+                        PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
+    PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
+    PluginGroupManager([ApexStatusPlugin()], 'apex'),
     PrivateControl(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
@@ -140,28 +162,31 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
     ShowNews(), YesterdayNews(),
     MorningGreet(), NightGreet(),
-    SignIn(),
+    SignIn(), 
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), SjtuBwc(), #SubscribeJwc(), 
     GetSjtuNews(),
     LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
-    GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(),
-    ShowEE0502Comments(),
+    GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(), GetUniAgenda(),
+    ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetFduMcLive(),
-    GetMddStatus(),#SubscribeMdd(),
-    SjtuHesuan(),
+    GetMddStatus(), IcolaUserBind(),#SubscribeMdd(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
-    SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(),
+    SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(),
     PrivateControl(),
+]
+GuildPluginList:List[GuildStandardPlugin] = [
+    GetJwcForGuild(), # 教务处
 ]
 GroupPokeList:List[PokeStandardPlugin] = [
     AutoRepoke(), # 自动回复拍一拍
 ]
 AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     AddGroupRecorder(), # place this plugin to the first place
-    SjtuPlusGroupingVerify('test',[123, 456]),
+    SjtuPlusGroupingVerify('dytwzzb',[]),
+    SjtuPlusGroupingVerify('test',[]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 
@@ -170,6 +195,7 @@ app = Flask(__name__)
 class NoticeType(IntEnum):
     NoProcessRequired = 0
     GroupMessageNoProcessRequired = 1
+    GuildMessageNoProcessRequired = 2
     GocqHeartBeat = 5
     GroupMessage = 11
     GroupPoke = 12
@@ -180,6 +206,7 @@ class NoticeType(IntEnum):
     PrivateRecall = 23
     AddGroup = 31
     AddPrivate = 32
+    GuildMessage = 41
 
 def eventClassify(json_data: dict)->NoticeType: 
     """事件分类"""
@@ -193,6 +220,11 @@ def eventClassify(json_data: dict)->NoticeType:
                 return NoticeType.GroupMessageNoProcessRequired
         elif json_data['message_type'] == 'private':
             return NoticeType.PrivateMessage
+        elif json_data['message_type'] == 'guild':
+            if (json_data['guild_id'], json_data['channel_id']) in APPLY_GUILD_ID:
+                return NoticeType.GuildMessage
+            else:
+                return NoticeType.GuildMessageNoProcessRequired
     elif json_data['post_type'] == 'notice':
         if json_data['notice_type'] == 'notify':
             if json_data['sub_type'] == "poke":
@@ -203,7 +235,6 @@ def eventClassify(json_data: dict)->NoticeType:
         elif json_data['notice_type'] == 'group_upload':
             return NoticeType.GroupUpload
     elif json_data['post_type'] == 'request':
-        print(json_data)
         if json_data['request_type'] == 'friend':
             return NoticeType.AddPrivate
         elif json_data['request_type'] == 'group':
@@ -234,7 +265,20 @@ def post_data():
     elif flag == NoticeType.GroupRecall:
         for plugin in [groupMessageRecorder]:
             plugin.recallMessage(data)
-
+    # 频道消息处理
+    elif flag == NoticeType.GuildMessage:
+        msg = data['message'].strip()
+        for plugin in GuildPluginList:
+            plugin: GuildStandardPlugin
+            try:
+                if plugin.judgeTrigger(msg, data):
+                    ret = plugin.executeEvent(msg, data)
+                    if ret != None:
+                        return ret
+            except TypeError as e:
+                warning("type error in main.py: {}\n\n{}".format(e, plugin))
+            except BaseException as e:
+                warning('base exception in main.py guild plugin: {}\n\n{}'.format(e, plugin))
     # 私聊消息处理
     elif flag == NoticeType.PrivateMessage:
         # print(data)

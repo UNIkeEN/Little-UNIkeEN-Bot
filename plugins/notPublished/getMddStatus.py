@@ -2,15 +2,41 @@ from utils.basicConfigs import sqlConfig
 from utils.responseImage import *
 from utils.basicEvent import send, warning, aioSend
 from typing import Union, Tuple, Any, List, Set
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
-from utils.basicEvent import getPluginEnabledGroups
+from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
+from utils.configAPI import getPluginEnabledGroups
 from threading import Timer, Semaphore
-from resources.api.mddApi import mddUrl, mddHeaders
 from datetime import datetime
 import time
 import os.path
 import asyncio
 import mysql.connector
+try:
+    from resources.api.mddApi import mddUrl, mddHeaders
+except ImportError:
+    raise NotPublishedException("mdd url and mdd headers are secret")
+
+def createMddRecordSql():
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    create table if not exists `BOT_DATA`.`mddRecord` (
+        `seq` bigint unsigned not null auto_increment,
+        `time` timestamp not null comment 'current time',
+        `mode` bool not null comment '0 if close, 1 if open',
+        `week` tinyint not null comment '0 to 6 from Monday to Sunday',
+        primary key(`seq`)
+    );""")
+
+def recordMddStatus(mode:int, t: datetime):
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    insert into `BOT_DATA`.`mddRecord` (`time`, `mode`, `week`) values
+    (%s, %s, %s)
+    """, (t, mode, t.weekday()))
+
 class SubscribeMdd(StandardPlugin):
     initGuard = Semaphore()
     # https://docs.python.org/3/faq/library.html#what-kinds-of-global-value-mutation-are-thread-safe
@@ -125,15 +151,18 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
         self.exactPath = 'data/mdd.json'
         self.prevStatus = False # false: 暂停营业, true: 营业
         if MonitorMddStatus.monitorSemaphore.acquire(blocking=False):
-            self.start(10, 30)
+            createMddRecordSql()
             if not os.path.isfile(self.exactPath):
                 MonitorMddStatus.dumpMddStatus(False)
             else:
                 self.prevStatus = MonitorMddStatus.loadMddStatus()
+            self.start(10, 30)
+
     def tick(self):
         req = getMddStatus()
         if req == None: return
         else: currentStatus = req
+        recordMddStatus(currentStatus, datetime.now())
         if currentStatus != self.prevStatus:
             self.prevStatus = currentStatus
             MonitorMddStatus.dumpMddStatus(currentStatus)
@@ -142,7 +171,7 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
                 for group in getPluginEnabledGroups('mddmonitor'):
                     send(group, '📣交大闵行麦当劳 已▶️开放营业')
                     # groupTasks.append(aioSend(group, '📣交大闵行麦当劳 已▶️开放营业'))
-                    
+                
             else:
                 for group in getPluginEnabledGroups('mddmonitor'):
                     send(group, '📣交大闵行麦当劳 已⏸️暂停营业')

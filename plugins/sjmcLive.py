@@ -3,7 +3,7 @@ from utils.responseImage import *
 from utils.basicEvent import send, warning
 from typing import Union, Tuple, Any, List
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin
-from utils.basicEvent import getPluginEnabledGroups
+from utils.configAPI import getPluginEnabledGroups
 from threading import Timer, Semaphore
 from bilibili_api.live import LiveRoom
 from bilibili_api.exceptions.LiveException import LiveException
@@ -80,10 +80,10 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
             self.prevStatus = currentStatus
             FduMcLiveMonitor.dumpSjmcStatus(currentStatus)
             if currentStatus:
+                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive.png')
+                genLivePic(roomInfo, '基岩社直播间状态', savePath, useCover=True)
                 for group in getPluginEnabledGroups('mclive'):
-                    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive.png')
                     send(group, '检测到基岩社B站开播，基岩社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                    genLivePic(roomInfo, '基岩社直播间状态', savePath, useCover=True)
                     send(group, f'[CQ:image,file=files:///{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
@@ -170,10 +170,10 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
             self.prevStatus = currentStatus
             SjmcLiveMonitor.dumpSjmcStatus(currentStatus)
             if currentStatus:
+                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive.png')
+                genLivePic(roomInfo, 'sjmc直播间状态', savePath, useCover=True)
                 for group in getPluginEnabledGroups('mclive'):
                     send(group, '检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive.png')
-                    genLivePic(roomInfo, 'sjmc直播间状态', savePath, useCover=True)
                     send(group, f'[CQ:image,file=files:///{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False

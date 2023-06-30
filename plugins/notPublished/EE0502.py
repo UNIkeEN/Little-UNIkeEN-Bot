@@ -2,13 +2,20 @@ from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.responseImage import FONT_SYHT_M32
-from utils.standardPlugin import StandardPlugin
+from utils.standardPlugin import StandardPlugin, NotPublishedException
 from PIL import Image, ImageDraw, ImageFont
 import os.path
 from utils.responseImage import *
 import json
 import random
 
+EE0502_DATA_PATH = 'resources/corpus/izf.json'
+try:
+    with open(EE0502_DATA_PATH,'r',encoding='utf-8') as f:
+        json.load(f)['results']
+except:
+    raise NotPublishedException("izf.json is secret")
+    
 def drawCommentEE0502(t):
     izf = ResponseImage(title='我爱电路实验', 
         primaryColor=PALETTE_CYAN, 
@@ -31,7 +38,7 @@ def drawCommentEE0502(t):
 
 class ShowEE0502Comments(StandardPlugin):
     def __init__(self) -> None:
-        with open('resources/corpus/izf.json','r',encoding='utf-8') as f:
+        with open(EE0502_DATA_PATH,'r',encoding='utf-8') as f:
             zf_data = json.load(f)['results']
         self.resource = zf_data
     def judgeTrigger(self, msg:str, data:Any) -> bool:

@@ -1,10 +1,18 @@
 from abc import ABC, abstractmethod
-from typing import Union, Tuple, Any, List, final, Optional, Callable
-from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig, getGroupAdmins
+from typing import Union, Tuple, Any, List, final, Optional, Callable, Dict
+from utils.basicEvent import send, warning
+from utils.configAPI import readGlobalConfig, writeGlobalConfig, getGroupAdmins
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.job import Job
 from threading import Timer
+
+class NotPublishedException(BaseException):
+    """可能有些插件因为secret key或者其他原因不选择开源，请抛出此类"""
+    def __init__(self, what:str):
+        self.what = what
+    def __str__(self):
+        return self.what
 
 class StandardPlugin(ABC):
     """接收‘正常私聊消息或群消息’的接口"""
@@ -74,6 +82,30 @@ class EmptyPlugin(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
+class GuildStandardPlugin(StandardPlugin):
+    """标准频道插件"""
+
+class GuildEmptyPlugin(GuildStandardPlugin):
+    """空QQ频道插件"""
+    def __init__(self, *args, **kwargs) -> None:
+        return
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return None
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'GuildEmptyPlugin',
+            'description': '空频道插件',
+            'commandDescription': '',
+            'usePlace': ['guild', ],
+            'showInHelp': False,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
 
 class PokeStandardPlugin(ABC):
     """接收‘拍一拍’消息"""

@@ -1,10 +1,12 @@
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
+from utils.standardPlugin import StandardPlugin, CronStandardPlugin, GuildStandardPlugin
 from typing import Set, Union, Any, List
 from utils.responseImage import *
 import requests
 from bs4 import BeautifulSoup as BS
 from utils.basicEvent import *
 from utils.basicConfigs import *
+from utils.channelAPI import send_guild_channel_msg
+from utils.configAPI import getPluginEnabledGroups
 from threading import Timer, Semaphore
 from pathlib import Path
 import json
@@ -173,6 +175,8 @@ class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
                 for group_id in getPluginEnabledGroups('jwc'):
                     send(group_id, broadcastWord)
                     send(group_id, '[CQ:image,file=files:///%s]'%pic)
+                send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['jwc'], broadcastWord)
+                send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['jwc'], '[CQ:image,file=files:///%s]'%pic)
                 # time.sleep(3)
                 # for user_id in SubscribeJwc.getJwcSubscribers():
                 #     send(user_id, broadcastWord, 'private')
@@ -217,6 +221,33 @@ class GetJwc(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
+class GetJwcForGuild(GuildStandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg=='-jwc'
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        jwc = sorted(getJwc(), key=lambda x: '%s-%s-%s'%(x['year'], x['month'], x['day']), reverse=True)
+        jwcStr = ""
+        idx = 1
+        for j in jwc[:7]:
+            jwcStr += '【%d】%s-%s-%s %s %s\n'%(idx, j['year'], j['month'], j['day'], j['title'], j['link'])
+            idx += 1
+        jwcStr = jwcStr[:-1]
+        send_guild_channel_msg(data['guild_id'], data['channel_id'], jwcStr)
+        return "OK"
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'GetJwcForGuild',
+            'description': '获取教务通知',
+            'commandDescription': '-jwc',
+            'usePlace': ['guild', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
 class SubscribeJwc(StandardPlugin):
     initGuard = Semaphore()
     # https://docs.python.org/3/faq/library.html#what-kinds-of-global-value-mutation-are-thread-safe

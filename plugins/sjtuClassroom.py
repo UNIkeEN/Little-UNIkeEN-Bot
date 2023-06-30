@@ -226,7 +226,7 @@ def getRoomInfo(building:str, room_name:str, savePath:str)->Optional[str]:
         try:
             sjly = course['sjly']
             courseName = course['courseName']
-            teacherName = course['teacherName']
+            teacherName = course.get('teacherName', '')
             orgName = course.get('orgName', None)
             startSection = course['startSection']
             endSection = course['endSection']

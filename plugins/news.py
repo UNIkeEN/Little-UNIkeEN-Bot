@@ -9,6 +9,7 @@ from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from threading import Semaphore
+from utils.configAPI import getPluginEnabledGroups
 TXT_ONELINE_SIZE=745
 
 class ShowNews(StandardPlugin):

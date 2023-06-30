@@ -9,6 +9,7 @@ from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
 import asyncio
 import mysql.connector
 import copy
+import time
 def bvToUrl(bvid:str):
     return 'https://www.bilibili.com/video/' + bvid
 
@@ -219,6 +220,7 @@ class BilibiliMonitor(CronStandardPlugin):
                 videos = sync(self.bUser.get_videos())
             except BaseException as e:
                 videos = None
+                time.sleep(3)
         if videos == None: 
             self.cumulativeNetworkErrCount += 1
             if self.cumulativeNetworkErrCount >= 3:

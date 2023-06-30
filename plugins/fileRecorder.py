@@ -5,11 +5,18 @@ from utils.basicEvent import get_group_file_system_info, get_group_files_by_fold
 from utils.basicConfigs import sqlConfig
 import mysql.connector
 import threading, time
+"""
+# 筛选file_id:
+select group_id, file_id, file_name, busid, file_size, (file_bin is not null) from BOT_DATA.fileRecord where ...;
+# 导出文件
+select file_bin from BOT_DATA.fileRecord where group_id = %s and file_id = %s into dumpfile '/var/lib/mysql-files/...';
 
-class QqGroupFile():
-    """QQ群文件类型, 对标go-cqhttp的File结构体"""
-    def __init__(self) -> None:
-        pass
+eg:
+mysql>      select file_bin from BOT_DATA.fileRecord where group_id = 604329164 and file_id = '/cf1f95db-5abe-44c3-bba6-29e5b702052c' into dumpfile '/var/lib/mysql-files/tmp.pdf';
+bash>       sudo mv /var/lib/mysql-files/tmp.pdf /tmp/tmp.pdf
+bash>       sudo chmod 777 /tmp/tmp.pdf
+powershell> scp ubuntu@xxx.xxx:/tmp/tmp.pdf ~/Desktop/
+"""
 
 def createSqlFileTable():
     """建表"""
@@ -33,7 +40,6 @@ def createSqlFileTable():
 class GroupFileRecorder(GroupUploadStandardPlugin):
     def __init__(self) -> None:
         createSqlFileTable()
-        # select group_id, file_id, file_name, busid, file_size, (file_bin is null) from BOT_DATA.fileRecord;
     def uploadFile(self, data)->Union[str, None]:
         file = data['file']
         mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)

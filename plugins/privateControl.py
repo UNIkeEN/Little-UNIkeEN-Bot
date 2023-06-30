@@ -1,4 +1,5 @@
-from utils.basicEvent import send, warning, readGlobalConfig, writeGlobalConfig
+from utils.basicEvent import send, warning
+from utils.configAPI import readGlobalConfig, writeGlobalConfig
 from utils.standardPlugin import StandardPlugin, PluginGroupManager
 from utils.basicConfigs import ROOT_ADMIN_ID
 from typing import Any, List, Union

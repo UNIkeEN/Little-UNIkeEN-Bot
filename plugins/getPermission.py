@@ -1,5 +1,6 @@
 from typing import Union, Any
-from utils.basicEvent import delGroupAdmin, send, addGroupAdmin, setGroupAdmin, getGroupAdmins, get_group_member_list, isGroupOwner
+from utils.configAPI import delGroupAdmin, addGroupAdmin, setGroupAdmin, getGroupAdmins
+from utils.basicEvent import send, get_group_member_list, isGroupOwner
 from utils.basicConfigs import ROOT_ADMIN_ID
 from utils.standardPlugin import StandardPlugin
 import re
