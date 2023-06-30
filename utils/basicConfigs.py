@@ -1,43 +1,54 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
+import enum
+# from utils.basicEvent import get_login_info
+HTTP_URL="http://127.0.0.1:5701" #go-cqhttp
 
-HTTP_URL="http://127.0.0.1:5700" #go-cqhttp
+APPLY_GROUP_ID=[]
 
-APPLY_GROUP_ID=[
-    # apply group id list
+APPLY_GUILD_ID = [ # guild test
+    # ('651039383982389627', '267764859'),
+    # ('651039383982389627', '267795135'),
 ]
 
-# about watch dog, see plugins/gocqWatchdog
-WARNING_ADMIN_ID = [
-    # watchdog warning to whom
-]
-MAIL_USER = 'xxxxx@qq.com'# see qq mail smtp protocal
-MAIL_PASS = 'abcdabcdabcdabcd'
+MAIN_GUILD = { # guild test
+    'guild_id': '', # '651039383982389627',
+    'channels':{
+        # 'chat': '267764859',
+        # 'mdd': '267795135',
+        # 'dekt': '267800522',
+        # 'bwc': '267836446',
+        # 'jwc': '267805890',
+    }
+}
 
-# used for sjtu-dekt
-JAC_COOKIE = ''
+JAC_COOKIE = '' # for dekt
 
-ROOT_ADMIN_ID=[] # root admins
+ROOT_ADMIN_ID=[]
 
-BOT_SELF_QQ=0 # TODO:
+WARNING_ADMIN_ID = []
 
-VERSION_TXT="""version：开源1.1.3版本
+MAIL_USER = '' # watch dog mail to whom
+MAIL_PASS = ''
+
+# BOT_SELF_QQ=get_login_info()['user_id']
+BOT_SELF_QQ=0
+
+VERSION_TXT="""version：开源1.1.4版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
-sqlConfig = { # configs for connecting to mysql server
+sqlConfig = {
     'host': '127.0.0.1',
     'user': 'root',
     'passwd': ''
 }
-
-TXT_PERMISSION_DENIED = ""
-TXT_PERMISSION_DENIED_2 = "您没有权限修改配置喔TAT"
 
 # 根路径与资源路径
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))[:-6]
 FONTS_PATH = 'resources/fonts'
 IMAGES_PATH = 'resources/images/'
 SAVE_TMP_PATH = 'data/tmp'
+os.makedirs(SAVE_TMP_PATH, exist_ok=True)
 
 # 画图颜色常量与文字
 BACK_CLR = {'r':(255, 232, 236, 255),'g':(219, 255, 228, 255),'h':(234, 234, 234, 255),'o':(254, 232, 199, 255)}
