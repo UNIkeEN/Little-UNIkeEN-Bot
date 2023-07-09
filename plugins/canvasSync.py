@@ -177,7 +177,7 @@ def DrawEventListPic(event_list, qq_id):
         title_parse=[]
         summary = summary.replace('[本-', '\n[本-')
         for word in summary:
-            if txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
+            if len(title_parse) > 0 and txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
                 title_parse[-1]+=word
                 continue
             txt_line+=word
@@ -197,7 +197,7 @@ def DrawEventListPic(event_list, qq_id):
         description_re = re.sub('\n+','\n', description)
         description_re = description_re.replace('\xa0','')
         for word in description_re:
-            if txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
+            if len(description_parse) > 0 and txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
                 description_parse[-1]+=word
                 continue
             txt_line+=word

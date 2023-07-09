@@ -153,7 +153,7 @@ def draw_news_card(text: str)->str:
     txt_line=""
     txt_parse=[]
     for word in text:
-        if txt_line=="" and word in ['，','；','。','、','"','：']: #避免标点符号在首位
+        if len(txt_parse) > 0 and txt_line=="" and word in ['，','；','。','、','"','：']: #避免标点符号在首位
             txt_parse[-1]+=word
             continue
         

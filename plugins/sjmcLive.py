@@ -5,22 +5,21 @@ from typing import Union, Tuple, Any, List
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from utils.configAPI import getPluginEnabledGroups
 from threading import Timer, Semaphore
-from bilibili_api.live import LiveRoom
+from utils.bilibili_api_fixed import LiveRoomFixed
 from bilibili_api.exceptions.LiveException import LiveException
 from bilibili_api.exceptions.ApiException import ApiException
-from bilibili_api import sync
 from datetime import datetime
 import os.path
 class GetFduMcLive(StandardPlugin):
     def __init__(self) -> None:
         self.liveId = 24716629
-        self.liveRoom = LiveRoom(self.liveId)
+        self.liveRoom = LiveRoomFixed(self.liveId)
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg == '-fdmclive'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         try:
-            roomInfo = sync(self.liveRoom.get_room_info())['room_info']
+            roomInfo = self.liveRoom.get_room_info()['room_info']
         except LiveException as e:
             warning("sjmc bilibili api exception: {}".format(e))
             return
@@ -62,7 +61,7 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
             return f.read().startswith('1')
     def __init__(self) -> None:
         self.liveId = 24716629
-        self.liveRoom = LiveRoom(self.liveId)
+        self.liveRoom = LiveRoomFixed(self.liveId)
         self.exactPath = 'data/fdmcLive.json'
         self.prevStatus = False # false: 未开播, true: 开播
         if FduMcLiveMonitor.monitorSemaphore.acquire(blocking=False):
@@ -74,7 +73,7 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
             self.start(5, 30)
 
     def tick(self):
-        roomInfo = sync(self.liveRoom.get_room_info())['room_info']
+        roomInfo = self.liveRoom.get_room_info()['room_info']
         currentStatus = roomInfo['live_status'] == 1
         if currentStatus != self.prevStatus:
             self.prevStatus = currentStatus
@@ -103,13 +102,13 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
 class GetSjmcLive(StandardPlugin):
     def __init__(self) -> None:
         self.liveId = 25567444
-        self.liveRoom = LiveRoom(self.liveId)
+        self.liveRoom = LiveRoomFixed(self.liveId)
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg in ['-mclive', '-sjmclive']
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         try:
-            roomInfo = sync(self.liveRoom.get_room_info())['room_info']
+            roomInfo = self.liveRoom.get_room_info()['room_info']
         except LiveException as e:
             warning("sjmc bilibili api exception: {}".format(e))
             return
@@ -151,7 +150,7 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
             return f.read().startswith('1')
     def __init__(self) -> None:
         self.liveId = 25567444
-        self.liveRoom = LiveRoom(self.liveId)
+        self.liveRoom = LiveRoomFixed(self.liveId)
         self.exactPath = 'data/sjmcLive.json'
         self.prevStatus = False # false: 未开播, true: 开播
         if SjmcLiveMonitor.monitorSemaphore.acquire(blocking=False):
@@ -164,7 +163,7 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
 
 
     def tick(self):
-        roomInfo = sync(self.liveRoom.get_room_info())['room_info']
+        roomInfo = self.liveRoom.get_room_info()['room_info']
         currentStatus = roomInfo['live_status'] == 1
         if currentStatus != self.prevStatus:
             self.prevStatus = currentStatus

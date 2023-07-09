@@ -322,7 +322,7 @@ class ResponseImage():
         txt_line = ""
         height = 0
         for word in raw_txt:
-            if txt_line=="" and word in ['，','；','。','、','"','：','.','”',')','）']: #避免标点符号在首位
+            if len(txt_parse)>0 and txt_line=="" and word in ['，','；','。','、','"','：','.','”',')','）']: #避免标点符号在首位
                 txt_parse[-1]+=word
                 continue
             txt_line+=word

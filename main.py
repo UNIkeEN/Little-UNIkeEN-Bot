@@ -21,8 +21,12 @@ from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
-from plugins.signIn import SignIn
-# from plugins.signIn_v2 import SignIn
+try:
+    from plugins.signIn_v2 import SignIn
+except:
+    print('signin_v2 not imported: {}'.format(e))
+    from plugins.signIn import SignIn
+
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
@@ -62,10 +66,13 @@ from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 from plugins.zsmCorups import ZsmGoldSentence
-# from plugins.notPublished.getMddTea import IcokeUserBind
-from plugins.notPublished.getMddCola import IcolaUserBind
 from plugins.apexStatus import ApexStatusPlugin
 from plugins.clearRecord import ClearRecord, RestoreRecord
+try:
+    from resources.api.getMddCola import IcolaUserBind
+except:
+    print("IcolaUserBind not imported")
+    IcolaUserBind = EmptyPlugin
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:

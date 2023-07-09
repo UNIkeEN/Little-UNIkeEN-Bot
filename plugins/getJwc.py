@@ -318,12 +318,12 @@ class SubscribeJwc(StandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
-class GetSjtuNews(StandardPlugin): 
+class GetSjtuNews(StandardPlugin, CronStandardPlugin): 
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:
-        self.checkTimer = Timer(20,self.updateAndCheck)
         if GetSjtuNews.monitorSemaphore.acquire(blocking=False):
-            self.checkTimer.start()
+            # self._tick()
+            self.start(0, 30 * 60)
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg in ['-sjtu news', '交大新闻']
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -345,10 +345,7 @@ class GetSjtuNews(StandardPlugin):
             'version': '1.0.0',
             'author': 'fangtiancheng',
         }
-    def updateAndCheck(self, ):
-        self.checkTimer.cancel()
-        self.checkTimer = Timer(900,self.updateAndCheck)
-        self.checkTimer.start()
+    def tick(self, ):
         drawSjtuNews()
 
 def DrawNoticePIC(notice)->str:
@@ -356,7 +353,7 @@ def DrawNoticePIC(notice)->str:
     txt_line=""
     txt_parse, title_parse=[], []
     for word in notice['title']:
-        if txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
+        if len(title_parse) > 0 and txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
             title_parse[-1]+=word
             continue
         txt_line+=word
@@ -368,7 +365,7 @@ def DrawNoticePIC(notice)->str:
 
     txt_line=""
     for word in notice['detail'].strip():
-        if txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
+        if len(txt_parse) > 0 and txt_line=="" and word in ['，','；','。','、','"','：','.','”']: #避免标点符号在首位
             txt_parse[-1]+=word
             continue
         txt_line+=word

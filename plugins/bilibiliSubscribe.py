@@ -3,9 +3,9 @@ from utils.basicConfigs import sqlConfig
 from utils.basicEvent import send, warning, gocqQuote
 import re
 from typing import List, Tuple, Optional, Union, Dict, Any, Set
-from bilibili_api import sync
-from bilibili_api.user import User
+from utils.bilibili_api_fixed import UserFixed
 from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
+
 import asyncio
 import mysql.connector
 import copy
@@ -38,9 +38,9 @@ class BilibiliSubscribeHelper(StandardPlugin):
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
         send(group_id,'订阅帮助: B站订阅帮助\n' 
-                    '订阅up:    订阅up <uid>\n'
-                    '取消订阅up: 取消订阅up<uid>\n'
-                    '获取已订阅: 已订阅up\n'
+                    '订阅up:    订阅 <uid>\n'
+                    '取消订阅up: 取消订阅 <uid>\n'
+                    '获取已订阅: 订阅\n'
                     '注意:  关闭本插件会自动取消订阅所有已订阅的up')
         return "OK"
     def getPluginInfo(self) -> dict:
@@ -75,12 +75,12 @@ class BilibiliUpSearcher(StandardPlugin):
 class BilibiliSubscribe(StandardPlugin):
     def __init__(self) -> None:
         """
-        self.bUps: uid -> User
+        self.bUps: uid -> UserFixed
         self.groupUps: group_id -> Set[uid: int]
         """
-        self.pattern1 = re.compile(r'^订阅up\s*(\d+)$')
-        self.pattern2 = re.compile(r'^取消订阅up\s*(\d+)$')
-        self.pattern3 = re.compile(r'^已订阅up$')
+        self.pattern1 = re.compile(r'^订阅\s*(\d+)$')
+        self.pattern2 = re.compile(r'^取消订阅\s*(\d+)$')
+        self.pattern3 = re.compile(r'^订阅$')
         self.bUps:Dict[int, BilibiliMonitor] = {}
         self.groupUps:Dict[int, Set[int]] = {}
         self._loadFromSql()
@@ -138,8 +138,8 @@ class BilibiliSubscribe(StandardPlugin):
             uid = self.pattern1.findall(msg)[0]
             uid = int(uid)
             try:
-                u = User(uid)
-                userInfo = sync(u.get_user_info())
+                u = UserFixed(uid)
+                userInfo = u.get_user_info()
                 self.subscribeBilibili(group_id, uid)
                 name = gocqQuote(userInfo['name'])
                 send(group_id, f'订阅成功！\nname: {name}\nuid: {uid}')
@@ -158,8 +158,7 @@ class BilibiliSubscribe(StandardPlugin):
                 send(group_id, '[CQ:reply,id=%d]本群还没有订阅up哦~'%data['message_id'])
             else:
                 try:
-                    metas = sync(asyncio.wait([up.get_user_info() for up in ups]))
-                    metas = [m.result() for m in metas[0]]
+                    metas = [up.get_user_info() for up in ups]
                     metas = [f"name: {m['name']}\nuid: {m['mid']}" for m in metas]
                     send(group_id,f'本群订阅的up有：\n\n'+'\n----------\n'.join(metas))
                 except BaseException as e:
@@ -172,7 +171,7 @@ class BilibiliSubscribe(StandardPlugin):
         for uid in copy.deepcopy(self.groupUps[group_id]):
             self.unsubscribeBilibili(group_id, uid)
     
-    def subscribeList(self, group_id:int)->List[User]:
+    def subscribeList(self, group_id:int)->List[UserFixed]:
         uids = self.groupUps.get(group_id, set())
         return [self.bUps[uid].bUser for uid in uids]
 
@@ -194,7 +193,7 @@ class BilibiliMonitor(CronStandardPlugin):
     """
     def __init__(self, uid:int) -> None:
         self.uid:int = uid
-        self.bUser = User(uid=uid)
+        self.bUser = UserFixed(uid=uid)
         self.groupList = set()
         self.job: Optional[Job] = None
 
@@ -214,10 +213,12 @@ class BilibiliMonitor(CronStandardPlugin):
     def tick(self) -> None:
         videos = None
         attempts = 0
-        while videos == None and attempts < 3:
+        # print('__session_pool:')
+        # print(session_pool)
+        while videos == None and attempts < 6:
             attempts += 1
             try:
-                videos = sync(self.bUser.get_videos())
+                videos = self.bUser.get_videos()
             except BaseException as e:
                 videos = None
                 time.sleep(3)
