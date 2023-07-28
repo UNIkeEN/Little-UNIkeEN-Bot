@@ -1,4 +1,5 @@
 # bilibili-api-python: version 15.5.1
+# remove session pool to avoid too many CLOSE_WAIT
 from bilibili_api.utils.network_httpx import *
 from bilibili_api.user import User, VideoOrder
 from bilibili_api.user import API as API_USER

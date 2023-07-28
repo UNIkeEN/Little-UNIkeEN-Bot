@@ -110,23 +110,35 @@ def getApexStatusImg():
     # mapinfo = f"匹配：{transName(ret['battle_royale']['current']['map'])}（余{ret['battle_royale']['current']['remainingTimer']}）\n\t接下来：{transName(ret['battle_royale']['next']['map'])}"
     # mapinfo += f"\n排位赛：{transName(ret['ranked']['current']['map'])}（余{ret['ranked']['current']['remainingTimer']}）\n\t接下来：{transName(ret['ranked']['next']['map'])}"
     # mapinfo += f"\n街机模式：{transName(ret['ltm']['current']['eventName'])}-{transName(ret['ltm']['current']['map'])}（余{ret['ltm']['current']['remainingTimer']}）\n\t接下来：{transName(ret['ltm']['next']['eventName'])}-{transName(ret['ltm']['next']['map'])}"
+
     
     card_mapinfo = [
         ('title', '地图轮换', HexToRgb(APEX_MAIN_COLOR)),
         ('separator',),
-        ('illustration', os.path.join(IMAGES_PATH, 'apex/'+ret['battle_royale']['current']['asset'].split('/')[-1])),
+    ]
+    current_battle_royale_map_asset = ret['battle_royale']['current']['asset']
+    if current_battle_royale_map_asset:
+        card_mapinfo.append(('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_battle_royale_map_asset.split('/')[-1])))
+    card_mapinfo += [
         ('subtitle', '匹配：{}'.format(transName(ret['battle_royale']['current']['map']))),
         ('body', '剩余时间：{}   接下来：{}'.format(ret['battle_royale']['current']['remainingTimer'], transName(ret['battle_royale']['next']['map']))),
         ('separator',),
-        ('illustration', os.path.join(IMAGES_PATH, 'apex/'+ret['ranked']['current']['asset'].split('/')[-1])),
+    ]
+    current_ranked_map_asset = ret['ranked']['current']['asset']
+    if current_ranked_map_asset:
+        card_mapinfo.append(('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_ranked_map_asset.split('/')[-1])))
+    card_mapinfo += [
         ('subtitle', '排位赛：{}'.format(transName(ret['ranked']['current']['map']))),
         ('body', '剩余时间：{}   接下来：{}'.format(ret['ranked']['current']['remainingTimer'], transName(ret['ranked']['next']['map']))),
         ('separator',),
-        ('illustration', os.path.join(IMAGES_PATH, 'apex/'+ret['ltm']['current']['asset'].split('/')[-1])),
+    ]
+    current_ltm_map_asset = ret['ltm']['current']['asset']
+    if current_ltm_map_asset:
+        card_mapinfo.append(('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_ltm_map_asset.split('/')[-1])))
+    card_mapinfo += [
         ('subtitle', '街机模式：{} - {}'.format(transName(ret['ltm']['current']['eventName']), transName(ret['ltm']['current']['map']))),
         ('body', '剩余时间：{}   接下来：{} - {}'.format(ret['ltm']['current']['remainingTimer'], transName(ret['ltm']['next']['eventName']), transName(ret['ltm']['next']['map']))),
     ]
-
 
     # 复制器
     url = f"https://api.mozambiquehe.re/crafting?auth={APEX_AUTHKEY}"

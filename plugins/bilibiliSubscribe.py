@@ -5,7 +5,7 @@ import re
 from typing import List, Tuple, Optional, Union, Dict, Any, Set
 from utils.bilibili_api_fixed import UserFixed
 from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
-
+import random
 import asyncio
 import mysql.connector
 import copy
@@ -34,7 +34,7 @@ def createBilibiliTable()->None:
 
 class BilibiliSubscribeHelper(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return msg == "B站订阅帮助" and data['message_type']=='group'
+        return msg in ["B站订阅帮助", "b站订阅帮助"] and data['message_type']=='group'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
         send(group_id,'订阅帮助: B站订阅帮助\n' 
@@ -179,7 +179,7 @@ class BilibiliSubscribe(StandardPlugin):
         return {
             'name': 'BilibiliSubscribe',
             'description': '订阅B站up',
-            'commandDescription': '订阅up <uid>/取消订阅up <uid>/已订阅up',
+            'commandDescription': '订阅/订阅 <uid>/取消订阅 <uid>',
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
@@ -199,10 +199,11 @@ class BilibiliMonitor(CronStandardPlugin):
 
         self.cumulativeNetworkErrCount = 0
         self._prevMeta:Optional[Tuple[int, str]] = None
+        self.baseInterval = 3 * 60 + random.randint(0, 100)
     def addGroup(self, group_id:int):
         self.groupList.add(group_id)
         if self.job == None:
-            self.job = self.start(0, 5 * 60)
+            self.job = self.start(0, self.baseInterval)
         else:
             self.resume()
     def delGroup(self, group_id:int):
@@ -212,22 +213,19 @@ class BilibiliMonitor(CronStandardPlugin):
 
     def tick(self) -> None:
         videos = None
-        attempts = 0
-        # print('__session_pool:')
-        # print(session_pool)
-        while videos == None and attempts < 6:
-            attempts += 1
-            try:
-                videos = self.bUser.get_videos()
-            except BaseException as e:
-                videos = None
-                time.sleep(3)
+        try:
+            videos = self.bUser.get_videos()
+        except BaseException as e:
+            videos = None
+            time.sleep(3)
         if videos == None: 
             self.cumulativeNetworkErrCount += 1
             if self.cumulativeNetworkErrCount >= 3:
-                warning('bilibili subscribe api failed!')
+                # warning('bilibili subscribe api failed!')
                 self.cumulativeNetworkErrCount = 0
                 self.cancel()
+                self.baseInterval += random.randint(0, 100)
+                self.job = self.start(0, self.baseInterval)
             return
         else:
             self.cumulativeNetworkErrCount = 0

@@ -71,10 +71,10 @@ class ChineseChessPlugin(StandardPlugin):
                 player = self.new_player(data)
                 if msg in ['下象棋', '-lxq']:
                     game.player_red = player
-                    send(target, '群友 {} 执红，向大家发起象棋挑战'.format(player), data['message_type'])
+                    send(target, '群友 {} 执红，向大家发起象棋挑战，输入“应战”接受挑战吧！'.format(player), data['message_type'])
                 else:
                     game.player_black = player
-                    send(target, '群友 {} 执黑，向大家发起象棋挑战'.format(player), data['message_type'])
+                    send(target, '群友 {} 执黑，向大家发起象棋挑战，输入“应战”接受挑战吧！'.format(player), data['message_type'])
                 self.games[target] = game
         elif msg in self.ckptCommands:
             game = self.games.get(group_id, None)
@@ -140,7 +140,7 @@ class ChineseChessPlugin(StandardPlugin):
             if game == None:
                 send(target, '[CQ:reply,id={}]群内没有对局，请先发起对局'.format(data['message_id']), data['message_type'])
             elif game.player_black == None or game.player_red == None:
-                send(target, '[CQ:reply,id={}]游戏尚未开始，请先回复“应战”接收对局'.format(data['message_id']), data['message_type'])
+                send(target, '[CQ:reply,id={}]游戏尚未开始，请先回复“应战”接受对局'.format(data['message_id']), data['message_type'])
             elif game.player_next != None and game.player_next.id != user_id:
                 send(target, '[CQ:reply,id={}]不是你的回合'.format(data['message_id']), data['message_type'])
             else:

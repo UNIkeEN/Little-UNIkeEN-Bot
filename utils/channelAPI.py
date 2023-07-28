@@ -1,5 +1,5 @@
 import requests, requests.exceptions, json
-from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
+from utils.basicConfigs import HTTP_URL
 from typing import Dict, List, Union, Tuple, Any, Optional
 from utils.basicEvent import warning
 from utils.basicConfigs import MAIN_GUILD

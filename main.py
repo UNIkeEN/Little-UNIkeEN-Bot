@@ -57,6 +57,7 @@ from plugins.messageRecorder import GroupMessageRecorder
 from plugins.addGroupRecorder import AddGroupRecorder
 from plugins.fileRecorder import GroupFileRecorder
 from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
+from plugins.advertisement import McAdManager
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
@@ -142,7 +143,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
-                        PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive')], 'sjmc'), #MC社服务
+                        PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
+                        PluginGroupManager([McAdManager()], 'mcad')], 'sjmc'), #MC社服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
                         PluginGroupManager([SjtuDektMonitor()], 'dekt'),
