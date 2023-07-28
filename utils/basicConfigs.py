@@ -34,7 +34,7 @@ MAIL_PASS = ''
 # BOT_SELF_QQ=get_login_info()['user_id']
 BOT_SELF_QQ=0
 
-VERSION_TXT="""version：开源1.1.4版本
+VERSION_TXT="""version：开源1.2.0版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
 sqlConfig = {
