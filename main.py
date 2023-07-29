@@ -66,6 +66,7 @@ from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPe
 from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
+from plugins.song import ChooseSong
 from plugins.zsmCorups import ZsmGoldSentence
 from plugins.apexStatus import ApexStatusPlugin
 from plugins.clearRecord import ClearRecord, RestoreRecord
@@ -163,6 +164,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
+    PluginGroupManager([ChooseSong()], 'song'),
     PrivateControl(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
@@ -183,6 +185,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetMddStatus(), IcolaUserBind(),#SubscribeMdd(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
+    ChooseSong(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(),
     PrivateControl(),
 ]

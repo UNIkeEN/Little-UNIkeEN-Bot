@@ -13,7 +13,7 @@ class ThreeKingdomsRandom(StandardPlugin):
                         '6', '7', '8', '9', '10',
                         'J', 'Q', 'K']
     def judgeTrigger(self, msg: str, data) -> bool:
-        return msg == '判定'
+        return msg.startswith('判定')
     def executeEvent(self, msg: str, data) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         result = random.choice(self.flowers) + random.choice(self.points)
@@ -23,7 +23,7 @@ class ThreeKingdomsRandom(StandardPlugin):
         return {
             'name': 'ThreeKingdomsRandom',
             'description': '三国杀判定',
-            'commandDescription': '判定',
+            'commandDescription': '判定[...]?',
             'usePlace': ['group', 'private'],
             'showInHelp': True,
             'pluginConfigTableNames': [],

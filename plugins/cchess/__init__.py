@@ -27,6 +27,7 @@ class ChineseChessHelper(StandardPlugin):
             '接受游戏：应战\n'
             '认输：   认输\n'
             '下棋： 炮二平五/h2e2/...\n'
+            '显示棋谱招法： 谱招\n'
             '悔棋： 悔棋'
         ), data['message_type'])
         return "OK"
@@ -48,10 +49,10 @@ class ChineseChessPlugin(StandardPlugin):
         self.acceptCommands = ['应战']
         self.defeatCommands = ['认输', '掀棋盘', '不下了', '结束对局']
         self.ckptCommands = ['保存对局']
-        self.chessdbCommands = ['谱招']
+        self.chessdbCommands = ['谱招', '谱着']
         self.games:Dict[str, Game] = {}
         # self.timers: Dict[str, ] = {}
-        self.matchMovePattern = re.compile(r"^\S\S[a-iA-I平进退上下][1-9一二三四五六七八九]$")
+        self.matchMovePattern = re.compile(r"^\S\S[a-iA-I平进退上下][0-9一二三四五六七八九]$")
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return (msg in self.startCommands or 
             msg in self.acceptCommands or 
