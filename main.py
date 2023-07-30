@@ -30,6 +30,7 @@ except:
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
+from plugins.mua import MuaAnnHelper, MuaAnnEditor
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin, createLotterySql
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -146,6 +147,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
                         PluginGroupManager([McAdManager()], 'mcad')], 'sjmc'), #MC社服务
+    PluginGroupManager([MuaAnnHelper(), MuaAnnEditor()], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
                         PluginGroupManager([SjtuDektMonitor()], 'dekt'),
@@ -176,6 +178,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     SignIn(), 
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), SjtuBwc(), #SubscribeJwc(), 
+    MuaAnnHelper(), MuaAnnEditor(),
     GetSjtuNews(),
     LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),

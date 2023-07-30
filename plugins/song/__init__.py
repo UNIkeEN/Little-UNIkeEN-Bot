@@ -18,9 +18,9 @@ def dumpSongInfo(songInfos:List[Dict])->Tuple[bool, str]:
     try:
         result = []
         for songIdx, songInfo in enumerate(songInfos):
-            name = songInfo['name']
+            name = gocqQuote(songInfo['name'])
             songId = songInfo['id']
-            songUrl = neteaseIdToUrl(songId)
+            songUrl = gocqQuote(neteaseIdToUrl(songId))
             result.append(f'{songIdx+1}. {name} {songUrl}')
         return True, '\n'.join(result)
     except BaseException as e:
