@@ -78,7 +78,16 @@ class ChooseSong(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         songName = self.pattern.findall(msg)
         try:
-            songInfos = searchSongNeteaseAPI(songName)[:5]
+            try:
+                songInfos = searchSongNeteaseAPI(songName)[:5]
+            except:
+                try:
+                    time.sleep(0.5)
+                    songInfos = searchSongNeteaseAPI(songName)[:5]
+                except:
+                    time.sleep(1)
+                    songInfos = searchSongNeteaseAPI(songName)[:5]
+
             if len(songInfos) == 0:
                 send(target, '[CQ:reply,id=%d]搜索结果为空'%(data['message_id'], ), data['message_type'])
             else:

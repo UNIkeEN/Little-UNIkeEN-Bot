@@ -30,7 +30,7 @@ except:
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.mua import MuaAnnHelper, MuaAnnEditor
+from plugins.mua import MuaAnnHelper, MuaAnnEditor, MuaTokenBinder, MuaTokenUnbinder, MuaTokenLister
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin, createLotterySql
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -50,6 +50,7 @@ except NotPublishedException as e:
     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
     print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor, GetJwcForGuild#, SubscribeJwc
+from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor, createBwcSql
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
@@ -138,7 +139,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowNews(), YesterdayNews(), 
                         PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
-    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(), DrawClassroomPeopleCount(),
+    PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
+                        DrawClassroomPeopleCount(), SjtuSchoolGate(),
                         SjtuClassroomRecommend(), GetMddStatus(), IcolaUserBind(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
@@ -147,7 +149,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
                         PluginGroupManager([McAdManager()], 'mcad')], 'sjmc'), #MC社服务
-    PluginGroupManager([MuaAnnHelper(), MuaAnnEditor()], 'mua'), #MC高校联盟服务
+    PluginGroupManager([MuaAnnHelper(), MuaAnnEditor(), MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenLister()], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
                         PluginGroupManager([SjtuDektMonitor()], 'dekt'),
@@ -178,7 +180,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     SignIn(), 
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), SjtuBwc(), #SubscribeJwc(), 
-    MuaAnnHelper(), MuaAnnEditor(),
+    MuaAnnHelper(), MuaAnnEditor(), MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenLister(),
     GetSjtuNews(),
     LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
@@ -189,7 +191,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     ChooseSong(),
-    SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(),
+    SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(), SjtuSchoolGate(),
     PrivateControl(),
 ]
 GuildPluginList:List[GuildStandardPlugin] = [

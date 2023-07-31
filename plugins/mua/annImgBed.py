@@ -55,6 +55,7 @@ def imgUrlToImgPath(imgUrl:str)->Optional[str]:
 def dumpMsgToBed(msg:str):
     imgPattern = re.compile(r'\[CQ\:image\,file\=[^\,]+\,subType=\S+\,url\=([^\,]+)\]')
     for url in imgPattern.findall(msg):
-        print('dump OK: url =', url)
-        dumpUrlToBed(url)
-    
+        if dumpUrlToBed(url):
+            print('dump OK: url =', url)
+        else:
+            print('dump fail: url =', url)    
