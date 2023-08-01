@@ -75,8 +75,11 @@ class SjtuSchoolGate(StandardPlugin):
             send(target, '[CQ:reply,id=%d]API请求失败，请稍后重试'%data['message_id'], data['message_type'])
         else:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'gate_%d.png'%target)
-            drawSchoolGatePic(gatesInfo, savePath)
-            send(target, '[CQ:image,file=files:///%s]'%savePath, data['message_type'])
+            succ, result = drawSchoolGatePic(gatesInfo, savePath)
+            if succ:
+                send(target, '[CQ:image,file=files:///%s]'%savePath, data['message_type'])
+            else:
+                send(target, '[CQ:reply,id=%d]数据绘制失败，请联系管理员'%data['message_id'], data['message_type'])
         return "OK"
     def getPluginInfo(self)->Any:
         return {

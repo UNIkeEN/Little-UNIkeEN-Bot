@@ -28,3 +28,4 @@ matplotlib
 wordcloud
 mysql-connector-python
 pyjsparser
+websockets

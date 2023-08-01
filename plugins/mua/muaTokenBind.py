@@ -47,7 +47,7 @@ class MuaTokenBinder(StandardPlugin):
         userId = data['user_id']
         tokenDescription, token = self.triggerPattern.findall(msg)[0]
         if len(tokenDescription) > 20:
-            send(target, '[CQ:reply,id=%d]绑定失败，token描述符须在20字以内'%data['message_id'], data['message_type'])
+            send(target, '[CQ:reply,id=%d]绑定失败，MUAID须在20字以内'%data['message_id'], data['message_type'])
         elif len(token) > 100 or self.tokenPattern.match(token) == None:
             send(target, '[CQ:reply,id=%d]绑定失败，请检查token格式'%data['message_id'], data['message_type'])
         else:
@@ -67,7 +67,7 @@ class MuaTokenBinder(StandardPlugin):
         return {
             'name': 'MuaTokenBinder',
             'description': 'MUA token绑定',
-            'commandDescription': '-muabind [token描述符(无空格和换行)] [token]',
+            'commandDescription': '-muabind [UnionAPI ID] [token]',
             'usePlace': ['group', 'private'],
             'showInHelp': True,
             'pluginConfigTableNames': ['muaToken'],
@@ -116,7 +116,7 @@ class MuaTokenUnbinder(StandardPlugin):
             select count(*) from `BOT_DATA`.`muaToken` where user_id = %s and `token_description` = %s
             """, (userId, tokenDescription))
             if list(mycursor)[0][0] == 0:
-                send(target, '[CQ:reply,id=%d]您尚未绑定描述符为 %s 的token，无法解绑'%(data['message_id'], tokenDescription), data['message_type'])
+                send(target, '[CQ:reply,id=%d]您尚未绑定MUAID为 %s 的token，无法解绑'%(data['message_id'], tokenDescription), data['message_type'])
             else:
                 mycursor.execute("""
                 delete from `BOT_DATA`.`muaToken` where `user_id` = %s and `token_description` = %s
@@ -130,7 +130,7 @@ class MuaTokenUnbinder(StandardPlugin):
         return {
             'name': 'MuaTokenUninder',
             'description': 'MUA token解绑',
-            'commandDescription': '-muaunbind [token描述符]',
+            'commandDescription': '-muaunbind [MUA ID]',
             'usePlace': ['group', 'private'],
             'showInHelp': True,
             'pluginConfigTableNames': [],

@@ -1,11 +1,13 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
-from utils.basicEvent import send, warning, getImgFromUrl
-from utils.standardPlugin import StandardPlugin
+from utils.basicEvent import getImgFromUrl
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 import re, os, time
 import uuid
 import mysql.connector
 from pymysql.converters import escape_string
+from PIL import Image
+from io import BytesIO
+import base64
 
 ANN_IMGBED_DIR = 'data/annImgBed'
 os.makedirs(os.path.join(ROOT_PATH, ANN_IMGBED_DIR), exist_ok=True)
@@ -50,7 +52,16 @@ def imgUrlToImgPath(imgUrl:str)->Optional[str]:
     if len(result) == 0:
         return None
     else:
-        return os.path.join(ROOT_PATH, SAVE_TMP_PATH, result[0][0])
+        return os.path.join(ROOT_PATH, ANN_IMGBED_DIR, result[0][0])
+
+def imgUrlToImgBase64(imgUrl:str)->Optional[str]:
+    imgPath = imgUrlToImgPath(imgUrl)
+    if imgPath == None: return None
+    img = Image.open(imgPath)
+    imgData = BytesIO()
+    img.save(imgData, format=img.format)
+    b64img = base64.b64encode(imgData.getvalue()).decode('utf-8')
+    return b64img
 
 def dumpMsgToBed(msg:str):
     imgPattern = re.compile(r'\[CQ\:image\,file\=[^\,]+\,subType=\S+\,url\=([^\,]+)\]')
@@ -58,4 +69,22 @@ def dumpMsgToBed(msg:str):
         if dumpUrlToBed(url):
             print('dump OK: url =', url)
         else:
-            print('dump fail: url =', url)    
+            print('dump fail: url =', url)
+
+# if True:
+if __name__ == '__main__':
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    select `img_url`,`img_name` from `BOT_DATA`.`muaAnnImgbed`
+    limit 1""")
+    result = list(mycursor)
+    if len(result) == 0:
+        print('测试失败，图床为空')
+    else:
+        imgUrl, imgName = result[0]
+        picPath = imgUrlToImgPath(imgUrl)
+        print('img path:', picPath)
+        b64img = imgUrlToImgBase64(imgUrl)
+        print(b64img)

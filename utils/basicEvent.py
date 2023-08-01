@@ -59,6 +59,36 @@ def get_group_avatar_pic(id: int)->Union[None, bytes]:
     else:
         return url_avatar.content
 
+def parse_cqcode(cqcode:str)->Optional[Tuple[str, Dict[str,str]]]:
+    """解析CQ码
+    @cqcode: CQ码
+    @return: 
+        if cqcode不是cq码 => None
+        else => (CQ码类型, {cq key: cq value})
+    """
+    cqcodePattern = re.compile(r'^\[(CQ\:[^\[\]\s]+)\]$')
+    cqtypePattern = re.compile(r'^CQ\:([^\[\]\s\,]+)$')
+    result = cqcodePattern.findall(cqcode)
+    if len(result) == 0:
+        print(f'cqcode = "{cqcode}"')
+        print('len result == 0')
+        return None
+    result = result[0].split(',')
+    cqtype = cqtypePattern.findall(result[0])
+    if len(cqtype) == 0: 
+        print('len cqtype == 0')
+        return None
+    cqtype = cqtype[0]
+    cqdict = {}
+    for r in result[1:]:
+        r = r.split('=', 1)
+        if len(r) != 2:
+            print('len r != 2')
+            return None
+        cqkey, cqvalue = r
+        cqdict[cqkey] = cqvalue
+    return cqtype, cqdict
+
 def get_login_info()->dict:
     """获取登录号信息
     @return: {

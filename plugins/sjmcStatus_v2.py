@@ -161,6 +161,10 @@ def draw_sjmc_info(dat, server_group):
         new_title = title
         if res['online']:
             res['hostname'] = res['hostname'].replace('.',' . ')
+            if 'port' in res.keys() and res['port'] != None:
+                port = str(res['port']).strip()
+                if port != '25565':
+                    res['hostname'] += ' : ' + port
         draw.text((160, fy), new_title, fill=white, font=font_mc_l)
         if res['online']:
             draw.text((160, fy+45), res['hostname'], fill=grey, font=font_mc_m)
