@@ -8,6 +8,7 @@ import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector
 from threading import Semaphore
+from .clientInstance import queryAnnouncement
 
 def createMuaTokenSql():
     mydb = mysql.connector.connect(**sqlConfig)
@@ -131,6 +132,46 @@ class MuaTokenUnbinder(StandardPlugin):
             'name': 'MuaTokenUninder',
             'description': 'MUA token解绑',
             'commandDescription': '-muaunbind [MUA ID]',
+            'usePlace': ['group', 'private'],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class MuaQuery(StandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg in ['-mca', 'mua通知', 'MUA通知']
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        succ, result = queryAnnouncement(data)
+        send(target, result, data['message_type'])
+        return 'OK'
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'MuaQuery',
+            'description': '查询MUA通知',
+            'commandDescription': 'mua通知/-mca',
+            'usePlace': ['group', 'private'],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class MuaAbstract(StandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg in ['-mcb', 'mua摘要', 'MUA摘要']
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        succ, result = queryAnnouncement(data, abstract=True)
+        send(target, result, data['message_type'])
+        return 'OK'
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'MuaAbstract',
+            'description': '查询MUA摘要',
+            'commandDescription': 'mcb/-muaabs',
             'usePlace': ['group', 'private'],
             'showInHelp': True,
             'pluginConfigTableNames': [],

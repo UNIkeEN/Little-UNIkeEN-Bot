@@ -63,6 +63,28 @@ def imgUrlToImgBase64(imgUrl:str)->Optional[str]:
     b64img = base64.b64encode(imgData.getvalue()).decode('utf-8')
     return b64img
 
+def urlOrBase64ToImage(imgType:str, imgContent:str)->Optional[Image.Image]:
+    if imgType == 'imgurl':
+        imgPath = imgUrlToImgPath(imgContent)
+        if imgPath != None:
+            return Image.open(imgPath)
+        else:
+            req = requests.get(url=imgContent)
+            if req.status_code == requests.codes.ok:
+                try:
+                    return Image.open(BytesIO(requests.content))
+                except:
+                    return None
+            else:
+                return None
+    elif imgType == 'imgbase64':
+        try:
+            return Image.open(BytesIO(base64.decode(imgContent)))
+        except:
+            return None
+    else:
+        return None
+
 def dumpMsgToBed(msg:str):
     imgPattern = re.compile(r'\[CQ\:image\,file\=[^\,]+\,subType=\S+\,url\=([^\,]+)\]')
     for url in imgPattern.findall(msg):

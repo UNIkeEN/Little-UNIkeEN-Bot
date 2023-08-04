@@ -7,6 +7,7 @@ from typing import Callable
 
 from .common.packets import *
 from .common.subprotocols import *
+from utils.basicEvent import warning
 
 class Client:
     def __init__(self, id, token, server):
@@ -26,11 +27,14 @@ class Client:
         await self.ws.send(payload.to_json())
 
     async def handle_payload(self, payload : PayloadPacket):
-        print('handling payload...')
-        print(payload.body)
         sessionId = payload.get_session_id()
-        if self.handle_payload_fn != None and sessionId != None:
-            self.handle_payload_fn(sessionId, payload)
+        if self.handle_payload_fn != None:
+            try:
+                self.handle_payload_fn(sessionId, payload)
+            except BaseException as e:
+                warning(f'exception in handling mua payload: {e}, payload: {str(payload)}')
+        else:
+            print("[WARNING]: handle_payload_fn is None")
             
     async def send_packet(self, packet : Packet):
         await self.ws.send(packet.to_json())

@@ -1,5 +1,6 @@
 from .packets import PayloadPacket
 import time
+import json
 from typing import Union, Optional, List, Tuple, Set
 # --------------------
 #     ANNOUNCEMENT
@@ -46,28 +47,29 @@ class Announcement:
         if self.time_expires is not None:
             r["time_expires"] = self.time_expires
         if self.targets is not None:
-            r["time_expires"] = self.targets
+            r["targets"] = self.targets
         return r
     
     @classmethod
     def from_json(cls, s):
         ret = cls(
-            s["title"],
-            s["content"],
-            s.get("author_token", None),
-            s["channel"],
-            s["tags"],
-            s.get("targets", None),
-            s["time_created"],
-            s.get("time_expires", None),
-            s["meta"]
+            title=s["title"],
+            content=s["content"],
+            author_token=s.get("author_token", None),
+            channel=s["channel"],
+            tags=s["tags"],
+            targets=s.get("targets", None),
+            time_created=s["time_created"],
+            time_expires=s.get("time_expires", None),
+            meta=s["meta"]
         )
         ret.author_id = s.get("author_id", None)
         return ret
 
     def __hash__(self) -> int:
         return hash(self.title + self.content + self.channel)
-
+    def __str__(self) -> str:
+        return json.dumps(self.serialize(), ensure_ascii=False)
 class CreateAnnouncementPacket(PayloadPacket):
     SUBPROTOCOL_TYPE = "CREATE"
 
@@ -139,11 +141,12 @@ class DeleteAnnouncementPacket(PayloadPacket):
 class QueryAnnouncementListPacket(PayloadPacket):
     SUBPROTOCOL_TYPE = "QUERY"
     
-    def __init__(self):
+    def __init__(self, session_id:str=None):
         super().__init__(
             subprotocol_name = SUBPROTOCOL_ANNOUNCEMENT_NAME,
             subprotocol_version = SUBPROTOCOL_ANNOUNCEMENT_VERSION, 
             subprotocol_packet_type = self.SUBPROTOCOL_TYPE,
+            session_id=session_id,
         )
 
     @classmethod

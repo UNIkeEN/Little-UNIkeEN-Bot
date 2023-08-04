@@ -1,12 +1,12 @@
 import json
-
+from typing import Dict, Any
 class Packet:
     TYPE = None
 
     def __init__(self):
         pass
 
-    def serialize_content() -> str:
+    def serialize_content() -> Dict[str, Any]:
         pass
 
     def __str__(self) -> str:
@@ -85,7 +85,14 @@ class PayloadPacket(Packet):
 
     __SUBPROTOCOL_REGISTRY = {}
 
-    def __init__(self, subprotocol_name : str, subprotocol_version : int, subprotocol_packet_type : str, body : str = None, targets : list = None, sender : str = None, session_id = None):
+    def __init__(self,
+        subprotocol_name : str,
+        subprotocol_version : int,
+        subprotocol_packet_type : str,
+        body : str = None,
+        targets : list = None,
+        sender : str = None,
+        session_id = None):
         self.subprotocol_name : str = subprotocol_name
         self.subprotocol_version : int = subprotocol_version
         self.subprotocol_packet_type : str = subprotocol_packet_type
@@ -106,7 +113,7 @@ class PayloadPacket(Packet):
     def get_subprotocol_packet_type(self) -> str:
         return self.subprotocol_packet_type
     
-    def serialize_content(self) -> str:
+    def serialize_content(self) -> Dict[str, Any]:
         content = { 
             "subprotocol" : {
                 "name" : self.subprotocol_name,
@@ -143,8 +150,8 @@ class PayloadPacket(Packet):
             content["subprotocol"]["name"], 
             content["subprotocol"]["version"], 
             content["subprotocol"]["packet_type"], 
-            content.get("body", None), 
-            content.get("targets", None), 
+            body=content.get("body", None), 
+            targets=content.get("targets", None), 
             session_id=content.get("session_id", None)
         )
 

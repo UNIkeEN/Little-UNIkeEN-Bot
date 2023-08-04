@@ -11,7 +11,7 @@ import mysql.connector
 from pymysql.converters import escape_string
 from .annImgBed import createAnnImgBedSql, dumpMsgToBed, imgUrlToImgBase64
 from .muaTokenBind import getAllMuaToken
-from .clientInstance import sendAnnouncement
+from .clientInstance import sendAnnouncement, deleteAnnouncement
 import asyncio
 from threading import Semaphore
 import datetime, json, time
@@ -39,8 +39,22 @@ def createAnnCtxSql():
         `editing` bool not null default false comment '是否正在编辑',
         `token_description` char(20) default null comment '发布MUA ID',
         `metadata` json default null comment '其他信息，如群筛选器等，json格式',
+        `aid` bigint default null comment '发通知成功后mua服务器返回的aid',
         primary key (`user_id`, `ann_key`)
     )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
+
+def recordAidWhenSucc(aid:int, data:Any):
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+    `editing` = false, `aid` = %s, `released_time` = from_unixtime(%s)
+    where user_id = %s and ann_key = %s
+    """, (aid, data['time'], data['user_id'], data['ann_key']))
+    result = MuaAnnEditor.getContext(data['user_id'])
+    if result != None and result[0] == data['ann_key']:
+        MuaAnnEditor.setContext(data['user_id'], data['ann_key'], False)
+
 
 def loadAnnContext(userId:int, annKey:str)->Optional[Dict[str, Any]]:
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
@@ -125,14 +139,15 @@ def drawHelpPic(savePath:str)->bool:
     """
     helpWords = (
         "新建通知： -annnew  [通知关键字]\n"
-        "删除通知记录： -annrm  [通知关键字]\n"
+        "删除通知本地记录： -annrm  [通知关键字]\n"
+        "删除mua服务器上的通知： -anndel  [通知关键字]\n"
         "获取当前编辑通知的关键字： -annkey\n"
         "获取所有未被删除的通知： -annls\n"
         "复制之前通知的内容到新通知，并切换到新通知： -anncp  [前通知关键字]  [新通知关键字]\n"
         "切换到新通知： -annswt  [通知关键字]\n"
         "设置通知title： -annttl  [文字]\n"
         "将一段内容添加到content末尾： -annctt  [文字/图片]\n"
-        "删除content： -annrmctt\n"
+        "清空content： -annrmctt\n"
         "设置tag： -anntg  [tag,以空格隔开]\n"
         "设置channel： -anncnl  [channel文字]\n"
         "设置通信target： -anntgt  [target,以空格隔开]\n"
@@ -196,12 +211,24 @@ def parseTimeStr(timeStr:str)->Optional[datetime.datetime]:
 
 class MuaAnnEditor(StandardPlugin):
     initGuard = Semaphore()
+    # 用户ID => [当前正在编辑的通知key, 是否可编辑]
+    context:Dict[int, Tuple[str, bool]] = {} # 私聊、群聊共享一个
+    @staticmethod
+    def getContext(userId:int)->Optional[Tuple[str, bool]]:
+        return MuaAnnEditor.context.get(userId, None)
+
+    @staticmethod
+    def setContext(userId:int, editingAnnName:str, editing:bool):
+        MuaAnnEditor.context[userId] = (editingAnnName, editing)
+
     def __init__(self):
         if self.initGuard.acquire(blocking=False):
             createAnnCtxSql()
             createAnnImgBedSql()
+            self.loadContext()
         self.annnewPattern = re.compile(r'^\-annnew\s+(\S+)')
         self.annrmPattern  = re.compile(r'^\-annrm\s+(\S+)')
+        self.anndelPattern  = re.compile(r'^\-anndel\s+(\S+)')
         self.anncpPattern  = re.compile(r'^\-anncp\s+(\S+)\s+(\S+)')
         self.annswtPattern = re.compile(r'^\-annswt\s+(\S+)')
         self.annttlPattern = re.compile(r'^\-annttl\s+(.*)')
@@ -213,9 +240,6 @@ class MuaAnnEditor(StandardPlugin):
         self.annstpPattern = re.compile(r'^\-annstp\s+(.*)')
         self.anntkPattern = re.compile(r'^\-anntk\s+(\S+)')
         self.cqcodePattern = re.compile(r'\[CQ\:.*\]')
-        self.context:Dict[int, Tuple[str, bool]] = {}
-        # 用户ID => [当前正在编辑的通知key, 是否可编辑]
-        self.loadContext()
 
     def loadContext(self):
         mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
@@ -256,7 +280,8 @@ class MuaAnnEditor(StandardPlugin):
             pass
         elif msg == '-annrls':
             succ, result  = self.annRls(userId, data)
-            send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])  
+            if not succ:
+                send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
         elif msg == '-annhelp':
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'muahelp_%d.png'%target)
             if drawHelpPic(savePath):
@@ -282,6 +307,11 @@ class MuaAnnEditor(StandardPlugin):
         elif self.annrmPattern.match(msg) != None:
             annKey = self.annrmPattern.findall(msg)[0]
             succ, result = self.annRm(userId, annKey, data)
+            if not succ:
+                send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
+        elif self.anndelPattern.match(msg) != None:
+            annKey = self.anndelPattern.findall(msg)[0]
+            succ, result = self.annDel(userId, annKey, data)
             send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
         elif self.anntgtPattern.match(msg) != None:
             tgt = self.anntgtPattern.findall(msg)[0]
@@ -358,7 +388,7 @@ class MuaAnnEditor(StandardPlugin):
             mycursor = mydb.cursor()
             mycursor.execute("""
             update `BOT_DATA`.`muaAnnCtx` set `editing` = false
-            where `user_id` = %d"""%(userId, ))
+            where `user_id` = %d and `editing` = true"""%(userId, ))
             try:
                 mycursor.execute("""insert into `BOT_DATA`.`muaAnnCtx` 
                 (`user_id`, `ann_key`, `create_time`, `editing`) values
@@ -368,7 +398,8 @@ class MuaAnnEditor(StandardPlugin):
             except BaseException as e:
                 print(e)
                 return False, '创建失败，关键词重复或数据库错误'
-            return True, '创建成功'
+            return True, ('创建成功，请发送“-anntk MUAID”为通知绑定发布身份的MUAID(若不清楚MUAID名称，请发送“-muals”获取已注册的MUAID)，'
+            '绑定完MUAID后，请发送“-anncnl 目标频道”设置频道（原版/模组/小游戏/其他）')
         except BaseException as e:
             warning('exception in MuaAnnEditor.annNew: {}'.format(e))
             return False, '创建失败'
@@ -385,13 +416,34 @@ class MuaAnnEditor(StandardPlugin):
         if result[0][0] == 0:
             return False, '删除失败，不存在该关键字'
         mycursor.execute("""
-        delete from `BOT_DATA`.`muaAnnCtx`
+        delete from `BOT_DATA`.`muaAnnCtx` 
         where user_id = %s and ann_key = %s
         """, (userId, annKey))
-        currentCtx = self.context.get(userId, None)
-        if currentCtx != None and currentCtx[0] == annKey:
+        if userId in self.context.keys() and self.context[userId][0] == annKey:
             del self.context[userId]
-        return True, "删除成功"
+        return True, '本地记录删除成功'
+
+    def annDel(self, userId:int, annKey:str, data:Any)->Tuple[bool, str]:
+        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+        mydb.autocommit = True
+        mycursor = mydb.cursor()
+        mycursor.execute("""
+        select `aid`, `token_description` from `BOT_DATA`.`muaAnnCtx` 
+        where user_id = %s and ann_key = %s
+        """, (userId, annKey))
+        result = list(mycursor)
+        if len(result) == 0:
+            return False, '删除失败，不存在该关键字'
+        aid, tokenDescription = result[0]
+        if aid == None:
+            return False, '服务器未存储aid，该announcement之前可能未发送成功，如果已发送成功，请联系管理员解决该bug'
+        if tokenDescription == None:
+            return False, '该通知未存储MUA ID，请联系管理员解决该bug'
+        tokens = getAllMuaToken(userId)
+        if tokenDescription not in tokens.keys():
+            return False, '发送信息时的token已被移除，请重新绑定该token'
+        succ, result = deleteAnnouncement(aid, tokens[tokenDescription])
+        return succ, result
 
     def annLs(self, userId:int, data:Any)->Tuple[bool, str]:
         try:
@@ -404,7 +456,7 @@ class MuaAnnEditor(StandardPlugin):
             result = [annKey for annKey, in list(mycursor)]
             return True, '读取成功，往期关键字为：\n' + ', '.join(result)
         except BaseException as e:
-            warning('exception in MuaAnnEditor.annNew: {}'.format(e))
+            warning('exception in MuaAnnEditor.annLs: {}'.format(e))
             return False, '读取失败，数据库错误'
 
     def annSwt(self, userId:int, annKey:str, data:Any)->Tuple[bool, str]:
@@ -422,14 +474,14 @@ class MuaAnnEditor(StandardPlugin):
             return False, '切换失败，不存在以“%s”为关键词的通知'%annKey
         released = result[0][0] != None
         mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
-        `editing` = false where `user_id` = %s""",(userId, ))
+        `editing` = false where `user_id` = %s and `editing` = true""",(userId, ))
         mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
         `editing` = true where `user_id` = %s and `ann_key` = %s
         """, (userId, annKey))
         self.context[userId] = (annKey, not released)
         if released:
             return True, ('切换成功，请注意该通知已经发布，无法修改，'
-            '如需修改，请用-anncp命令将该通知复制到新通知，然后编辑发布')
+            '如需修改，请用“-anncp %s 新通知”命令将该通知复制到新通知，然后编辑发布'%annKey)
         else:
             return False, '切换成功'
 
@@ -460,7 +512,9 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `content` = if(`content` is null, %s, concat(`content`, %s)) where `user_id` = %s and `ann_key` = %s
             """, (content, content, userId, annKey))
-            return True, 'content添加成功'
+            return True, ('content添加成功，可以继续发送“-annctt 内容”往现有内容后面添加新图文（不会覆盖），'
+            '也可以发送“-annrmctt”清空通知内容。内容编辑完成后，请发送“-annstp 失效时间字符串”设置失效时间，'
+            '若不设置失效时间，则默认失效时间为15天')
         except BaseException as e:
             return False, 'content添加失败，数据库错误或字数超限'
 
@@ -479,7 +533,7 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `content` = null where `user_id` = %s and `ann_key` = %s
             """, (userId, annKey))
-            return True, 'content删除成功'
+            return True, ('通知内容已清空')
         except BaseException as e:
             return False, 'content删除失败，数据库错误'
     
@@ -487,9 +541,43 @@ class MuaAnnEditor(StandardPlugin):
         mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
         mydb.autocommit = True
         mycursor = mydb.cursor()
-        # TODO:
+        # 1. 看dstKey是不是被占用了
+        mycursor.execute("""select count(*) from `BOT_DATA`.`muaAnnCtx`
+        where user_id = %s and ann_key = %s""", (userId, dstKey))
+        if list(mycursor)[0][0] > 0 :
+            return False, '关键词“%s”被占用，请用-annrm删掉之前的通知，或换一个没有被占用的关键词'%dstKey
+        # 2. 读取
+        mycursor.execute("""select `title`, `content`, `begin_time`, `end_time`, `info_source`,
+        `tag`, `target`, `channel`, `token_description`, `metadata` from
+        `BOT_DATA`.`muaAnnCtx` where `user_id` = %s and `ann_key` = %s
+        """, (userId, srcKey))
+        result = list(mycursor)
+        if len(result) == 0:
+            return False, '您还没有创建过以“%s”为关键词的通知，或者该通知已被移除'%srcKey
+        result = result[0]
+        # 3. editing写入
         mycursor.execute("""
-        """)
+        update `BOT_DATA`.`muaAnnCtx` set `editing` = false where
+        `user_id` = %s and `editing` = true""", (userId, ))
+        # 4. 写入
+        mycursor.execute("""insert into `BOT_DATA`.`muaAnnCtx` (
+            `user_id`, `ann_key`,
+            `title`, `content`, `begin_time`, `end_time`, `info_source`,
+            `tag`, `target`, `channel`, `token_description`, `metadata`,
+            `editing`, `create_time`
+        ) values (
+            %s,%s,
+            %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s,
+            true, from_unixtime(%s)
+        )""", (userId, dstKey,
+            result[0], result[1], result[2], result[3], result[4], 
+            result[5], result[6], result[7], result[8], result[9], 
+            data['time'],
+        ))
+        # 4. 修改内存
+        self.context[userId] = (dstKey, True)
+        return True, '复制成功，输入“-annprv”可预览，输入“-annrls”可发布'
 
     def annTtl(self, userId:int, title:str, data:Any)->Tuple[bool, str]:
         annKey:Optional[str, bool] = self.context.get(userId, None)
@@ -510,7 +598,7 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `title` = %s where `user_id` = %s and `ann_key` = %s
             """, (title, userId, annKey))
-            return True, 'title设置成功'
+            return True, 'title设置成功，发送“-anntg 标记”可以编辑通知标记，发送“-annctt 内容”可以编辑通知内容'
         except BaseException as e:
             return False, 'title设置失败，数据库错误'
 
@@ -533,7 +621,8 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `channel` = %s where `user_id` = %s and `ann_key` = %s
             """, (channel, userId, annKey))
-            return True, 'channel设置成功'
+            return True, ('channel设置成功，请发送“-annttl 标题”编辑通知标题，'
+            '发送“-anntg 标记”编辑通知标记，或者发送“-annctt 内容”编辑通知内容')
         except BaseException as e:
             return False, 'channel设置失败，数据库错误'
 
@@ -577,14 +666,13 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `tag` = %s where `user_id` = %s and `ann_key` = %s
             """, (tag, userId, annKey))
-            return True, 'tag设置成功'
+            return True, ('tag设置成功，继续发送“-annctt 内容”可以编辑通知内容，'
+            '发送“-annstp 截止时间字符串”可以编辑通知截止时间（如不编辑则默认15日）')
         except BaseException as e:
             return False, 'tag设置失败，数据库错误'
 
     def annStt(self, userId:int, timeStr:str, data:Any)->Tuple[bool, str]:
         timeParsed = parseTimeStr(timeStr)
-        if timeParsed == None:
-            return False, '字符串解析失败'
         annKey:Optional[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, '开始时间设置失败，当前没有正在编辑的通知'
@@ -592,6 +680,10 @@ class MuaAnnEditor(StandardPlugin):
             return False, ('开始时间设置失败，当前通知已发布，无法编辑，'
             '如需修改，请用-anncp命令将该通知复制到新通知，然后编辑发布')
         annKey:str = annKey[0]
+        invalidTime=False
+        if timeParsed == None:
+            invalidTime = True
+            timeParsed = None
         try:
             mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
             mydb.autocommit = True
@@ -599,15 +691,15 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `begin_time` = %s where `user_id` = %s and `ann_key` = %s
             """, (timeParsed, userId, annKey))
-            return True, timeParsed.strftime('开始时间设置成功，为 %Y-%m-%d %H:%M:%S')
+            if invalidTime:
+                return False, '字符串解析失败，开始时间变为默认'
+            else:
+                return True, timeParsed.strftime('开始时间设置成功，为 %Y-%m-%d %H:%M:%S')
         except BaseException as e:
             print(e)
             return False, '开始时间设置失败，数据库错误'
 
     def annStp(self, userId:int, timeStr:str, data:Any)->Tuple[bool, str]:
-        timeParsed = parseTimeStr(timeStr)
-        if timeParsed == None:
-            return False, '字符串解析失败'
         annKey:Optional[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, '结束时间设置失败，当前没有正在编辑的通知'
@@ -615,6 +707,11 @@ class MuaAnnEditor(StandardPlugin):
             return False, ('结束时间设置失败，当前通知已发布，无法编辑，'
             '如需修改，请用-anncp命令将该通知复制到新通知，然后编辑发布')
         annKey:str = annKey[0]
+        timeParsed = parseTimeStr(timeStr)
+        invalidTime=False
+        if timeParsed == None:
+            invalidTime = True
+            timeParsed = None
         try:
             mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
             mydb.autocommit = True
@@ -622,7 +719,10 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `end_time` = %s where `user_id` = %s and `ann_key` = %s
             """, (timeParsed, userId, annKey))
-            return True, timeParsed.strftime('结束时间设置成功，为 %Y-%m-%d %H:%M:%S')
+            if invalidTime:
+                return False, '字符串解析失败，失效时间变为默认'
+            else:
+                return True, timeParsed.strftime('失效时间设置成功，为 %Y-%m-%d %H:%M:%S，发送“-annprv”可以预览通知，发送“-annrls”可以发布通知')
         except BaseException as e:
             print(e)
             return False, '结束时间设置失败，数据库错误'
@@ -681,11 +781,15 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'MUA ID应小于20字符'
         annKey:Optional[str, bool] = self.context.get(userId, None)
         if annKey == None:
-            return False, 'MUA ID设置失败，当前没有正在编辑的通知'
+            return False, ('MUA ID设置失败，当前没有正在编辑的通知，'
+            '请发送“-annnew 新通知关键字”创建新通知，或者发送“-anncp 已创建关键字 新通知关键字”从模板中复制新通知')
         if not annKey[1]:
             return False, ('MUA ID设置失败，当前通知已发布，无法编辑，'
             '如需修改，请用-anncp命令将该通知复制到新通知，然后编辑发布')
         annKey:str = annKey[0]
+        allToken = getAllMuaToken(userId)
+        if tokenDescription not in allToken:
+            return False, f'绑定失败，您注册的所有MUA ID为：{"、".join(allToken)}，在其中没有发现名为“{tokenDescription}”的ID'
         try:
             mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
             mydb.autocommit = True
@@ -693,7 +797,8 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `token_description` = %s where `user_id` = %s and `ann_key` = %s
             """, (tokenDescription, userId, annKey))
-            return True, 'MUA ID设置成功'
+            return True, ('MUA ID设置成功，请发送“-anncnl 目标频道”设置频道（原版/模组/小游戏/其他），'
+            '继续发送“-annttl 标题内容”可以编辑通知标题')
         except BaseException as e:
             return False, 'MUA ID设置失败，数据库错误'
 
@@ -710,7 +815,7 @@ class MuaAnnEditor(StandardPlugin):
         if result == None:
             return False, '数据库读取失败，请联系管理员'
         if result['token_description'] == None:
-            return False, '发布失败，MUA ID未设置，请根据发布身份选择MUA ID，使用-annTk [..]语句设置'
+            return False, '发布失败，MUA ID未设置，请根据发布身份选择MUA ID，使用-anntk [..]语句设置'
         if result['title'] == None:
             return False, '发布失败，title未设置，请使用-annttl命令设置title'
         if result['channel'] == None:
@@ -732,8 +837,23 @@ class MuaAnnEditor(StandardPlugin):
             meta=result['metadata'],
         )
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, '格式检查通过，等待mua服务器响应中...', data['message_type'])
-        if sendAnnouncement(announcement, data):
-            return True, 'OK'
-        else:
-            return False, 'BOT与服务器连接中断，请联系管理员'
+        send(target, '格式检查通过，等待mua服务器响应中。发送“-anndel 通知key”可以让mua服务器删除通知，发送“-annrm 通知key”可以在本地删除通知key（但不通知服务器删除）', data['message_type'])
+        succ, result = sendAnnouncement(announcement, data, annKey)
+        return succ, result
+
+class MuaNotice(StandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any)->bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return None
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'MuaNotice',
+            'description': 'MUA通知广播',
+            'commandDescription': '[-grpcfg驱动]',
+            'usePlace': ['group',],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
