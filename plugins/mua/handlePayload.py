@@ -130,7 +130,11 @@ def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->T
                     titleFontColor=PALETTE_CYAN,
                     backColor=None
                 ))
-
+        muaPic.addCard(ResponseImage.RichContentCard(
+            raw_content = [('body', '发送 -mca 查看详细通知，发送 -mcb 查看通知摘要')],
+            titleFontColor=PALETTE_CYAN,
+            backColor=None
+        ))
         muaPic.generateImage(savePath)
         return True, savePath
     except BaseException as e:
@@ -164,6 +168,7 @@ def handle_payload_fn(session_id, payload):
                 warning(f'mua图片绘制失败: {result}')
     elif session_id == None:
         # 全服广播
+        # TODO: 根据targets选择广播对象
         if retType == 'LIST':
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'mualist_global.png')
             succ, result = drawMuaBriefListPic(savePath, body)

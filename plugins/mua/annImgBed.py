@@ -13,6 +13,9 @@ ANN_IMGBED_DIR = 'data/annImgBed'
 os.makedirs(os.path.join(ROOT_PATH, ANN_IMGBED_DIR), exist_ok=True)
 
 def createAnnImgBedSql():
+    """QQ图片链接容易过期，如果某个图片过期了，但是还存储在通知记录里，就可能导致不好的事情发生。
+    因此我们需要实现一个图床，以url为key将图片存储在本地一份，当链接过期时启用图床，
+    将图片以base64编码发送给服务器"""
     mydb = mysql.connector.connect(**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()

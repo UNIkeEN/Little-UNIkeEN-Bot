@@ -19,6 +19,8 @@ from dateutil import parser as timeparser
 from .common.subprotocols import Announcement
 
 def createAnnCtxSql():
+    """创建mua通知发布过程中记录上下文环境的sql table
+    """
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -44,6 +46,12 @@ def createAnnCtxSql():
     )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
 
 def recordAidWhenSucc(aid:int, data:Any):
+    """如果成功发送通知，服务器返回"RESULT" pay_load，此时需要恢复上下文，
+    记录发送通知的aid、记录通知的released_time、将通知editing设为False
+    
+    @aid:  mua服务器返回的通知aid
+    @data: 恢复出来的上下文环境
+    """
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -120,15 +128,15 @@ def makeContent(content:Optional[str])->List[Tuple[str, str]]:
         wordsIdx += 1
     return content
                 
-def makeTag(tag:Optional[str])->List[str]:
+def makeTag(tag:Optional[str])->Optional[List[str]]:
     if tag == None:
-        return []
+        return None
     else:
         return tag.strip().split()
 
-def makeTarget(target:Optional[str])->List[str]:
+def makeTarget(target:Optional[str])->Optional[List[str]]:
     if target == None:
-        return []
+        return None
     else:
         return target.strip().split()
 
@@ -150,12 +158,11 @@ def drawHelpPic(savePath:str)->bool:
         "清空content： -annrmctt\n"
         "设置tag： -anntg  [tag,以空格隔开]\n"
         "设置channel： -anncnl  [channel文字]\n"
-        "设置通信target： -anntgt  [target,以空格隔开]\n"
-        "设置活动开始时间： -annstt  [时间字符串 like '2023-07-30 23:59']\n"
+        # "设置通信target： -anntgt  [target,以空格隔开]\n"
+        # "设置活动开始时间： -annstt  [时间字符串 like '2023-07-30 23:59']\n"
         "设置结束(过期)时间： -annstp  [时间字符串 like '2023-07-30 23:59']\n"
         "设置发布身份： -anntk  [MUA ID]\n"
         "预览通知： -annprv\n"
-        "渲染通知： -annrdr\n"
         "发布通知： -annrls\n"
         "获取帮助： -annhelp\n"
         "测试用：   -anndmp [关键字]?\n"
@@ -276,8 +283,6 @@ class MuaAnnEditor(StandardPlugin):
         elif msg == '-annprv':
             succ, result = self.annPrv(userId, data)
             send(target, result, data['message_type'])
-        elif msg == '-annrdr':
-            pass
         elif msg == '-annrls':
             succ, result  = self.annRls(userId, data)
             if not succ:
@@ -307,8 +312,7 @@ class MuaAnnEditor(StandardPlugin):
         elif self.annrmPattern.match(msg) != None:
             annKey = self.annrmPattern.findall(msg)[0]
             succ, result = self.annRm(userId, annKey, data)
-            if not succ:
-                send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
+            send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
         elif self.anndelPattern.match(msg) != None:
             annKey = self.anndelPattern.findall(msg)[0]
             succ, result = self.annDel(userId, annKey, data)
@@ -398,7 +402,7 @@ class MuaAnnEditor(StandardPlugin):
             except BaseException as e:
                 print(e)
                 return False, '创建失败，关键词重复或数据库错误'
-            return True, ('创建成功，请发送“-anntk MUAID”为通知绑定发布身份的MUAID(若不清楚MUAID名称，请发送“-muals”获取已注册的MUAID)，'
+            return True, ('创建成功，发送“-anntk MUAID”可为通知绑定发布身份的MUAID(若不清楚MUAID名称，发送“-muals”可获取已注册的MUAID)，'
             '绑定完MUAID后，请发送“-anncnl 目标频道”设置频道（原版/模组/小游戏/其他）')
         except BaseException as e:
             warning('exception in MuaAnnEditor.annNew: {}'.format(e))
@@ -545,7 +549,7 @@ class MuaAnnEditor(StandardPlugin):
         mycursor.execute("""select count(*) from `BOT_DATA`.`muaAnnCtx`
         where user_id = %s and ann_key = %s""", (userId, dstKey))
         if list(mycursor)[0][0] > 0 :
-            return False, '关键词“%s”被占用，请用-annrm删掉之前的通知，或换一个没有被占用的关键词'%dstKey
+            return False, '关键词“%s”被占用，请用-annrm删掉之前的通知(-annrm只会删除本地记录，不会请求服务器删除)，或换一个没有被占用的关键词'%dstKey
         # 2. 读取
         mycursor.execute("""select `title`, `content`, `begin_time`, `end_time`, `info_source`,
         `tag`, `target`, `channel`, `token_description`, `metadata` from
@@ -598,7 +602,7 @@ class MuaAnnEditor(StandardPlugin):
             mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
             `title` = %s where `user_id` = %s and `ann_key` = %s
             """, (title, userId, annKey))
-            return True, 'title设置成功，发送“-anntg 标记”可以编辑通知标记，发送“-annctt 内容”可以编辑通知内容'
+            return True, 'title设置成功，发送“-anntg 标签(不同标签以空格隔开)”可以编辑通知标签，发送“-annctt 内容”可以编辑通知内容'
         except BaseException as e:
             return False, 'title设置失败，数据库错误'
 
@@ -627,6 +631,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'channel设置失败，数据库错误'
 
     def annTgt(self, userId:int, tgt:str, data:Any)->Tuple[bool, str]:
+        # TODO: 为target设置引导
         annKey:Optional[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'target设置失败，当前没有正在编辑的通知'
@@ -753,19 +758,19 @@ class MuaAnnEditor(StandardPlugin):
             txt += 'channel: ' + result['channel'] + '\n'
         else:
             txt += 'channel缺失\n'
-        if result['target'] != None:
-            txt += 'target: ' + result['target'] + '\n'
-        else:
-            txt += 'target缺失\n'
+        # if result['target'] != None:
+        #     txt += 'target: ' + result['target'] + '\n'
+        # else:
+        #     txt += 'target缺失\n'
         if result['tag'] != None:
             txt += 'tag: ' + result['tag']+'\n\n'
         else:
             txt += 'tag缺失\n\n'
 
-        if result['begin_time'] != None:
-            txt += datetime.datetime.fromtimestamp(result['begin_time']).strftime('开始时间： %Y-%m-%d %H:%M:%S\n')
-        else:
-            txt += '起始时间缺失\n'
+        # if result['begin_time'] != None:
+        #     txt += datetime.datetime.fromtimestamp(result['begin_time']).strftime('开始时间： %Y-%m-%d %H:%M:%S\n')
+        # else:
+        #     txt += '起始时间缺失\n'
         if result['end_time'] != None:
             txt += datetime.datetime.fromtimestamp(result['end_time']).strftime('结束时间： %Y-%m-%d %H:%M:%S\n\n')
         else:

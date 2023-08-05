@@ -11,7 +11,7 @@ from utils.standardPlugin import (
     EmptyAddGroupPlugin,GuildStandardPlugin
 )
 from utils.configAPI import createGlobalConfig
-from utils.basicEvent import get_group_list, warning, set_friend_add_request
+from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
 
 from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
@@ -30,7 +30,17 @@ except:
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.mua import MuaAnnHelper, MuaAnnEditor, MuaTokenBinder, MuaTokenUnbinder, MuaTokenLister, MuaNotice, MuaQuery, MuaAbstract
+try:
+    from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
+        MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower, 
+        MuaTokenLister, MuaNotice, MuaQuery, MuaAbstract,
+        MuaGroupBindTarget, MuaGroupUnbindTarget)
+except NotPublishedException as e:
+    print('mua plugins not imported: {}'.format(e))
+    MuaAnnHelper, MuaAnnEditor = EmptyPlugin, EmptyPlugin
+    MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower = EmptyPlugin, EmptyPlugin, EmptyPlugin
+    uaTokenLister, MuaNotice, MuaQuery, MuaAbstract = EmptyPlugin, EmptyPlugin, EmptyPlugin, EmptyPlugin
+    MuaGroupBindTarget, MuaGroupUnbindTarget = EmptyPlugin, EmptyPlugin
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin, createLotterySql
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -149,7 +159,9 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
                         PluginGroupManager([McAdManager()], 'mcad')], 'sjmc'), #MC社服务
-    PluginGroupManager([MuaQuery(), MuaAbstract(), MuaAnnHelper(), MuaAnnEditor(), MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenLister(),
+    PluginGroupManager([MuaQuery(), MuaAbstract(), MuaAnnHelper(), MuaAnnEditor(), 
+                        MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
+                        MuaGroupBindTarget(), MuaGroupUnbindTarget(),
                         PluginGroupManager([MuaNotice()], 'muanotice')], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
@@ -181,7 +193,8 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     SignIn(), 
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), SjtuBwc(), #SubscribeJwc(), 
-    MuaAbstract(), MuaQuery(), MuaAnnHelper(), MuaAnnEditor(), MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenLister(),
+    MuaAbstract(), MuaQuery(), MuaAnnHelper(), MuaAnnEditor(), 
+    MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
     GetSjtuNews(),
     LotteryPlugin(),
     Show2cyPIC(), #ShowSePIC(),
@@ -222,8 +235,9 @@ class NoticeType(IntEnum):
     PrivateMessage = 21
     PrivatePoke = 22
     PrivateRecall = 23
-    AddGroup = 31
+    AddGroup = 31       # 有人要求加入自己的群
     AddPrivate = 32
+    AddGroupInvite = 33 # 有人邀请自己加入新群
     GuildMessage = 41
 
 def eventClassify(json_data: dict)->NoticeType: 
@@ -256,7 +270,10 @@ def eventClassify(json_data: dict)->NoticeType:
         if json_data['request_type'] == 'friend':
             return NoticeType.AddPrivate
         elif json_data['request_type'] == 'group':
-            return NoticeType.AddGroup
+            if json_data['sub_type'] == 'add':
+                return NoticeType.AddGroup
+            elif json_data['sub_type'] == 'invite':
+                return NoticeType.AddGroupInvite
     else:
         return NoticeType.NoProcessRequired
 
@@ -325,6 +342,9 @@ def post_data():
     # 自动加好友
     elif flag==NoticeType.AddPrivate:
         set_friend_add_request(data['flag'], True)
+    # 自动通过加群邀请
+    elif flag==NoticeType.AddGroupInvite:
+        set_group_add_request(data['flag'], data['sub_type'], True)
     elif flag==NoticeType.GocqHeartBeat:
         gocqWatchDog.feed()
     return "OK"
