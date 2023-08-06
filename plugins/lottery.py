@@ -163,8 +163,7 @@ class LotteryPlugin(StandardPlugin):
     warningSemaphore = Semaphore()
     def __init__(self,):
         if LotteryPlugin.warningSemaphore.acquire(blocking=False):
-            # warning once
-            pass
+            createLotterySql()
             # print('注意，开启LotteryPlugin插件有被腾讯封号的风险')
         self.lottery = _lottery()
     def judgeTrigger(self, msg:str, data:Any) -> bool:

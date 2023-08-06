@@ -9,7 +9,6 @@ import uuid
 from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
 import mysql.connector
 from typing import Any, Optional, Dict, List, Tuple
-from icecream import ic
 import time, datetime
 from .annImgBed import urlOrBase64ToImage
 from utils.responseImage_beta import *

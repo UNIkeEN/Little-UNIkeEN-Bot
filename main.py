@@ -4,17 +4,18 @@ from enum import IntEnum
 from typing import List, Tuple, Any, Dict
 from utils.standardPlugin import NotPublishedException
 from utils.basicConfigs import APPLY_GROUP_ID, APPLY_GUILD_ID
+from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
 from utils.accountOperation import create_account_sql
 from utils.standardPlugin import (
     StandardPlugin, PluginGroupManager, EmptyPlugin,
     PokeStandardPlugin, AddGroupStandardPlugin, 
     EmptyAddGroupPlugin,GuildStandardPlugin
 )
-from utils.configAPI import createGlobalConfig
+from utils.configAPI import createBotDataDb, createGlobalConfig, removeInvalidGroupConfigs
 from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
 
 from plugins.autoRepoke import AutoRepoke
-from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ, createFaqDb, createFaqTable
+from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ
 from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
 from plugins.greetings import MorningGreet, NightGreet
 from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
@@ -42,12 +43,12 @@ except NotPublishedException as e:
     uaTokenLister, MuaNotice, MuaQuery, MuaAbstract = EmptyPlugin, EmptyPlugin, EmptyPlugin, EmptyPlugin
     MuaGroupBindTarget, MuaGroupUnbindTarget = EmptyPlugin, EmptyPlugin
 from plugins.roulette import RoulettePlugin
-from plugins.lottery import LotteryPlugin, createLotterySql
+from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan
-from plugins.privateControl import PrivateControl
-from plugins.bilibiliSubscribe import createBilibiliTable, BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
+from plugins.privateControl import PrivateControl, LsGroup, GroupApply
+from plugins.bilibiliSubscribe import BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
 try:
     from plugins.chatWithNLP import ChatWithNLP
 except NotPublishedException as e:
@@ -61,7 +62,7 @@ except NotPublishedException as e:
     print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor, GetJwcForGuild#, SubscribeJwc
 from plugins.sjtuSchoolGate import SjtuSchoolGate
-from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor, createBwcSql
+from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
 from plugins.goBang import GoBangPlugin
@@ -116,16 +117,15 @@ from plugins.gocqWatchDog import GocqWatchDog
 ###### end not published plugins
 
 def sqlInit():
+    createBotDataDb()
+    createApplyGroupsSql()
     createGlobalConfig()
     create_account_sql()
-    createFaqDb()
-    createBilibiliTable()
-    createLotterySql()
-    createBwcSql()
-    for group in get_group_list():
-        groupId = group['group_id']
-        createFaqTable(str(groupId))
-sqlInit()
+
+    loadApplyGroupId()
+    # removeInvalidGroupConfigs() # it may danger, consider change it to add tag
+
+sqlInit() # put this after import
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
@@ -182,11 +182,11 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     PluginGroupManager([ChooseSong()], 'song'),
-    PrivateControl(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
     ShowStatus(),ServerMonitor(),
+    LsGroup(), GroupApply(), PrivateControl(),
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
     ShowNews(), YesterdayNews(),
     MorningGreet(), NightGreet(),
@@ -206,7 +206,6 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MakeJoke(),
     ChooseSong(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(), SjtuSchoolGate(),
-    PrivateControl(),
 ]
 GuildPluginList:List[GuildStandardPlugin] = [
     GetJwcForGuild(), # 教务处

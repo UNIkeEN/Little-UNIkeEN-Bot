@@ -13,6 +13,19 @@ import mysql.connector
 from threading import Semaphore
 import time
 
+def createBwcSql():
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
+    mydb.autocommit = True
+    mycursor.execute("""
+    create table if not exists `BOT_DATA`.`bwcRecord`(
+        `msgid` bigint unsigned not null,
+        `create_time` timestamp default null,
+        `title` varchar(300) default null,
+        `url` varchar(500) default null,
+        primary key(`msgid`)
+    )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
+
 def simplifyWxappUrl(url:str):
     up = urlparse(url)
     query = []
@@ -87,6 +100,10 @@ def getBwcNotice()->Optional[List[Dict]]:
         return None
 
 class SjtuBwc(StandardPlugin): 
+    initGuard = Semaphore()
+    def __init__(self):
+        if self.initGuard.acquire(blocking=False):
+            createBwcSql()
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg=='-bwc'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
@@ -109,18 +126,6 @@ class SjtuBwc(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-def createBwcSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
-    mycursor.execute("""
-    create table if not exists `BOT_DATA`.`bwcRecord`(
-        `msgid` bigint unsigned not null,
-        `create_time` timestamp default null,
-        `title` varchar(300) default null,
-        `url` varchar(500) default null,
-        primary key(`msgid`)
-    )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
 
 class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
     guardSem = Semaphore()

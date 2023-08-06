@@ -11,14 +11,19 @@ import json
 # create table `BOT_DATA`.`globalConfig` (`groupId` bigint not null, `groupConfig` json, `groupAdmins` json, primary key (`groupId`));
 # insert into `globalConfig` values (1234, '{"test1": {"name": "ftc", "enable": false}, "test2": {"name": "syj", "enable": true}}', '[]');
 # insert into `globalConfig` values (8888, '{"test1": {"name": "ftc", "enable": true}, "test2": {"name": "syj", "enable": false}}', '[]');
-def createGlobalConfig():
-    """创建global config的sql table, 移除不在APPLY_GROUP_ID中的群号"""
+def createBotDataDb():
     mydb = mysql.connector.connect(**sqlConfig)
     mycursor = mydb.cursor()
     mydb.autocommit = True
     mycursor.execute("""
     create database if not exists `BOT_DATA`
     """)
+
+def createGlobalConfig():
+    """创建global config的sql table, """
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
+    mydb.autocommit = True
     mycursor.execute("""
     create table if not exists `BOT_DATA`.`globalConfig` (
         `groupId` bigint not null,
@@ -26,6 +31,12 @@ def createGlobalConfig():
         `groupAdmins` json,
         primary key (`groupId`)
     );""")
+
+def removeInvalidGroupConfigs():
+    '''移除不在APPLY_GROUP_ID中的群号'''
+    mydb = mysql.connector.connect(**sqlConfig)
+    mycursor = mydb.cursor()
+    mydb.autocommit = True
     mycursor.execute("select groupId from BOT_DATA.globalConfig")
     groupNeedToBeRemoved = set([x for x, in list(mycursor)]) - set(APPLY_GROUP_ID)
     for groupId in groupNeedToBeRemoved:
@@ -113,7 +124,8 @@ def getPluginEnabledGroups(pluginName: str)->List[int]:
     try:
         mycursor.execute("select groupId from BOT_DATA.globalConfig \
             where json_extract(groupConfig, '$.%s.enable') = true"%escape_string(pluginName))
-        return [x[0] for x in list(mycursor)]
+        result = set([x for x, in list(mycursor)])
+        return list(result.intersection(APPLY_GROUP_ID))
     except mysql.connector.Error as e:
         warning("mysql error in getPluginEnabledGroups: {}".format(e))
 

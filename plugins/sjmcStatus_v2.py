@@ -18,10 +18,11 @@ class ShowSjmcStatus(StandardPlugin):
             '-mc' : '',
             '-sjmc' : 'SJMC',
             '-fdc' : 'FDCraft',
-            '-tjmc' : 'TJMC'
+            '-tjmc' : 'TJMC',
+            '-xjtumc': 'XJTUMC',
         }
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg in self.server_groups
+        return msg in self.server_groups.keys()
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         server_group = self.server_groups[msg]

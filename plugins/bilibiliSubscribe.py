@@ -6,6 +6,7 @@ from typing import List, Tuple, Optional, Union, Dict, Any, Set
 from utils.bilibili_api_fixed import UserFixed
 from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
 import random
+from threading import Semaphore
 import asyncio
 import mysql.connector
 import copy
@@ -73,11 +74,14 @@ class BilibiliUpSearcher(StandardPlugin):
             'author': 'Unicorn',
         }
 class BilibiliSubscribe(StandardPlugin):
+    initGuard = Semaphore()
     def __init__(self) -> None:
         """
         self.bUps: uid -> UserFixed
         self.groupUps: group_id -> Set[uid: int]
         """
+        if self.initGuard.acquire(blocking=False):
+            createBilibiliTable()
         self.pattern1 = re.compile(r'^订阅\s*(\d+)$')
         self.pattern2 = re.compile(r'^取消订阅\s*(\d+)$')
         self.pattern3 = re.compile(r'^订阅$')

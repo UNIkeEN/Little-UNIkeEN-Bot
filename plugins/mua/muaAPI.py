@@ -17,12 +17,13 @@ def verifyMuaToken(token:str)->Tuple[bool, str]:
         return succ, req['code']
     else:
         return succ, 'false'
-def getTargetGroupMapping(muaToken:str)->Optional[Dict[str, int]]:
+
+def getTargetGroupMapping(muaToken:str)->Optional[Dict[int, str]]:
     """获取 群号-MUAID 之间的对应关系
     @muaToken: 查询者的MUA Token
     @return:
         if 查询者合法:
-            {MUAID(str): 群号(int)}
+            {群号(int): MUAID(str)}
         else:
             None
     """
@@ -31,9 +32,10 @@ def getTargetGroupMapping(muaToken:str)->Optional[Dict[str, int]]:
     if req.status_code != requests.codes.ok:
         return None
     try:
-        result = req.json()['extra']['union_sync']['qq_groups']
-        for muaId, groupId in result.items():
-            result[muaId] = int(groupId)
+        tmp = req.json()['extra']['union_sync']['qq_groups']
+        result = {}
+        for groupId, muaId in tmp.items():
+            result[int(groupId)] = muaId
         return result
     except Exception as e:
         print(e)

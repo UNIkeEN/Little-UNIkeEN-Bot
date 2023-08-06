@@ -2,13 +2,14 @@ from typing import Dict, Union, Any, List, Tuple
 from utils.basicEvent import send, warning
 from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, APPLY_GROUP_ID
 from utils.responseImage import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
 import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector
 from pymysql.converters import escape_string
 from fuzzywuzzy import process as fuzzy_process
+from threading import Semaphore
 
 FAQ_DATA_PATH="data"
 def createFaqTable(tableName: str):
@@ -43,6 +44,12 @@ def createFaqDb():
     mycursor.execute("create database if not exists `BOT_FAQ_DATA`")
     createFaqTable("globalFaq")
 class HelpFAQ(StandardPlugin):
+    initGuard = Semaphore()
+    def __init__(self):
+        if self.initGuard.acquire(blocking=False):
+            createFaqDb()
+            for groupId in APPLY_GROUP_ID:
+                createFaqTable(str(groupId))
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '问答帮助' and data['message_type']=='group'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:

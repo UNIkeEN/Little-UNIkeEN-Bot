@@ -10,7 +10,7 @@ import uuid
 from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
 import mysql.connector
 from typing import Any, Optional, Dict, List, Tuple
-from icecream import ic
+# from icecream import ic
 import time, datetime
 from .annImgBed import urlOrBase64ToImage
 from .clientInstance import muaClientInstance, loadMuaSession
@@ -146,7 +146,6 @@ def handle_payload_fn(session_id, payload):
     data = loadMuaSession(session_id)
     body = payload.get_json_body()
     retType = payload.get_subprotocol_packet_type()
-    ic(body)
     if data != None:
         # 单点通知
         if retType == 'RESULT':

@@ -55,6 +55,7 @@ class ShowHelp(StandardPlugin):
                 '\n群BOT管理权限标识: 🔑'
                 '\n开启插件组[🔑]:  -grpcfg enable <组名>'
                 '\n关闭插件组[🔑]:  -grpcfg disable <组名>'
+                '\n插件组可嵌套，开启内层插件组须先打开外层'
                 ,
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
@@ -101,7 +102,7 @@ def drawHelpCard(pluginList, group_id):
                         plugin: PluginGroupManager
                         cardPluginList.append((
                             'body' if plugin.queryEnabled(group_id) else 'subtitle',
-                            "[GROUP] "+ plugin.groupName + '\n' +
+                            "[插件组] "+ plugin.groupName + '\n' +
                                 infoDict['description']
                         ))
                     else:
