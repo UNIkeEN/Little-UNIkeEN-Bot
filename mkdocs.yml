@@ -8,6 +8,7 @@ nav:
       - '关于本项目': 'about.md'
       - '更新日志': 'update-plan.md'
       - '授权许可': 'license.md'
+      - '技术先进性': 'progressiveness.md'
     - 开始:
       - '安装向导': 'get-start/installation.md'
       - '配置 python': 'get-start/set-python.md'
@@ -19,7 +20,7 @@ nav:
       - '插件入门': 'plugin/introduction.md'
       - '插件与数据库': 'plugin/pluginWithSql.md'
       - '定时任务': 'plugin/pluginWithTimer.md'
-      - 基本插件:
+      - 基础插件:
         - '插件组管理': 'plugin/plugins/groupManagerPlugin.md'
         - '群权限获取': 'plugin/plugins/getPermissionPlugin.md'
         - '帮助插件':   'plugin/plugins/helpPlugin.md'
@@ -27,7 +28,7 @@ nav:
         - '群文件记录': 'plugin/plugins/fileRecorderPlugin.md'
         - 'gocq离线警告': 'plugin/plugins/gocqWatchDogPlugin.md'
         - '群内自动回拍': 'plugin/plugins/autoRepokePlugin.md'
-      - 功能插件:
+      - 基本功能插件:
         - '超级表情':   'plugin/plugins/superEmojiPlugin.md'
         - '早安晚安':   'plugin/plugins/greetingsPlugin.md'
         - '寄了检测':   'plugin/plugins/jilePlugin.md'
@@ -49,12 +50,18 @@ nav:
         - 'SJTU 核酸点位': 'plugin/plugins/sjtuHesuanPlugin.md'
         - 'SJTU 教室查询': 'plugin/plugins/sjtuClassroomPlugin.md'
         - 'SJTU 麦当劳': 'plugin/plugins/sjtuMddPlugin.md'
+        - 'SJTU 校门': 'plugin/plugins/sjtuSchoolGatePlugin.md'
         - '我爱电路实验':  'plugin/plugins/izfPlugin.md'
         - '水群报告': 'plugin/plugins/myactPlugin.md'
         - '昨日词云': 'plugin/plugins/wordcloudPlugin.md'
         - '随机数': 'plugin/plugins/randomNumPlugin.md'
         - 'B站订阅': 'plugin/plugins/bilibiliSubscribePlugin.md'
         - '热搜': 'plugin/plugins/hotSearchPlugin.md'
+        - '点歌': 'plugin/plugins/songPlugin.md'
+      - MC高校联盟插件:
+        - 'MUA通知编辑': 'plugin/plugins/mua/annContextManagerPlugin.md'
+        - 'MUA用户token绑定': 'plugin/plugins/mua/muaTokenBindPlugin.md'
+        - 'MUA群组token绑定': 'plugin/plugins/mua/muaTargetsPlugin.md'
     - API:
       - '驱动器对接': 'api/send.md'
       - '运行时警告': 'api/warning.md'
@@ -62,6 +69,7 @@ nav:
       - '响应卡片绘制': 'api/draw-card.md'
       - '金币系统': 'api/account-operation.md'
       - 'bot管理': 'api/botAdminApi.md'
+      - '缓冲队列': 'api/bufferQueue.md'
 edit_uri: ""
 theme:
   name: 'material'
