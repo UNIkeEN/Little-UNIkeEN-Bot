@@ -47,7 +47,7 @@ from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan
-from plugins.privateControl import PrivateControl, LsGroup, GroupApply
+from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
 from plugins.bilibiliSubscribe import BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
 try:
     from plugins.chatWithNLP import ChatWithNLP
@@ -132,6 +132,7 @@ RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 
 # 特殊插件需要复用的放在这里
 helper = ShowHelp() # 帮助插件
+helperForPrivateControl = HelpInGroup() # BOT管理员查看群聊功能开启情况插件
 gocqWatchDog = GocqWatchDog(60)
 groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
 sjtuClassroomRecorder = SjtuClassroomRecorder()
@@ -186,7 +187,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
     ShowStatus(),ServerMonitor(),
-    LsGroup(), GroupApply(), PrivateControl(),
+    LsGroup(), GroupApply(), PrivateControl(), helperForPrivateControl,
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
     ShowNews(), YesterdayNews(),
     MorningGreet(), NightGreet(),
@@ -219,7 +220,7 @@ AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     SjtuPlusGroupingVerify('test',[]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
-
+helperForPrivateControl.setPluginList(GroupPluginList)
 app = Flask(__name__)
 
 class NoticeType(IntEnum):

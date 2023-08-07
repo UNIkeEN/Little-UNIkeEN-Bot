@@ -28,6 +28,7 @@ def getAllMuaToken(userId:int)->Dict[str, str]:
     mydb = mysql.connector.connect(**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
+    # token_description是MUA ID
     mycursor.execute("""
     select `token_description`, `mua_token` from `BOT_DATA`.`muaToken` where `user_id` = %s
     """, (userId, ))
@@ -218,7 +219,7 @@ class MuaQuery(StandardPlugin):
         return {
             'name': 'MuaQuery',
             'description': '查询MUA通知',
-            'commandDescription': 'mua通知/-mca',
+            'commandDescription': '-mca/mua通知',
             'usePlace': ['group', 'private'],
             'showInHelp': True,
             'pluginConfigTableNames': [],

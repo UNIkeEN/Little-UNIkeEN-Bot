@@ -75,7 +75,7 @@ class ShowHelp(StandardPlugin):
             else:
                 warning("unexpected plugin {} type in ShowHelp plugin".format(plugin))
 
-def drawHelpCard(pluginList, group_id):
+def drawHelpCard(pluginList, group_id)->str:
     helpCards = ResponseImage(
         title = '群聊功能配置' if group_id!=0 else '私聊功能配置', 
         footer = (f'当前群号:{group_id}' if group_id!=0 else ''),
@@ -124,7 +124,7 @@ def drawHelpCard(pluginList, group_id):
             clr = PALETTE_GREY if not flag else PALETTE_CYAN
             clr2 = PALETTE_GREY if not flag else PALETTE_BLACK
             helpCards.addCard(ResponseImage.RichContentCard(raw_content=cardPluginList, titleFontColor=clr ,bodyFontColor=clr2,subtitleFontColor=PALETTE_GREY))
-    save_path = (os.path.join(SAVE_TMP_PATH, f'{group_id}_help.png'))
+    save_path = (os.path.join(ROOT_PATH, SAVE_TMP_PATH, f'{group_id}_help.png'))
     helpCards.generateImage(save_path)
     return save_path
 class ShowStatus(StandardPlugin): 

@@ -24,6 +24,7 @@ def createAnnCtxSql():
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
+    # token_description是MUA ID
     mycursor.execute("""
     create table if not exists `BOT_DATA`.`muaAnnCtx` (
         `user_id` bigint unsigned not null comment '发布者qq号',
@@ -68,6 +69,7 @@ def loadAnnContext(userId:int, annKey:str)->Optional[Dict[str, Any]]:
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
+    # token_description是MUA ID
     mycursor.execute("""
     select `user_id`, `ann_key`, unix_timestamp(`create_time`),
     `title`, `content`, unix_timestamp(`begin_time`), unix_timestamp(`end_time`),
@@ -97,6 +99,8 @@ def loadAnnContext(userId:int, annKey:str)->Optional[Dict[str, Any]]:
     }
 
 def makeContent(content:Optional[str])->List[Tuple[str, str]]:
+    """将文字、图片CQ码混合的content转换为mua ann协议约定的content
+    """
     if content == None: return []
     cqcodePattern = re.compile(r'\[CQ\:[^\[\]\s]+\]')
     cqcodes = cqcodePattern.findall(content)
@@ -273,10 +277,7 @@ class MuaAnnEditor(StandardPlugin):
                 annKey[0], '未发布可编辑' if annKey[1] else '已发布不可编辑'), data['message_type'])
         elif msg == '-annls':
             succ, result = self.annLs(userId, data)
-            if succ:
-                send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
-            else:
-                send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
+            send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
         elif msg == '-annrmctt':
             succ, result = self.annRmctt(userId, data)
             send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], result), data['message_type'])
@@ -579,7 +580,7 @@ class MuaAnnEditor(StandardPlugin):
             result[5], result[6], result[7], result[8], result[9], 
             data['time'],
         ))
-        # 4. 修改内存
+        # 5. 修改内存
         self.context[userId] = (dstKey, True)
         return True, '复制成功，输入“-annprv”可预览，输入“-annrls”可发布'
 
@@ -628,7 +629,7 @@ class MuaAnnEditor(StandardPlugin):
             return True, ('channel设置成功，请发送“-annttl 标题”编辑通知标题，'
             '发送“-anntg 标记”编辑通知标记，或者发送“-annctt 内容”编辑通知内容')
         except BaseException as e:
-            return False, 'channel设置失败，数据库错误'
+            return False, 'channel设置失败，数据库错误，请联系管理员解决该bug'
 
     def annTgt(self, userId:int, tgt:str, data:Any)->Tuple[bool, str]:
         # TODO: 为target设置引导
@@ -651,7 +652,7 @@ class MuaAnnEditor(StandardPlugin):
             """, (tgt, userId, annKey))
             return True, 'target设置成功'
         except BaseException as e:
-            return False, 'target设置失败，数据库错误'
+            return False, 'target设置失败，数据库错误，请联系管理员解决该bug'
 
     def annTg(self, userId:int, tag:str, data:Any)->Tuple[bool, str]:
         annKey:Optional[str, bool] = self.context.get(userId, None)
@@ -674,7 +675,7 @@ class MuaAnnEditor(StandardPlugin):
             return True, ('tag设置成功，继续发送“-annctt 内容”可以编辑通知内容，'
             '发送“-annstp 截止时间字符串”可以编辑通知截止时间（如不编辑则默认15日）')
         except BaseException as e:
-            return False, 'tag设置失败，数据库错误'
+            return False, 'tag设置失败，数据库错误，请联系管理员解决该bug'
 
     def annStt(self, userId:int, timeStr:str, data:Any)->Tuple[bool, str]:
         timeParsed = parseTimeStr(timeStr)
@@ -830,9 +831,14 @@ class MuaAnnEditor(StandardPlugin):
         if tokenDescription not in tokens.keys():
             return False, '未在bot本地找到MUA ID对应token，请用-muabind指令绑定token'
         token = tokens[tokenDescription]
+        content = None
+        try:
+            content = makeContent(result['content'])
+        except Exception as e:
+            return False, str(e)
         announcement = Announcement(
             title=result['title'],
-            content=makeContent(result['content']),
+            content=content,
             author_token=token,
             channel=result['channel'],
             tags=makeTag(result['tag']),

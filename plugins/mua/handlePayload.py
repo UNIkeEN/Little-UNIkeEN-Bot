@@ -18,6 +18,12 @@ from .annContextManager import recordAidWhenSucc
 import os
 
 def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[bool, str]:
+    """绘制MUA通知
+    @savePath: 图片保存路径
+    @muaList:  mua通知
+
+    @return:   Tuple[是否成功, 图片保存路径 if 成功 else 失败原因]
+    """
     try:
         muaPic = ResponseImage(
             title = 'MUA 通知', 
@@ -69,6 +75,12 @@ def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[
         return False, str(e)
 
 def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[bool, str]:
+    """绘制MUA摘要通知
+    @savePath: 图片保存路径
+    @muaList:  mua通知
+
+    @return:   Tuple[是否成功, 图片保存路径 if 成功 else 失败原因]
+    """
     try:
         muaPic = ResponseImage(
             title = 'MUA 通知摘要', 
@@ -141,6 +153,7 @@ def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->T
         return False, str(e)
 
 def handle_payload_fn(session_id, payload):
+    """处理返回payload包的逻辑"""
     def quote(txt:str):
         return txt.replace('[', '&#91;').replace(']', '&#93;')
     data = loadMuaSession(session_id)

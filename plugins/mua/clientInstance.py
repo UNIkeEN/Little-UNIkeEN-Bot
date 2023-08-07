@@ -39,6 +39,12 @@ def createMuaSessionIdSql():
 createMuaSessionIdSql()
 
 def dumpMuaSession(sessionId:str, data:Any, annKey:str, abstract:bool=False):
+    """将Mua会话保存到sql，以便收到返回payload包时恢复会话
+    @sessionId: 会话id
+    @data:      gocqhttp的data，包含time、message_id、user_id、message_type等
+    @annKey:    用户的announcement关键字
+    @abstract:  是否以摘要形式发送（用于处理用户查询返回的LIST）
+    """
     target = data['group_id'] if data['message_type']=='group' else data['user_id']
     mydb = mysql.connector.connect(**sqlConfig)
     mydb.autocommit = True
@@ -51,6 +57,9 @@ def dumpMuaSession(sessionId:str, data:Any, annKey:str, abstract:bool=False):
         data['message_id'], annKey, abstract))
 
 def loadMuaSession(sessionId:str)->Optional[Any]:
+    """根据sessionId恢复MUA会话
+    @sessionId: sessionId
+    """
     mydb = mysql.connector.connect(**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -72,6 +81,7 @@ def loadMuaSession(sessionId:str)->Optional[Any]:
     }
 
 def clientInstanceMainloop():
+    """client实例的主循环"""
     async def mainloop():
         global muaClientInstanceRunning
         await muaClientInstance.connect()
@@ -93,6 +103,13 @@ __muaClientInstanceMainloop.start()
 
 
 def sendAnnouncement(announcement:Announcement, data:Any, annKey:str)->Tuple[bool, str]:
+    """向MUA服务器发送announcement
+    @announcement: 待发送的announcement
+    @data:         gocqhttp的data包
+    @annKey:       announce的用户关键字
+
+    @return:       Tuple[是否成功, 描述]
+    """
     global muaClientInstanceRunning, muaClientInstance
     if muaClientInstanceRunning:
         sessionId = str(uuid.uuid4())
