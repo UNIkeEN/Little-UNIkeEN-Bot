@@ -4,6 +4,7 @@ from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 from utils.responseImage_beta import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
+from utils.configsLoader import addGroupToApplyId
 import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector
@@ -91,6 +92,23 @@ class MuaTokenBinder(StandardPlugin):
             'author': 'Unicorn',
         }
 
+# @return:  0 没有权限
+#           1 使用权
+#           2 拥有权
+def getUserMuaIdPermission(userId:int, muaId:str)->Tuple[bool, str]:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""select `mua_token`, `empowered` from `BOT_DATA`.`muaToken` where 
+    `user_id` = %s and `token_description` = %s""", (userId, muaId))
+    result = list(mycursor)
+    if len(result) == 0:
+        return 0
+    token, empowered = result[0]
+    if empowered:
+        return 1
+    return 2
+
 def makeEmpower(userId:int, empowerTargetId:int, muaId:str)->Tuple[bool, str]:
     mydb = mysql.connector.connect(**sqlConfig)
     mydb.autocommit = True
@@ -144,6 +162,7 @@ class MuaTokenEmpower(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
 class MuaTokenLister(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-muals'

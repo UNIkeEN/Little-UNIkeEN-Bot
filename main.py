@@ -33,15 +33,16 @@ from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
 try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
-        MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower, 
+        MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
         MuaTokenLister, MuaNotice, MuaQuery, MuaAbstract,
-        MuaGroupBindTarget, MuaGroupUnbindTarget)
+        MuaGroupBindTarget, MuaGroupUnbindTarget, MuaGroupAnnFilter)
 except NotPublishedException as e:
     print('mua plugins not imported: {}'.format(e))
     MuaAnnHelper, MuaAnnEditor = EmptyPlugin, EmptyPlugin
     MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower = EmptyPlugin, EmptyPlugin, EmptyPlugin
     uaTokenLister, MuaNotice, MuaQuery, MuaAbstract = EmptyPlugin, EmptyPlugin, EmptyPlugin, EmptyPlugin
     MuaGroupBindTarget, MuaGroupUnbindTarget = EmptyPlugin, EmptyPlugin
+    MuaGroupAnnFilter = EmptyPlugin
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -159,10 +160,11 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
-                        PluginGroupManager([McAdManager()], 'mcad')], 'sjmc'), #MC社服务
+                        # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
+                        ], 'sjmc'), #MC社服务
     PluginGroupManager([MuaQuery(), MuaAbstract(), MuaAnnHelper(), MuaAnnEditor(), 
                         MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
-                        MuaGroupBindTarget(), MuaGroupUnbindTarget(),
+                        MuaGroupBindTarget(), MuaGroupUnbindTarget(), MuaGroupAnnFilter(),
                         PluginGroupManager([MuaNotice()], 'muanotice')], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂

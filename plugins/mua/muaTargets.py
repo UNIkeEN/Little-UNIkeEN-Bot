@@ -1,6 +1,7 @@
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 from utils.standardPlugin import StandardPlugin, NotPublishedException
-from utils.basicEvent import send, warning
+from utils.basicEvent import send, warning, get_group_member_list
+from utils.configAPI import getGroupAdmins
 from typing import Dict, Union, Any, List, Tuple, Optional
 import re, os.path, os
 import mysql.connector
@@ -71,6 +72,13 @@ class MuaGroupUnbindTarget(StandardPlugin):
         return self.triggerPattern.match(msg) != None
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         groupId = data['group_id']
+        userId = data['user_id']
+        admins = set(u['user_id'] for u in get_group_member_list(groupId) if u['role'] in ['admin', 'owner']).union(
+            getGroupAdmins(groupId)
+        )
+        if userId not in admins:
+            send(groupId, '[CQ:reply,id=%d]权限检查失败。该指令仅允许群管理员触发。'%data['message_id'], data['message_type'])
+            return 'OK'
         muaTarget = self.triggerPattern.findall(msg)[0]
         succ, result = groupUnbindTarget(groupId, muaTarget)
         send(groupId, '[CQ:reply,id=%d]%s'%(data['message_id'], result))
@@ -96,17 +104,24 @@ class MuaGroupBindTarget(StandardPlugin):
         return msg.startswith('-muagroupbind')
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         groupId = data['group_id']
+        userId = data['user_id']
+        admins = set(u['user_id'] for u in get_group_member_list(groupId) if u['role'] in ['admin', 'owner']).union(
+            getGroupAdmins(groupId)
+        )
+        if userId not in admins:
+            send(groupId, '[CQ:reply,id=%d]权限检查失败。该指令仅允许群管理员触发。'%data['message_id'], data['message_type'])
+            return 'OK'
         if msg == '-muagroupbind':
             muaTargets = getTargetsByGroup(groupId)
             if len(muaTargets) == 0:
                 send(groupId, '[CQ:reply,id=%d]当前群尚未绑定MUA ID，请输入“-muagroupbind [绑定的MUA ID]”进行target绑定'%data['message_id'])
             else:
-                send(groupId, ('[CQ:reply,id=%d]当前绑定的MUAID有：%s。\n输入“-muagroupbind [绑定的MUA ID]”'
+                send(groupId, ('[CQ:reply,id=%d]当前绑定的MUA ID有：%s。\n输入“-muagroupbind [绑定的MUA ID]”'
                                '可以继续绑定，输入“-muagroupunbind [绑定的MUA ID]”可以解除绑定')%(data['message_id'], '，'.join(muaTargets)))
             return 'OK'
         result = self.triggerPattern.findall(msg)
         if len(result) == 0:
-            send(groupId, ('[CQ:reply,id=%d]指令识别失败。输入“-muagroupbind”可以获取群已绑定的MUAID，输入“-muagroupbind [绑定的MUA ID]”'
+            send(groupId, ('[CQ:reply,id=%d]指令识别失败。输入“-muagroupbind”可以获取群已绑定的MUA ID，输入“-muagroupbind [绑定的MUA ID]”'
                            '可以继续绑定，输入“-muagroupunbind [绑定的MUA ID]可以解除绑定”')%(data['message_id'],))
         else:
             muaTarget = result[0]

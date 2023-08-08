@@ -162,7 +162,7 @@ def drawHelpPic(savePath:str)->bool:
         "清空content： -annrmctt\n"
         "设置tag： -anntg  [tag,以空格隔开]\n"
         "设置channel： -anncnl  [channel文字]\n"
-        # "设置通信target： -anntgt  [target,以空格隔开]\n"
+        "设置通信target： -anntgt  [target,以空格隔开]\n"
         # "设置活动开始时间： -annstt  [时间字符串 like '2023-07-30 23:59']\n"
         "设置结束(过期)时间： -annstp  [时间字符串 like '2023-07-30 23:59']\n"
         "设置发布身份： -anntk  [MUA ID]\n"
@@ -759,10 +759,10 @@ class MuaAnnEditor(StandardPlugin):
             txt += 'channel: ' + result['channel'] + '\n'
         else:
             txt += 'channel缺失\n'
-        # if result['target'] != None:
-        #     txt += 'target: ' + result['target'] + '\n'
-        # else:
-        #     txt += 'target缺失\n'
+        if result['target'] != None:
+            txt += 'target: ' + result['target'] + '\n'
+        else:
+            txt += 'target缺失\n'
         if result['tag'] != None:
             txt += 'tag: ' + result['tag']+'\n\n'
         else:

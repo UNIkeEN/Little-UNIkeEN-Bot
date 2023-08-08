@@ -4,6 +4,7 @@ import threading
 from utils.standardPlugin import NotPublishedException
 from utils.basicEvent import send, warning, gocqQuote
 from utils.configAPI import getPluginEnabledGroups
+from utils.configsLoader import getApplyGroups
 from utils.responseImage_beta import *
 from .common.subprotocols import Announcement, CreateAnnouncementPacket
 import uuid
@@ -15,9 +16,10 @@ import time, datetime
 from .annImgBed import urlOrBase64ToImage
 from .clientInstance import muaClientInstance, loadMuaSession
 from .annContextManager import recordAidWhenSucc
+from .annFilter import AnnouncementFilter, getGroupFilter
 import os
 
-def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[bool, str]:
+def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]], groupAnnFilter:AnnouncementFilter)->Tuple[bool, str]:
     """绘制MUA通知
     @savePath: 图片保存路径
     @muaList:  mua通知
@@ -35,6 +37,8 @@ def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[
         )
         for channel, announcements in muaList.items():
             for announcement in announcements:
+                if not groupAnnFilter.apply(announcement):
+                    continue
                 is_new = False
                 metadata = announcement.get('meta', None)
                 if metadata != None and metadata.get('is_new', False):
@@ -74,7 +78,7 @@ def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[
     except BaseException as e:
         return False, str(e)
 
-def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->Tuple[bool, str]:
+def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]], groupAnnFilter:AnnouncementFilter)->Tuple[bool, str]:
     """绘制MUA摘要通知
     @savePath: 图片保存路径
     @muaList:  mua通知
@@ -94,6 +98,8 @@ def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->T
         for channel, announcements in muaList.items():
             raw_content = [('title', channel, PALETTE_BLUE),('separator', )]
             for announcement in announcements:
+                if not groupAnnFilter.apply(announcement):
+                    continue
                 is_new = False
                 metadata = announcement.get('meta', None)
                 if metadata != None and metadata.get('is_new', False):
@@ -107,10 +113,15 @@ def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->T
                 titleFontColor=PALETTE_CYAN,
             ))
         # 再画is_new
+        shouldSend = False
         for channel, announcements in muaList.items():
             for announcement in announcements:
                 metadata = announcement.get('meta', None)
                 if metadata == None or not metadata.get('is_new', False):
+                    continue
+                if groupAnnFilter.apply(announcement):
+                    shouldSend = True
+                else:
                     continue
                 raw_content = []
                 raw_content.append(('title', '['+channel+'] '+announcement['title']))
@@ -148,9 +159,9 @@ def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]])->T
             backColor=None
         ))
         muaPic.generateImage(savePath)
-        return True, savePath
+        return True, savePath, shouldSend
     except BaseException as e:
-        return False, str(e)
+        return False, str(e), False
 
 def handle_payload_fn(session_id, payload):
     """处理返回payload包的逻辑"""
@@ -171,9 +182,9 @@ def handle_payload_fn(session_id, payload):
         elif retType == 'LIST':
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'mualist_%d.png'%data['user_id'])
             if data['abstract']:
-                succ, result = drawMuaBriefListPic(savePath, body)
+                succ, result, _ = drawMuaBriefListPic(savePath, body, getGroupFilter(data['target']))
             else:
-                succ, result = drawMuaListPic(savePath, body)
+                succ, result = drawMuaListPic(savePath, body, getGroupFilter(data['target']))
             if succ:
                 send(data['target'], f'[CQ:image,file=files:///{savePath}]', data['message_type'])
             else:
@@ -182,13 +193,14 @@ def handle_payload_fn(session_id, payload):
         # 全服广播
         # TODO: 根据targets选择广播对象
         if retType == 'LIST':
-            savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'mualist_global.png')
-            succ, result = drawMuaBriefListPic(savePath, body)
-            if succ:
-                for groupId in getPluginEnabledGroups('muanotice'):
-                    send(groupId, '检测到MUA通知更新：')
-                    send(groupId, f'[CQ:image,file=files:///{savePath}]')
-            else:
-                warning(f'mua图片绘制失败: {result}')
+            for groupId in getPluginEnabledGroups('muanotice'):
+                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'mualist_broadcast_%d.png'%groupId)
+                succ, result, shouldSend = drawMuaBriefListPic(savePath, body, getGroupFilter(groupId))
+                if succ:
+                    if shouldSend:
+                        send(groupId, '检测到MUA通知更新：')
+                        send(groupId, f'[CQ:image,file=files:///{savePath}]')   
+                else:
+                    warning(f'mua图片绘制失败: {result}')
 
 muaClientInstance.set_handle_payload_fn(handle_payload_fn)
