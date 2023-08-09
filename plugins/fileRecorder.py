@@ -4,7 +4,6 @@ from utils.basicEvent import get_group_list, warning
 from utils.basicEvent import get_group_file_system_info, get_group_files_by_folder, get_group_root_files, get_group_file_url
 from utils.basicConfigs import sqlConfig
 import mysql.connector
-import threading, time
 """
 # 筛选file_id:
 select group_id, file_id, file_name, busid, file_size, (file_bin is not null) from BOT_DATA.fileRecord where ...;

@@ -2,7 +2,7 @@ import mysql.connector
 from utils.standardPlugin import StandardPlugin
 from typing import Optional, List, Dict, Any, Union
 from utils.basicConfigs import ROOT_ADMIN_ID, sqlConfig
-from utils.basicEvent import send, warning, startswith_in
+from utils.basicEvent import send, warning
 import re
 import datetime
 

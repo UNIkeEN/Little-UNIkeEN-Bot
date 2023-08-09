@@ -1,10 +1,10 @@
-import schedule
+# import schedule
 import time
 import threading
 
+'''
 schedule.every(37).minutes.do(job) # 每10秒执行一次
-
-def createMuaTokenSql():
+def createMuaAScheduleSql():
     mydb = mysql.connector.connect(**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
@@ -17,14 +17,9 @@ def createMuaTokenSql():
         primary key(`user_id`, `token_description`)
     )""")
 
-class TimerStringParser:
-    def __init__(self, s : str):
-        self.s = s
-        self.secondPattern = re.compile(r'every\s+(\d+)\s+min')
-
 class MuaScheduledAnnouncement(StandardPlugin):
     def __init__(self):
-        self.triggerPattern1 = re.compile(r'^\-mcbsched\s+every\s+(\d+)\s+min$')
+        self.triggerPattern1 = re.compile(r'^\-mcbsched\s+every\s+(\d+)\s+mins$')
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg.startswith('-mcbsched')
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -55,3 +50,4 @@ def scheduleRunPending() -> None:
         schedule.run_pending() # 运行所有可运行的任务
 
 threading.Thread(target=scheduleRunPending)
+'''

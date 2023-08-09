@@ -7,8 +7,7 @@ from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.channelAPI import send_guild_channel_msg
 from utils.configAPI import getPluginEnabledGroups
-from threading import Timer, Semaphore
-from pathlib import Path
+from threading import Semaphore
 import json
 from datetime import datetime
 from urllib.parse import urljoin

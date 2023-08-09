@@ -9,7 +9,6 @@ from typing import List, Dict, Tuple, Any, Optional, Union
 import time
 import re, os.path
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, FONTS_PATH
-import matplotlib
 from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.font_manager import FontProperties 
@@ -59,8 +58,10 @@ def aioGetAllBuildingCourse(targetDate:datetime.date)->List[Dict]:
                 return result['data']
             except BaseException as e:
                 return None
-    tasks = [getCourse(p) for p in payloads]
-    results = asyncio.run(asyncio.wait(tasks))
+    loop = asyncio.new_event_loop()
+    tasks = [loop.create_task(getCourse(p)) for p in payloads]
+    results = loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
     results = [r.result() for r in results[0]]
     buildingInfos = [r for r in results if r != None]
     if len(buildingInfos) != len(results):

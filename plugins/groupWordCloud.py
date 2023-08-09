@@ -7,13 +7,11 @@ from utils.responseImage_beta import *
 from utils.configAPI import getPluginEnabledGroups
 import wordcloud
 import jieba
-from io import BytesIO
 import re
-from threading import Timer, Semaphore, Thread
+from threading import Semaphore, Thread
 import datetime
 import os
 from matplotlib import colors
-import numpy as np
 
 def wc_save_path(group_id:int, yesterday_str:str)->str:
     return os.path.join(ROOT_PATH, SAVE_TMP_PATH, f'{group_id}_{yesterday_str}_wordcloud.png')

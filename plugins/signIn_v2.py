@@ -1,13 +1,12 @@
 from PIL import Image, ImageDraw, ImageFont
 import random
-import requests
 import datetime
 from io import BytesIO
 import mysql.connector
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
+from utils.standardPlugin import StandardPlugin, NotPublishedException
 from utils.accountOperation import get_user_coins, update_user_coins
 from utils.responseImage_beta import *
 try:

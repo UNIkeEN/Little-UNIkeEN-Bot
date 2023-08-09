@@ -3,8 +3,6 @@ import requests
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.responseImage_beta import *
-from pathlib import Path
-import json
 from icalendar import Calendar
 import datetime
 import re

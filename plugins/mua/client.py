@@ -1,8 +1,5 @@
-import asyncio
 import websockets
-import time
 import ssl
-import argparse
 from typing import Callable
 
 from .common.packets import *

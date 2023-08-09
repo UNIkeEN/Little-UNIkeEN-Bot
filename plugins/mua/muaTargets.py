@@ -6,11 +6,6 @@ from typing import Dict, Union, Any, List, Tuple, Optional
 import re, os.path, os
 import mysql.connector
 from threading import Semaphore
-from .muaAPI import getTargetGroupMapping
-try:
-    from resources.api.muaID import TEST_MUA_TOKEN
-except:
-    raise NotPublishedException("TEST_MUA_TOKEN缺失，无法启用MUA插件")
 
 def createMuaTargetSql():
     mydb = mysql.connector.connect(**sqlConfig)
@@ -94,6 +89,8 @@ class MuaGroupUnbindTarget(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
+# [NOTE]: 该指令不会对MUA ID做有效性检查。
 class MuaGroupBindTarget(StandardPlugin):
     initGuard = Semaphore()
     def __init__(self):

@@ -1,12 +1,8 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
 from utils.basicEvent import send, warning
-from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
-from utils.responseImage_beta import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
-from utils.configsLoader import addGroupToApplyId
-import re, os.path, os
-from pypinyin import lazy_pinyin
+from utils.basicConfigs import sqlConfig
+import re, os
 import mysql.connector
 from threading import Semaphore
 from .clientInstance import queryAnnouncement

@@ -1,18 +1,15 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
 from utils.basicEvent import send, warning, parse_cqcode
-from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 from utils.responseImage_beta import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
 import re, os.path, os
-from pypinyin import lazy_pinyin
 import requests
 import mysql.connector
 from pymysql.converters import escape_string
 from .annImgBed import createAnnImgBedSql, dumpMsgToBed, imgUrlToImgBase64
 from .muaTokenBind import getAllMuaToken
 from .clientInstance import sendAnnouncement, deleteAnnouncement
-import asyncio
 from threading import Semaphore
 import datetime, json, time
 from dateutil import parser as timeparser
@@ -491,7 +488,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, '切换成功'
 
     def annCtt(self, userId:int, content:str, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'content删除失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -524,7 +521,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'content添加失败，数据库错误或字数超限'
 
     def annRmctt(self, userId:int, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'content删除失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -585,7 +582,7 @@ class MuaAnnEditor(StandardPlugin):
         return True, '复制成功，输入“-annprv”可预览，输入“-annrls”可发布'
 
     def annTtl(self, userId:int, title:str, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'title设置失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -608,7 +605,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'title设置失败，数据库错误'
 
     def annCnl(self, userId:int, channel:str, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'channel设置失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -633,7 +630,7 @@ class MuaAnnEditor(StandardPlugin):
 
     def annTgt(self, userId:int, tgt:str, data:Any)->Tuple[bool, str]:
         # TODO: 为target设置引导
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'target设置失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -655,7 +652,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'target设置失败，数据库错误，请联系管理员解决该bug'
 
     def annTg(self, userId:int, tag:str, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, 'tag设置失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -679,7 +676,7 @@ class MuaAnnEditor(StandardPlugin):
 
     def annStt(self, userId:int, timeStr:str, data:Any)->Tuple[bool, str]:
         timeParsed = parseTimeStr(timeStr)
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, '开始时间设置失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -706,7 +703,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, '开始时间设置失败，数据库错误'
 
     def annStp(self, userId:int, timeStr:str, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, '结束时间设置失败，当前没有正在编辑的通知'
         if not annKey[1]:
@@ -734,7 +731,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, '结束时间设置失败，数据库错误'
 
     def annPrv(self, userId:int, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, '预览失败，当前没有正在编辑的通知'
         annKey, editing = annKey
@@ -785,7 +782,7 @@ class MuaAnnEditor(StandardPlugin):
     def annTk(self, userId:int, tokenDescription:str, data:Any):
         if len(tokenDescription) > 20:
             return False, 'MUA ID应小于20字符'
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, ('MUA ID设置失败，当前没有正在编辑的通知，'
             '请发送“-annnew 新通知关键字”创建新通知，或者发送“-anncp 已创建关键字 新通知关键字”从模板中复制新通知')
@@ -809,7 +806,7 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'MUA ID设置失败，数据库错误'
 
     def annRls(self, userId:int, data:Any)->Tuple[bool, str]:
-        annKey:Optional[str, bool] = self.context.get(userId, None)
+        annKey:Tuple[str, bool] = self.context.get(userId, None)
         if annKey == None:
             return False, '发布失败，当前没有正在编辑的通知'
         if not annKey[1]:

@@ -2,8 +2,6 @@ from utils.standardPlugin import StandardPlugin, Any, Union
 import requests
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from pathlib import Path
-import json
 from icalendar import Calendar
 from datetime import datetime, timedelta
 import re

@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 import json
 from io import BytesIO
-from threading import Timer, Semaphore
+from threading import Semaphore
 import mysql.connector
 from utils.configAPI import getPluginEnabledGroups
 from pymysql.converters import escape_string

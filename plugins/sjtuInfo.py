@@ -1,7 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import json
 import httpx
-from io import BytesIO
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *

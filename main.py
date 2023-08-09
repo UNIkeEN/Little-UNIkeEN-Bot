@@ -24,13 +24,14 @@ from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
 try:
     from plugins.signIn_v2 import SignIn
-except:
+except Exception as e:
     print('signin_v2 not imported: {}'.format(e))
     from plugins.signIn import SignIn
 
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
+from plugins.sjmcStatus_v3 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
 try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
         MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
@@ -162,6 +163,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
                         # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
                         ], 'sjmc'), #MC社服务
+    PluginGroupManager([ShowMcStatus(), McStatusAddServer(), McStatusRemoveServer(), McStatusSetFooter(), McStatusRemoveFooter()
+                        ], 'mcs'), #MC服务器列表for MUA
     PluginGroupManager([MuaQuery(), MuaAbstract(), MuaAnnHelper(), MuaAnnEditor(), 
                         MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
                         MuaGroupBindTarget(), MuaGroupUnbindTarget(), MuaGroupAnnFilter(),

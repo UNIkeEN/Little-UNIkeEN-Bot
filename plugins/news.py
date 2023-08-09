@@ -2,7 +2,6 @@ import requests
 from lxml import etree
 from PIL import Image, ImageDraw, ImageFont
 import datetime
-from pathlib import Path
 import re
 from typing import Union, Any, Optional, Dict
 from utils.basicEvent import *

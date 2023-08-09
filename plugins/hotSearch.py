@@ -1,14 +1,9 @@
 import requests
-from lxml import etree
-from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
-from pathlib import Path
-import re
 from typing import Union, Any, Optional, Dict, List
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
-from threading import Semaphore
+from utils.standardPlugin import StandardPlugin
 from utils.hotSearchImage import HotSearchImage, Colors, Fonts
 from utils.responseImage_beta import ResponseImage
 

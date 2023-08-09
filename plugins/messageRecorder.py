@@ -4,7 +4,6 @@ from utils.basicConfigs import sqlConfig
 from pymysql.converters import escape_string
 import mysql.connector
 import threading, time
-import json
 
 def getLatestRecordSeq():
     groupList = [group['group_id'] for group in get_group_list()]

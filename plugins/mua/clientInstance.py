@@ -2,15 +2,12 @@ from .client import Client
 import asyncio
 import threading
 from utils.standardPlugin import NotPublishedException
-from utils.basicEvent import send, warning, gocqQuote
-from utils.configAPI import getPluginEnabledGroups
 from .common.subprotocols import Announcement, CreateAnnouncementPacket, DeleteAnnouncementPacket,QueryAnnouncementListPacket
 import uuid
 from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
 import mysql.connector
 from typing import Any, Optional, Dict, List, Tuple
 import time, datetime
-from .annImgBed import urlOrBase64ToImage
 from utils.responseImage_beta import *
 try:
     from resources.api.muaID import BOT_MUA_ID, BOT_MUA_TOKEN, MUA_URL

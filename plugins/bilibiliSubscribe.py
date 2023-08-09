@@ -7,7 +7,6 @@ from utils.bilibili_api_fixed import UserFixed
 from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
 import random
 from threading import Semaphore
-import asyncio
 import mysql.connector
 import copy
 import time

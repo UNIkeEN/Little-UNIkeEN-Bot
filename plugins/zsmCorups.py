@@ -1,7 +1,6 @@
 from typing import Union, Any
 from utils.basicEvent import send
 from utils.standardPlugin import StandardPlugin
-import os.path
 import random
 
 class ZsmGoldSentence(StandardPlugin):

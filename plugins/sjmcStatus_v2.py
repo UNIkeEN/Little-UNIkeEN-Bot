@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
@@ -7,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 import requests
 import base64
 import re
-import uuid
 from io import BytesIO
 
 import aiohttp, asyncio
@@ -38,7 +36,7 @@ class ShowSjmcStatus(StandardPlugin):
     def getPluginInfo(self, )->Any:
         return {
             'name': 'ShowSjmcStatus',
-            'description': 'mc服务器状态',
+            'description': 'mc服务器状态[SJMC/FDC/TJMC/XJTUMC]',
             'commandDescription': '/'.join(self.server_groups.keys()),
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
@@ -71,8 +69,10 @@ def aio_get_sjmc_info(group=""):
             status = await req.json()
             return i, status
     server_list = fetch_server_list(group)
-    tasks = [get_page(i, server['ip']) for i, server in enumerate(server_list)]
-    result = asyncio.run(asyncio.wait(tasks))
+    loop = asyncio.new_event_loop()
+    tasks = [loop.create_task(get_page(i, server['ip'])) for i, server in enumerate(server_list)]
+    result = loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
     result = [r.result() for r in result[0]]
     result = sorted(result, key=lambda x: x[0])
     result = [r[1] for r in result]

@@ -2,10 +2,8 @@ from utils.standardPlugin import StandardPlugin, Any, Union
 import requests
 from utils.basicEvent import *
 from utils.basicConfigs import *
-from pathlib import Path
 from utils.responseImage_beta import ResponseImage
 from resources.api.apexAPI import APEX_AUTHKEY
-import json
 
 APEX_MAIN_COLOR="#E54722"
 

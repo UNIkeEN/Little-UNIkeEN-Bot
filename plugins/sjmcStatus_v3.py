@@ -1,112 +1,308 @@
-from datetime import datetime
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
+from utils.configAPI import getGroupAdmins
+from utils.responseImage import *
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import base64
 import re
-import uuid
 from io import BytesIO
+import mysql.connector
+from threading import Semaphore
 
 import aiohttp, asyncio
 
-class ShowSjmcStatus(StandardPlugin):
-    def __init__(self) -> None:
-        self.server_groups = {
-            '-mc' : '',
-            '-sjmc' : 'SJMC',
-            '-fdc' : 'FDCraft',
-            '-tjmc' : 'TJMC',
-            '-xjtumc': 'XJTUMC',
-        }
+def create_mcs_sql():
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    create table if not exists `BOT_DATA`.`mcServerStatus` (
+        `group_id` bigint unsigned not null comment '群号',
+        `server` char(64) not null default '' comment '服务器ip',
+        primary key(`group_id`, `server`)
+    )""")
+
+def get_server_list(group_id:str)->List[str]:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    select `server` from `BOT_DATA`.`mcServerStatus`
+    where `group_id` = %s""", (group_id,))
+    result = list(mycursor)
+    return [server for server, in result]
+
+def add_server(group_id:int, server:str)->bool:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    replace into `BOT_DATA`.`mcServerStatus` (`group_id`, `server`)
+    values (%s, %s)""", (group_id, server))
+    return True
+
+def remove_server(group_id:int, server:str)->Tuple[bool, str]:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""select count(*) from `BOT_DATA`.`mcServerStatus`
+    where `group_id` = %s and `server` = %s
+    """, (group_id, server))
+    if list(mycursor)[0][0] == 0:
+        return False, '本群尚未添加服务器“%s”'%server
+    mycursor.execute("""delete from `BOT_DATA`.`mcServerStatus`
+    where `group_id` = %s and `server` = %s
+    """, (group_id, server))
+    return True, '移除成功'
+
+def create_mcs_footer_sql():
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    create table if not exists `BOT_DATA`.`mcServerStatusFooter` (
+        `group_id` bigint unsigned not null comment '群号',
+        `footer` varchar(256) not null default '' comment 'footer',
+        primary key(`group_id`)
+    )""")
+
+def get_footer(group_id:str)->List[str]:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    select `footer` from `BOT_DATA`.`mcServerStatusFooter`
+    where `group_id` = %s""", (group_id,))
+    result = list(mycursor)
+    if len(result) > 0:
+        result = result[0][0]
+    else:
+        result = ''
+    return result
+
+def set_footer(group_id:int, footer:str)->bool:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""
+    replace into `BOT_DATA`.`mcServerStatusFooter` (`group_id`, `footer`)
+    values (%s, %s)""", (group_id, footer))
+    return True
+
+def remove_footer(group_id:int)->Tuple[bool, str]:
+    mydb = mysql.connector.connect(**sqlConfig)
+    mydb.autocommit = True
+    mycursor = mydb.cursor()
+    mycursor.execute("""select count(*) from `BOT_DATA`.`mcServerStatusFooter`
+    where `group_id` = %s
+    """, (group_id, ))
+    if list(mycursor)[0][0] == 0:
+        return False, '尚未设置footer'
+    mycursor.execute("""delete from `BOT_DATA`.`mcServerStatusFooter`
+    where `group_id` = %s
+    """, (group_id, ))
+    return True, '移除成功'
+
+class ShowMcStatus(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg in self.server_groups.keys()
+        return msg == '-mcs' or msg == '-mcsip'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        server_group = self.server_groups[msg]
-        send(target, f"正在获取{server_group}服务器状态...", data['message_type'])
-        try:
-            imgPath = draw_sjmc_info(aio_get_sjmc_info(server_group), server_group)
-            imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-            send(target, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
-        except BaseException as e:
-            send(target, "internal error while getting sjmc", data['message_type'])
-            warning("basic exception in ShowSjmcStatus: {}".format(e))
-        return "OK"
+        group_id = data['group_id']
+        server_list = get_server_list(group_id)
+        if msg == '-mcs':
+            if len(server_list) == 0:
+                send(group_id, f"本群尚未添加Minecraft服务器", data['message_type'])
+                return 'OK'
+            send(group_id, f"正在获取Minecraft服务器状态...", data['message_type'])
+            try:
+                imgPath = draw_sjmc_info(aio_get_sjmc_info(server_list), group_id)
+                imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+                send(group_id, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            except BaseException as e:
+                send(group_id, "internal error while getting Minecraft server status", data['message_type'])
+                warning("basic exception in ShowSjmcStatus: {}".format(e))
+            return "OK"
+        else:
+            if len(server_list) == 0:
+                send(group_id, f"本群尚未添加Minecraft服务器", data['message_type'])
+                return 'OK'
+            try:
+                imgPath = draw_server_ip_list(server_list)
+                imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+                send(group_id, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            except BaseException as e:
+                send(group_id, "internal error while getting Minecraft server status", data['message_type'])
+                warning("basic exception in ShowSjmcStatus: {}".format(e))
+            return "OK"
     def getPluginInfo(self, )->Any:
         return {
-            'name': 'ShowSjmcStatus',
+            'name': 'ShowSjmcStatusV3',
             'description': 'mc服务器状态',
-            'commandDescription': '/'.join(self.server_groups.keys()),
-            'usePlace': ['group', 'private', ],
+            'commandDescription': '-mcs',
+            'usePlace': ['group', ],
             'showInHelp': True,
-            'pluginConfigTableNames': [],
+            'pluginConfigTableNames': ['mcServerStatus'],
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-def fetch_server_list(group)->Union[None, Dict[str, Any]]:
-    url=f"https://mc.sjtu.cn/custom/serverlist/?list={group}"
-    server_list = []
-    try:
-        res = requests.get(url, verify=False)
-        if res.status_code!= requests.codes.ok:
-            return None
-        server_list = res.json()
-        for server in server_list:
-            if 'ip' not in server:
-                return None
-        return server_list
-    except requests.JSONDecodeError as e:
-        warning("sjmc json decode error: {}".format(e))
-    except requests.Timeout as e:
-        print("connection time out")
-    except BaseException as e:
-        warning("sjmc basic exception: {}".format(e))
-def aio_get_sjmc_info(group=""):
+
+class McStatusRemoveServer(StandardPlugin):
+    def __init__(self):
+        self.triggerPattern = re.compile(r'^-mcsrm\s+(\S+)')
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return self.triggerPattern.match(msg) != None
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        groupId = data['group_id']
+        userId = data['user_id']
+        admins = set(u['user_id'] for u in get_group_member_list(groupId) if u['role'] in ['admin', 'owner']).union(
+            getGroupAdmins(groupId)
+        )
+        if userId not in admins:
+            send(groupId, '[CQ:reply,id=%d]权限检查失败。该指令仅允许群管理员触发。'%data['message_id'], data['message_type'])
+            return 'OK'
+        server = self.triggerPattern.findall(msg)[0]
+        succ, result = remove_server(groupId, server)
+        send(groupId, '[CQ:reply,id=%d]%s'%(data['message_id'], result))
+        return 'OK'
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'McStatusRemoveServer',
+            'description': '移除群聊可查询Minecraft服务器',
+            'commandDescription': '-mcsrm [server IP]',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': ['mcServerStatus'],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class McStatusAddServer(StandardPlugin):
+    initGuard = Semaphore()
+    def __init__(self):
+        if self.initGuard.acquire(blocking=False):
+            create_mcs_sql()
+        self.triggerPattern = re.compile(r'^-mcsadd\s+(\S+)')
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return self.triggerPattern.match(msg) != None
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        groupId = data['group_id']
+        userId = data['user_id']
+        admins = set(u['user_id'] for u in get_group_member_list(groupId) if u['role'] in ['admin', 'owner']).union(
+            getGroupAdmins(groupId)
+        )
+        if userId not in admins:
+            send(groupId, '[CQ:reply,id=%d]权限检查失败。该指令仅允许群管理员触发。'%data['message_id'], data['message_type'])
+            return 'OK'
+        server = self.triggerPattern.findall(msg)[0]
+        if len(server) > 64:# do some check
+            send(groupId, '[CQ:reply,id=%d]添加失败，IP最长为64字符。'%data['message_id'])
+        else:
+            succ = add_server(groupId, server)
+            if succ:
+                send(groupId, '[CQ:reply,id=%d]添加成功'%data['message_id'])
+            else:
+                send(groupId, '[CQ:reply,id=%d]添加失败：未知错误，请联系管理员。'%data['message_id'])
+        return 'OK'
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'McStatusAddServer',
+            'description': '添加群聊可查询Minecraft服务器',
+            'commandDescription': '-mcsadd [server IP]',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': ['mcServerStatus'],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class McStatusRemoveFooter(StandardPlugin):
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg == '-mcsrmfooter'
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        groupId = data['group_id']
+        userId = data['user_id']
+        admins = set(u['user_id'] for u in get_group_member_list(groupId) if u['role'] in ['admin', 'owner']).union(
+            getGroupAdmins(groupId)
+        )
+        if userId not in admins:
+            send(groupId, '[CQ:reply,id=%d]权限检查失败。该指令仅允许群管理员触发。'%data['message_id'], data['message_type'])
+            return 'OK'
+        succ, result = remove_footer(groupId)
+        send(groupId, '[CQ:reply,id=%d]%s'%(data['message_id'], result))
+        return 'OK'
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'McStatusRemoveFooter',
+            'description': '移除群聊mcs列表底部文字',
+            'commandDescription': '-mcsrmfoter',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': ['mcServerStatusFooter'],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+class McStatusSetFooter(StandardPlugin):
+    initGuard = Semaphore()
+    def __init__(self):
+        if self.initGuard.acquire(blocking=False):
+            create_mcs_footer_sql()
+        self.triggerPattern = re.compile(r'^-mcssetfooter\s+(\S+)')
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return self.triggerPattern.match(msg) != None
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        groupId = data['group_id']
+        userId = data['user_id']
+        admins = set(u['user_id'] for u in get_group_member_list(groupId) if u['role'] in ['admin', 'owner']).union(
+            getGroupAdmins(groupId)
+        )
+        if userId not in admins:
+            send(groupId, '[CQ:reply,id=%d]权限检查失败。该指令仅允许群管理员触发。'%data['message_id'], data['message_type'])
+            return 'OK'
+        footer = self.triggerPattern.findall(msg)[0]
+        if len(footer) > 256:# do some check
+            send(groupId, '[CQ:reply,id=%d]添加失败，IP最长为256字符。'%data['message_id'])
+        else:
+            succ = set_footer(groupId, footer)
+            if succ:
+                send(groupId, '[CQ:reply,id=%d]添加成功'%data['message_id'])
+            else:
+                send(groupId, '[CQ:reply,id=%d]添加失败：未知错误，请联系管理员。'%data['message_id'])
+        return 'OK'
+    def getPluginInfo(self)->Any:
+        return {
+            'name': 'McStatusSetFooter',
+            'description': '设置群聊mcs列表底部文字',
+            'commandDescription': '-mcssetfooter [footer]',
+            'usePlace': ['group', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': ['mcServerStatusFooter'],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
+def aio_get_sjmc_info(server_list:List[str]):
     async def get_page(i, addr):
         url=f"https://mc.sjtu.cn/custom/serverlist/?query={addr}"
         async with aiohttp.request('GET', url) as req:
             status = await req.json()
             return i, status
-    server_list = fetch_server_list(group)
-    tasks = [get_page(i, server['ip']) for i, server in enumerate(server_list)]
-    result = asyncio.run(asyncio.wait(tasks))
+    loop = asyncio.new_event_loop()
+    tasks = [loop.create_task(get_page(i, server)) for i, server in enumerate(server_list)]
+    result = loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
     result = [r.result() for r in result[0]]
     result = sorted(result, key=lambda x: x[0])
     result = [r[1] for r in result]
     return result
-def get_sjmc_info():
-    url="https://mc.sjtu.cn/wp-admin/admin-ajax.php"
-    dat = []
-    for t in range(8):
-        #try:
-        params={
-            "_ajax_nonce": "0e441f8c8a",
-            "action": "fetch_mcserver_status",
-            "i": str(t),
-        }
-        try:
-            res = requests.get(url, verify=False, params=params)
-            if res.status_code!= requests.codes.ok:
-                continue
-            res = res.json()
-            dat.append(res)
-        except requests.JSONDecodeError as e:
-            warning("sjmc json decode error: {}".format(e))
-        except requests.Timeout as e:
-            print("connection time out")
-        except KeyError as e:
-            warning("key error in sjmc: {}".format(e))
-        except BaseException as e:
-            warning("sjmc basic exception: {}".format(e))
-    return dat
-def draw_sjmc_info(dat, server_group):
-    if server_group == '':
-        server_group = 'MC'
+
+def draw_sjmc_info(dat, group_id: int):
     j = sum([res['online'] and res['players']['online']!=0 for res in dat])
     j1 = 0
+    footer = get_footer(group_id)
     FONTS_PATH = 'resources/fonts'
     white, grey, green, red = (255,255,255,255),(128,128,128,255),(0,255,33,255),(255,85,85,255)
     font_mc_l = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 30)
@@ -114,12 +310,17 @@ def draw_sjmc_info(dat, server_group):
     font_mc_s = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 16)
     font_mc_xl = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 39)
     width=860
-    height=215+len(dat)*140+j*35
+    height=215+len(dat)*140+j*35+60
+    if len(footer) == 0:
+        height -= 80 - 20
     img = Image.new('RGBA', (width, height), (46, 33, 23, 255))
     draw = ImageDraw.Draw(img)
-    draw.rectangle((0, 120, width, height-80), fill=(15, 11, 7, 255))
-    draw.text((width-140-draw.textsize(f"{server_group}服务器状态", font=font_mc_xl)[0],42), 
-        f"{server_group}服务器状态", fill=(255,255,255,255), font=font_mc_xl)
+    if len(footer) > 0:
+        draw.rectangle((0, 120, width, height-80-40), fill=(15, 11, 7, 255))
+    else:
+        draw.rectangle((0, 120, width, height-60), fill=(15, 11, 7, 255))
+    draw.text((width-140-draw.textsize(f"Minecraft服务器状态", font=font_mc_xl)[0],42), 
+        f"Minecraft服务器状态", fill=(255,255,255,255), font=font_mc_xl)
     draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
     
     for i, res in enumerate(dat):
@@ -198,8 +399,10 @@ def draw_sjmc_info(dat, server_group):
             draw.text((width-60-txt_size[0], fy), "offline", fill=red, font=font_mc_m)
             txt_size = draw.textsize("服务器离线", font=font_mc_m)
             draw.text((width-60-txt_size[0], fy+32), "服务器离线", fill=grey, font=font_mc_m)
-    draw.text((60,height-50),"欢迎加入SJTU-Minecraft交流群！群号 712514518",fill=white,font=font_mc_m)
-    save_path=os.path.join(SAVE_TMP_PATH,'sjmc_status.png')
+    if len(footer) > 0:
+        draw.text((60,height-50-40),footer,fill=white,font=font_mc_m)
+    draw.text((width/2,height-30), "Powered by LITTLE-UNIkeEN@SJMC", fill=(200,200,200,255), font=font_syht_m, anchor="mm")
+    save_path=os.path.join(SAVE_TMP_PATH,'mc_server_status.png')
     img.save(save_path)
     return save_path
 
@@ -226,3 +429,20 @@ def decode_image(src)->Union[None, BytesIO]:
         return None
     # 2、base64解码
     return BytesIO(base64.urlsafe_b64decode(data))
+
+def draw_server_ip_list(server_list:List[str]) -> str:
+    img = ResponseImage(
+        theme = 'unicorn',
+        title = '服务器IP列表', 
+        titleColor = PALETTE_SJTU_BLUE, 
+        primaryColor = PALETTE_SJTU_RED,
+        layout = 'normal')
+
+    img.addCard(
+        ResponseImage.NormalCard(
+            body = '\n'.join(server_list),
+        )
+    )
+    save_path=os.path.join(SAVE_TMP_PATH,'mc_server_list.png')
+    img.generateImage(save_path)
+    return save_path

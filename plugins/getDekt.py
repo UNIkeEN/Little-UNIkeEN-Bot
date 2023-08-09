@@ -9,7 +9,7 @@ from utils.basicConfigs import *
 import requests
 from utils.configAPI import getPluginEnabledGroups
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 from io import BytesIO
 from threading import Timer, Semaphore
 try:
@@ -20,7 +20,7 @@ except ImportError as e:
     raise NotPublishedException(str(e))
 
 DEKT_SOURCE_DIR = os.path.join(ROOT_PATH, 'data/dektSource/')
-BROWSERMOB_SERVER_PATH = '/home/ubuntu/dektFetcher/browsermob-proxy-2.1.4/bin/browsermob-proxy'
+BROWSERMOB_SERVER_PATH = '/root/dektFetcher/browsermob-proxy-2.1.4/bin/browsermob-proxy'
 if not os.path.isfile(BROWSERMOB_SERVER_PATH):
     raise NotPublishedException("browsermob-proxy尚未安装")
 if not isinstance(JAC_COOKIE, str) or len(JAC_COOKIE) < 10:
@@ -32,6 +32,7 @@ def DownloadActlist():
     edgeOptions = ChromeOptions()
     edgeOptions.add_argument('ignore-certificate-errors')
     edgeOptions.add_argument('--headless')
+    edgeOptions.add_argument('--no-sandbox')
     edgeOptions.add_argument(f'--proxy-server={proxy.proxy}')
     proxy.new_har("dekt", options={'captureHeaders': True, 'captureContent': True})
     def parseCookie(cookieStr: str):

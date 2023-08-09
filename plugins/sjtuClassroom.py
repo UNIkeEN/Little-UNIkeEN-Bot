@@ -11,7 +11,6 @@ from utils.hotSearchImage import HotSearchImage, Colors, Fonts
 import os.path
 from matplotlib import pyplot as plt
 from io import BytesIO
-import random
 
 headers = {
     "Accept": "application/json, text/javascript, */*; q=0.01",

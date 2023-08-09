@@ -1,5 +1,4 @@
 from typing import Union, Any
-from unittest import result
 from utils.basicEvent import *
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import sqlConfig

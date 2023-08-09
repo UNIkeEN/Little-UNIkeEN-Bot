@@ -5,9 +5,8 @@ from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 import mysql.connector
 from utils.responseImage_beta import *
 import re
-from threading import Timer, Semaphore
+from threading import Semaphore
 import datetime
-import os
 import mysql.connector
 from pymysql.converters import escape_string
 
