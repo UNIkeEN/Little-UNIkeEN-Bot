@@ -189,6 +189,96 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
+class MuaLiveMonitor(StandardPlugin, CronStandardPlugin):
+    monitorSemaphore = Semaphore()
+    @staticmethod
+    def dumpSjmcStatus(status: bool):
+        exactPath = 'data/muaLive.json'
+        with open(exactPath, 'w') as f:
+            f.write('1' if status else '0')
+    @staticmethod
+    def loadSjmcStatus()->bool:
+        exactPath = 'data/muaLive.json'
+        with open(exactPath, 'r') as f:
+            return f.read().startswith('1')
+    def __init__(self) -> None:
+        self.liveId = 30539032
+        self.liveRoom = LiveRoomFixed(self.liveId)
+        self.exactPath = 'data/muaLive.json'
+        self.prevStatus = False # false: 未开播, true: 开播
+        if self.monitorSemaphore.acquire(blocking=False):
+            if not os.path.isfile(self.exactPath):
+                os.makedirs('data', exist_ok=True)
+                self.dumpSjmcStatus(self.prevStatus)
+            else:
+                self.prevStatus = self.loadSjmcStatus()
+            self.start(5, 30)
+
+
+    def tick(self):
+        roomInfo = self.liveRoom.get_room_info()['room_info']
+        currentStatus = roomInfo['live_status'] == 1
+        if currentStatus != self.prevStatus:
+            self.prevStatus = currentStatus
+            self.dumpSjmcStatus(currentStatus)
+            if currentStatus:
+                savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'muaLive.png')
+                genLivePic(roomInfo, 'MC高校联盟直播间状态', savePath, useCover=True)
+                for group in getPluginEnabledGroups('mualive'):
+                    send(group, '检测到MC高校联盟B站开播，MUA直播地址： https://live.bilibili.com/%d'%self.liveId)
+                    send(group, f'[CQ:image,file=files:///{savePath}]')
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return False
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        return "OK"
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'MuaLiveMonitor',
+            'description': '广播MUA B站直播间开播信息',
+            'commandDescription': 'None',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.3',
+            'author': 'Unicorn',
+        }
+class GetMuaLive(StandardPlugin):
+    def __init__(self) -> None:
+        self.liveId = 30539032
+        self.liveRoom = LiveRoomFixed(self.liveId)
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return msg in ['-mualive', ]
+    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        try:
+            roomInfo = self.liveRoom.get_room_info()['room_info']
+        except LiveException as e:
+            warning("mua bilibili api exception: {}".format(e))
+            return
+        except ApiException as e:
+            warning('bilibili api exception: {}'.format(e))
+            return 
+        except BaseException as e:
+            warning('base exception in mualive: {}'.format(e))
+            return
+        if roomInfo['live_status'] == 1:
+            savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'muaLive-%d.png'%target)
+            genLivePic(roomInfo, 'mua直播间状态', savePath)
+            send(target, f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+        else:
+            send(target, '当前时段未开播哦', data['message_type'])
+        return "OK"
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'GetMuaLive',
+            'description': 'MUA B站直播间状态',
+            'commandDescription': '-mualive',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.3',
+            'author': 'Unicorn',
+        }
 def genLivePic(roomInfo, title, savePath, useCover=False)->str:
     """
     @roomInfo: Dict

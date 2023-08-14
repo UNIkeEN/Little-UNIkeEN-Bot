@@ -1,18 +1,17 @@
-import mysql.connector
+from utils.sqlUtils import newSqlSession
+
 from utils.standardPlugin import StandardPlugin
 from typing import Optional, List, Dict, Any, Union
-from utils.basicConfigs import ROOT_ADMIN_ID, sqlConfig
+from utils.basicConfigs import ROOT_ADMIN_ID
 from utils.basicEvent import send, warning
 import re
 import datetime
 
 class ClearRecord(StandardPlugin):
     def __init__(self):
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mydb.autocommit = True
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        create table if not exists `BOT_DATA`.`clearChatLog`(
+        create table if not exists `clearChatLog`(
             `group_id` bigint unsigned not null,
             `user_id` bigint unsigned not null,
             `message_seq` bigint not null,
@@ -23,13 +22,8 @@ class ClearRecord(StandardPlugin):
         return msg == '-actclear' and data['message_type']=='group'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id']
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mydb.autocommit = True
-        # mycursor.execute("select count(*) from `BOT_DATA`.`messageRecord` where user_id = %d and group_id = %d"%(
-        #     data['user_id'], data['group_id']))
-        # ignore_count = list(mycursor)[0][0]
-        mycursor.execute("select last_operate_time from `BOT_DATA`.`clearChatLog` where user_id = %d and group_id = %d"%(
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("select last_operate_time from `clearChatLog` where user_id = %d and group_id = %d"%(
             data['user_id'], data['group_id']))
         result = list(mycursor)
         permitChange = False
@@ -38,7 +32,7 @@ class ClearRecord(StandardPlugin):
         elif result[0][0] - datetime.datetime.fromtimestamp(data['time']) > datetime.timedelta(days=60):
             permitChange = True
         if permitChange:
-            mycursor.execute("""replace into `BOT_DATA`.`clearChatLog` values
+            mycursor.execute("""replace into `clearChatLog` values
             (%d, %d, %d, from_unixtime(%d))"""%(data['group_id'], data['user_id'], data['message_seq'], data['time']))
             send(target, '[CQ:reply,id=%d]OK'%data['message_id'])
         else:
@@ -68,11 +62,9 @@ class RestoreRecord(StandardPlugin):
         if data['user_id'] not in ROOT_ADMIN_ID:
             send(target, '[CQ:reply,id=%d]无权限，请联系bot管理员'%data['message_id'])
         else:
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
-            mydb.autocommit = True
+            mydb, mycursor = newSqlSession()
             target_id = int(self.cmdStyle.findall(msg)[0])
-            mycursor.execute("""delete from `BOT_DATA`.`clearChatLog` where
+            mycursor.execute("""delete from `clearChatLog` where
             group_id = %d and user_id = %d"""%(data['group_id'], target_id))
             send(target, '[CQ:reply,id=%d]OK'%data['message_id'])
         return 'OK'

@@ -1,5 +1,4 @@
-from utils.basicConfigs import sqlConfig
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from utils.standardPlugin import CronStandardPlugin, StandardPlugin
 import datetime
 import asyncio
@@ -16,11 +15,9 @@ from matplotlib.font_manager import FontProperties
 font = FontProperties(fname=os.path.join(FONTS_PATH, 'SourceHanSansCN-Normal.otf'), size=14)
 
 def createSjtuClassroomSql():
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`sjtuClassroomRecord` (
+    create table if not exists `sjtuClassroomRecord` (
         `roomName` char(20) not null,
         `time` timestamp not null,
         `actualStuNum` int not null,
@@ -83,13 +80,11 @@ def processBuildingCourse(targetDate:datetime.date)->Dict[str, int]:
     return result
 
 def recordSjtuClassroom(result:Dict[str, int], now: datetime.datetime):
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     timestamp = int(time.mktime(now.timetuple()))
     for roomName, actualStuNum in result.items():
         mycursor.execute("""
-        insert into `BOT_DATA`.`sjtuClassroomRecord` (
+        insert into `sjtuClassroomRecord` (
             `roomName`, `actualStuNum`, `time`
         ) values (%s, %s, from_unixtime(%s))
         """,(roomName, actualStuNum, timestamp))
@@ -129,12 +124,10 @@ def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
 def getWeekDay(targetDate:datetime.date)->str:
     return '星期' + ['一','二','三','四','五','六','日'][targetDate.weekday()]
 def drawClassroomPeopleCountFunc(roomName:str, target:int)->Tuple[bool, str]:
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     now = datetime.datetime.now()
     today = now.date()
-    mycursor.execute("""select time, actualStuNum from `BOT_DATA`.`sjtuClassroomRecord` where
+    mycursor.execute("""select time, actualStuNum from `sjtuClassroomRecord` where
     roomName = %s and TIMESTAMPDIFF(DAY, time, %s) < 5 order by time desc;""", (roomName, today))
     result = list(mycursor)
     if len(result) < 30:

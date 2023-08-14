@@ -1,31 +1,23 @@
+from .sqlUtils import newSqlSession
 import mysql.connector
 from pymysql.converters import escape_string
-from utils.basicConfigs import sqlConfig, APPLY_GROUP_ID
+from .basicConfigs import sqlConfig, APPLY_GROUP_ID
 from typing import Any, Union, Dict, List, Tuple
-from utils.basicEvent import warning
+from .basicEvent import warning
 import json
 
 # config 相关
 # see: https://dev.mysql.com/doc/refman/5.7/en/json-modification-functions.html
 # globalConfig开表语句示例
-# create table `BOT_DATA`.`globalConfig` (`groupId` bigint not null, `groupConfig` json, `groupAdmins` json, primary key (`groupId`));
+# create table `globalConfig` (`groupId` bigint not null, `groupConfig` json, `groupAdmins` json, primary key (`groupId`));
 # insert into `globalConfig` values (1234, '{"test1": {"name": "ftc", "enable": false}, "test2": {"name": "syj", "enable": true}}', '[]');
 # insert into `globalConfig` values (8888, '{"test1": {"name": "ftc", "enable": true}, "test2": {"name": "syj", "enable": false}}', '[]');
-def createBotDataDb():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
-    mycursor.execute("""
-    create database if not exists `BOT_DATA`
-    """)
 
 def createGlobalConfig():
     """创建global config的sql table, """
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`globalConfig` (
+    create table if not exists `globalConfig` (
         `groupId` bigint not null,
         `groupConfig` json,
         `groupAdmins` json,
@@ -34,13 +26,11 @@ def createGlobalConfig():
 
 def removeInvalidGroupConfigs():
     '''移除不在APPLY_GROUP_ID中的群号'''
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
-    mycursor.execute("select groupId from BOT_DATA.globalConfig")
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("select groupId from `globalConfig`")
     groupNeedToBeRemoved = set([x for x, in list(mycursor)]) - set(APPLY_GROUP_ID)
     for groupId in groupNeedToBeRemoved:
-        mycursor.execute("delete from BOT_DATA.globalConfig where groupId = %d"%groupId)
+        mycursor.execute("delete from `globalConfig` where groupId = %d"%groupId)
 
 def readGlobalConfig(groupId: Union[None, int], pluginName: str)->Union[dict, Any, None]:
     """读global config
@@ -51,13 +41,13 @@ def readGlobalConfig(groupId: Union[None, int], pluginName: str)->Union[dict, An
     @pluginName
         like 'test1.enable' or 'test1'
     """
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession(autocommit=False)
+
     pluginName = escape_string(pluginName)
     if groupId == None:
         result = {}
         try:
-            mycursor.execute("SELECT groupId, json_extract(groupConfig,'$.%s') from BOT_DATA.globalConfig"%pluginName)
+            mycursor.execute("SELECT groupId, json_extract(groupConfig,'$.%s') from globalConfig"%pluginName)
         except mysql.connector.Error as e:
             warning("error in readGlobalConfig: {}".format(e))
             return None
@@ -68,7 +58,7 @@ def readGlobalConfig(groupId: Union[None, int], pluginName: str)->Union[dict, An
     elif isinstance(groupId, int):
         result = {}
         try:
-            mycursor.execute("SELECT groupId, json_extract(groupConfig, '$.%s') from BOT_DATA.globalConfig where groupId = %d"%(pluginName, groupId))
+            mycursor.execute("SELECT groupId, json_extract(groupConfig, '$.%s') from globalConfig where groupId = %d"%(pluginName, groupId))
         except mysql.connector.Error as e:
             warning("error in readGlobalConfig: {}".format(e))
             return None
@@ -82,7 +72,7 @@ def readGlobalConfig(groupId: Union[None, int], pluginName: str)->Union[dict, An
     else:
         warning("unknow groupId type in readGlobalConfig: groupId = {}".format(groupId))
         return None
-# update BOT_DATA.test set groupConfig=json_set(groupConfig, '$.test1.enable', False) where groupId=1234;
+# update test set groupConfig=json_set(groupConfig, '$.test1.enable', False) where groupId=1234;
 def writeGlobalConfig(groupId: Union[None, int], pluginName: str, value: Any):
     """写global config
     @groupId
@@ -93,23 +83,21 @@ def writeGlobalConfig(groupId: Union[None, int], pluginName: str, value: Any):
         like 'test1.enable' or 'test1'
     @value
     """
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     pluginName = escape_string(pluginName)
     if groupId == None:
         try:
-            mycursor.execute("update BOT_DATA.globalConfig set groupConfig=json_set(groupConfig, '$.%s', cast('%s' as json))"%(pluginName, json.dumps(value)))
+            mycursor.execute("update globalConfig set groupConfig=json_set(groupConfig, '$.%s', cast('%s' as json))"%(pluginName, json.dumps(value)))
         except mysql.connector.Error as e:
             warning("error in writeGlobalConfig: {}".format(e))
     elif isinstance(groupId, int):
         try:
-            mycursor.execute("insert ignore into BOT_DATA.globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
-            mycursor.execute("update BOT_DATA.globalConfig set groupConfig=json_set(groupConfig, '$.%s', cast('%s' as json)) where groupId=%d"%(pluginName, json.dumps(value), groupId))
+            mycursor.execute("insert ignore into globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
+            mycursor.execute("update globalConfig set groupConfig=json_set(groupConfig, '$.%s', cast('%s' as json)) where groupId=%d"%(pluginName, json.dumps(value), groupId))
         except mysql.connector.Error as e:
             warning("mysql error in writeGlobalConfig: {}".format(e))
     else:
         warning("unknow groupId type in writeGlobalConfig: groupId = {}".format(groupId))
-    mydb.commit()
 
 def getPluginEnabledGroups(pluginName: str)->List[int]:
     """获取开启插件的群聊id列表
@@ -118,11 +106,10 @@ def getPluginEnabledGroups(pluginName: str)->List[int]:
 
     @return: 开启插件的群id列表
     """
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession(autocommit=False)
     pluginName = escape_string(pluginName)
     try:
-        mycursor.execute("select groupId from BOT_DATA.globalConfig \
+        mycursor.execute("select groupId from globalConfig \
             where json_extract(groupConfig, '$.%s.enable') = true"%escape_string(pluginName))
         result = set([x for x, in list(mycursor)])
         return list(result.intersection(APPLY_GROUP_ID))
@@ -134,14 +121,12 @@ def getGroupAdmins(groupId: int)->List[int]:
     @groupId: 群号
     @return:  群bot管理员QQ号列表
     """
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     try:
-        mycursor.execute("select groupAdmins from BOT_DATA.globalConfig where groupId = %s"%(groupId))
+        mycursor.execute("select groupAdmins from globalConfig where groupId = %s"%(groupId))
         result = list(mycursor)
         if len(result) <= 0:
-            mycursor.execute("insert ignore into BOT_DATA.globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
-            mydb.commit()
+            mycursor.execute("insert ignore into globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
             return []
         else:
             result = json.loads(result[0][0])
@@ -161,12 +146,10 @@ def addGroupAdmin(groupId: int, adminId: int):
     if not isinstance(groupId, int) or not isinstance(adminId, int):
         warning("error groupId type or adminId type in addGroupAdmin: groupId = {}, adminId = {}".format(groupId, adminId))
         return
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     try:
-        mycursor.execute("insert ignore into BOT_DATA.globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
-        mycursor.execute("update BOT_DATA.globalConfig set groupAdmins=json_array_append(groupAdmins,'$', %d) where groupId=%d;"%(adminId, groupId))
-        mydb.commit()
+        mycursor.execute("insert ignore into globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
+        mycursor.execute("update globalConfig set groupAdmins=json_array_append(groupAdmins,'$', %d) where groupId=%d;"%(adminId, groupId))
     except mysql.connector.Error as e:
         warning("error in addGroupAdmin: {}".format(e))
 def setGroupAdmin(groupId: int, adminIds: List[int]):
@@ -177,12 +160,10 @@ def setGroupAdmin(groupId: int, adminIds: List[int]):
     if not isinstance(adminIds, list) or any([not isinstance(x, int) for x in adminIds]):
         warning('error admin type, groupId = %d'%groupId)
         return
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     try:
-        mycursor.execute("insert ignore into BOT_DATA.globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
-        mycursor.execute("update BOT_DATA.globalConfig set groupAdmins='%s' where groupId=%d;"%(json.dumps(adminIds), groupId))
-        mydb.commit()
+        mycursor.execute("insert ignore into globalConfig(groupId, groupConfig, groupAdmins) values (%d, '{}', '[]')"%groupId)
+        mycursor.execute("update globalConfig set groupAdmins='%s' where groupId=%d;"%(json.dumps(adminIds), groupId))
     except mysql.connector.Error as e:
         warning("error in setGroupAdmin: {}".format(e))
 def delGroupAdmin(groupId: int, adminId: int):

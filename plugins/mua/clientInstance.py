@@ -4,8 +4,7 @@ import threading
 from utils.standardPlugin import NotPublishedException
 from .common.subprotocols import Announcement, CreateAnnouncementPacket, DeleteAnnouncementPacket,QueryAnnouncementListPacket
 import uuid
-from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from typing import Any, Optional, Dict, List, Tuple
 import time, datetime
 from utils.responseImage_beta import *
@@ -18,11 +17,9 @@ muaClientInstanceRunning = False
 
 
 def createMuaSessionIdSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaSessionId` (
+    create table if not exists `muaSessionId` (
         `session_id` char(40) not null comment 'MUA会话uuid',
         `user_id` bigint unsigned comment 'QQ会话用户',
         `target` bigint unsigned comment 'QQ会话对象(群组或用户)',
@@ -43,11 +40,9 @@ def dumpMuaSession(sessionId:str, data:Any, annKey:str, abstract:bool=False):
     @abstract:  是否以摘要形式发送（用于处理用户查询返回的LIST）
     """
     target = data['group_id'] if data['message_type']=='group' else data['user_id']
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    replace into `BOT_DATA`.`muaSessionId`
+    replace into `muaSessionId`
     (`session_id`, `user_id`, `target`, `message_type`, `time`, `message_id`, `ann_key`, `abstract`) values
     (%s, %s, %s, %s, %s, %s, %s, %s)
     """,(sessionId, data['user_id'], target, data['message_type'], data['time'],
@@ -57,12 +52,10 @@ def loadMuaSession(sessionId:str)->Optional[Any]:
     """根据sessionId恢复MUA会话
     @sessionId: sessionId
     """
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
     select `user_id`, `target`, `message_type`, `time`, `message_id`, `ann_key`, `abstract` from
-    `BOT_DATA`.`muaSessionId` where `session_id` = %s
+    `muaSessionId` where `session_id` = %s
     """, (sessionId,))
     result = list(mycursor)
     if len(result) == 0: return None

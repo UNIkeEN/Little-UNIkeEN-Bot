@@ -445,7 +445,7 @@ class UserFixed(User):
     ) -> dict:
         api = API_USER["info"]["video"]
         params = {
-            "mid": self.__uid,
+            "mid": self.get_uid(),
             "ps": ps,
             "tid": tid,
             "pn": pn,

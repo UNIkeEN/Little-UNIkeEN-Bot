@@ -2,19 +2,17 @@ from utils.basicEvent import send, warning, get_group_msg_history
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from typing import Optional, List, Dict, Any, Union, Tuple
 from utils.configAPI import getPluginEnabledGroups
-from utils.basicConfigs import sqlConfig, IMAGES_PATH, ROOT_PATH
-import mysql.connector
+from utils.basicConfigs import IMAGES_PATH, ROOT_PATH
+from utils.sqlUtils import newSqlSession
 from pymysql.converters import escape_string
 from threading import Semaphore
 import time
 import os
 
 def createAdvertisementSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`advertisementContext`(
+    create table if not exists `advertisementContext`(
         `group_id` bigint unsigned not null,
         `unique_key` char(64) not null,
         `last_message_seq` bigint,
@@ -29,11 +27,9 @@ def getLatestSeqAndTime(group_id: int)->Optional[Tuple[int, int]]:
         latestMsg = max(msgs, key=lambda x:x['message_seq'])
         return latestMsg['message_seq'], max(latestMsg['time'], currentTime)
     else:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select `message_seq`, unix_timestamp(`time`) from `BOT_DATA`.`messageRecord`
+        select `message_seq`, unix_timestamp(`time`) from `messageRecord`
         where group_id = %d order by `message_seq` desc limit 1;
         """%(group_id, ))
         result = list(mycursor)
@@ -80,11 +76,9 @@ class BaseAdvertisementClass(CronStandardPlugin):
         """
         @return: Tuple[last_message_seq, last_time]
         """
-        mydb = mysql.connector.connect(**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select `last_message_seq`, unix_timestamp(`last_time`) from `BOT_DATA`.`advertisementContext`
+        select `last_message_seq`, unix_timestamp(`last_time`) from `advertisementContext`
         where group_id = %d and unique_key = '%s'"""%(
             self.group_id, escape_string(self.uniqueKey)
         ))
@@ -95,10 +89,8 @@ class BaseAdvertisementClass(CronStandardPlugin):
             return result[0]
 
     def dumpContext(self, lastMsgSeq:int, lastTime:int):
-        mydb = mysql.connector.connect(**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
-        mycursor.execute("""replace into `BOT_DATA`.`advertisementContext`
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("""replace into `advertisementContext`
         (`last_message_seq`,`last_time`,`group_id`, `unique_key`) 
         values (%d, from_unixtime(%d), %d, '%s')
         """%(

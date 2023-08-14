@@ -1,6 +1,6 @@
 from utils.standardPlugin import AddGroupStandardPlugin, CronStandardPlugin
 from utils.basicEvent import get_group_system_msg, warning
-from utils.basicConfigs import sqlConfig
+from utils.sqlUtils import newSqlSession
 from typing import Any, Union, List, Dict, Tuple
 import mysql.connector
 from threading import Semaphore
@@ -10,11 +10,9 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
     initOnceGuard = Semaphore()
     def __init__(self) -> None:
         if self.initOnceGuard.acquire(blocking=False):
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            create table if not exists `BOT_DATA`.`addGroupRecord` (
+            create table if not exists `addGroupRecord` (
                 `sub_type` char(20),
                 `group_id` bigint unsigned not null,
                 `user_id` bigint unsigned not null,
@@ -31,15 +29,13 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
         return True
     def addGroupVerication(self, data) -> Union[str, None]:
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             try:
                 data['flag'] = int(data['flag'])
             except ValueError:
                 pass
             mycursor.execute("""
-            insert ignore into `BOT_DATA`.`addGroupRecord` (
+            insert ignore into `addGroupRecord` (
                 `sub_type`, `group_id`, `user_id`, `time`, `comment`, `request_id`
             ) values (
                 %s, %s, %s, from_unixtime(%s), %s, %s
@@ -63,13 +59,12 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
     def tick(self,):
         group_system = get_group_system_msg()
         if group_system == None: return
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
+
         if group_system['invited_requests'] != None:
             for invq in group_system['invited_requests']:
                 mycursor.execute("""
-                update `BOT_DATA`.`addGroupRecord` set
+                update `addGroupRecord` set
                 `invitor_id` = %s,
                 `invitor_nick` = %s where 
                 `request_id` = %s""",(
@@ -80,7 +75,7 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
         if group_system['join_requests'] != None:
             for joinq in group_system['join_requests']:
                 mycursor.execute("""
-                insert ignore into `BOT_DATA`.`addGroupRecord` (
+                insert ignore into `addGroupRecord` (
                     `group_id`, `user_id`, `comment`, `request_id`, `time`
                 ) values (
                     %s, %s, %s, %s, %s

@@ -115,8 +115,10 @@ def gocqQuote(text:str)->str:
     """
     return text.replace('&','&amp;').replace('[','&#91;').replace(']','&#93;').replace(',','&#44;')
 
-groupSendBufferQueue = BufferQueue(1, 1)
+groupSendBufferQueue = BufferQueue(1, 1) # L1 cache
+groupSendBufferQueueCache = BufferQueue(3, 6) # L2 cache
 groupSendBufferQueue.start()
+groupSendBufferQueueCache.start()
 def send(id: int, message: str, type:str='group')->None:
     """发送消息
     id: 群号或者私聊对象qq号
@@ -130,7 +132,9 @@ def send(id: int, message: str, type:str='group')->None:
             "group_id": id,
             "message": message
         }
-        groupSendBufferQueue.put(requests.get, (url,), {'params':params})
+        def cachedDo(url, params):
+            groupSendBufferQueueCache.put(requests.get, (url,), {'params':params})
+        groupSendBufferQueue.put(cachedDo, (url, params))
         # requests.get(url, params=params)
     elif type=='private':
         params = {

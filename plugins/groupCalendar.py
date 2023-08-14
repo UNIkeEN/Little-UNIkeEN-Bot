@@ -7,14 +7,12 @@ from utils.responseImage_beta import *
 import re
 from threading import Semaphore
 import datetime
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from pymysql.converters import escape_string
 
 def createCalendarTable():
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""create table if not exists `BOT_DATA`.`groupCalendar` (
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""create table if not exists `groupCalendar` (
         `group_id` bigint unsigned not null,            # 群号
         `uid` bigint unsigned not null,                 # 每个群的事件唯一id,不同群可重复
         `create_time` timestamp not null,               # 事件创建的时间戳
@@ -148,14 +146,12 @@ def updateGroupCalendar(
             raise ValueError('need_remind should be an instance of bool')
         if not isinstance(overdue, bool):
             raise ValueError('overdue should be an instance of bool')
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         event_description_sentence = f", event_description = '{escape_string(event_description)}'" if event_description else ''
         event_tag_sentence = f", event_tag = '{escape_string(event_tag)}'" if event_tag else ''
         reminded_users_sentence = f", reminded_users = cast('{escape_string(json.dumps(reminded_users))}' as json)" if reminded_users != None else ''
         if isinstance(uid, int):
-            mycursor.execute(f"""update `BOT_DATA`.`groupCalendar`
+            mycursor.execute(f"""update `groupCalendar`
             set
                 last_update_time = '{datetimeToStr(create_time)}',
                 need_remind = {need_remind},
@@ -169,9 +165,9 @@ def updateGroupCalendar(
             """)
             return True, {'uid': uid,}
         elif isinstance(event_tag, str):
-            mycursor.execute(f"select ifnull(max(`uid`)+1,0) from `BOT_DATA`.`groupCalendar` where group_id={group_id}")
+            mycursor.execute(f"select ifnull(max(`uid`)+1,0) from `groupCalendar` where group_id={group_id}")
             uid, = list(mycursor)[0]
-            mycursor.execute(f"""insert into `BOT_DATA`.`groupCalendar` set
+            mycursor.execute(f"""insert into `groupCalendar` set
                 group_id = {group_id},
                 uid = {uid},
                 create_time = '{datetimeToStr(create_time)}',

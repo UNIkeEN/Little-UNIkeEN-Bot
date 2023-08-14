@@ -1,11 +1,11 @@
 from utils.basicEvent import warning
-import mysql.connector
 from datetime import datetime
-from utils.basicConfigs import sqlConfig
+from utils.sqlUtils import newSqlSession
+import mysql.connector
 from pymysql.converters import escape_string
 from typing import Union
 '''
-BOT_DATA.accounts 账户
+accounts 账户
 +----------+------------------+------+-----+---------+-------+
 | Field    | Type             | Null | Key | Default | Extra |
 +----------+------------------+------+-----+---------+-------+
@@ -15,7 +15,7 @@ BOT_DATA.accounts 账户
 | fortune  | tinyint unsigned | YES  |     | NULL    |       |
 +----------+------------------+------+-----+---------+-------+
 
-BOT_DATA.transactions 交易记录
+transactions 交易记录
 +-------------+-----------------+------+-----+---------+----------------+
 | Field       | Type            | Null | Key | Default | Extra          |
 +-------------+-----------------+------+-----+---------+----------------+
@@ -30,11 +30,9 @@ BOT_DATA.transactions 交易记录
 def create_account_sql():
     """创建金币系统sql的函数"""
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-            create table if not exists `BOT_DATA`.`accounts` (
+            create table if not exists `accounts` (
                 `id` bigint not null,
                 `coin` bigint,
                 `lastSign` date,
@@ -43,7 +41,7 @@ def create_account_sql():
             );
         """)
         mycursor.execute("""
-            create table if not exists `BOT_DATA`.`transactions` (
+            create table if not exists `transactions` (
                 `seq` bigint unsigned not null auto_increment,
                 `timestp` timestamp,
                 `qq` bigint,
@@ -73,14 +71,12 @@ def get_user_coins(id:int, format=True):
             warning("meet exception in get_user_coins: id should be int, but got {}".format(id))
             return 
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
-        mycursor.execute("SELECT coin FROM `BOT_DATA`.`accounts` where id=%d"%id)
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("SELECT coin FROM `accounts` where id=%d"%id)
         result=list(mycursor)
         if len(result)==0:
             mycursor.execute(
-                "INSERT INTO `BOT_DATA`.`accounts` (id, coin, lastSign) VALUES (%d, '0', '1980-01-01')"%id)
+                "INSERT INTO `accounts` (id, coin, lastSign) VALUES (%d, '0', '1980-01-01')"%id)
             return 0
         else:
             return int(result[0][0])/(100 if format else 1)
@@ -112,10 +108,8 @@ def update_user_coins(id:int, append: Union[int, float], description:str, format
             warning("meet exception in update_user_coins: id should be int, but got {}".format(id))
             return False
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
-        mycursor.execute("SELECT coin FROM BOT_DATA.accounts where id=%d"%id)
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("SELECT coin FROM `accounts` where id=%d"%id)
     except mysql.connector.Error as e:
         warning("sql error in update_user_coins: {}".format(e))
         return False
@@ -123,7 +117,7 @@ def update_user_coins(id:int, append: Union[int, float], description:str, format
     num_append=int((append)*(100 if format else 1))
     if len(result)==0:
         try:
-            mycursor.execute("""INSERT INTO BOT_DATA.accounts (id, coin, lastSign)
+            mycursor.execute("""INSERT INTO `accounts` (id, coin, lastSign)
                 VALUES (%d, %d, '1980-01-01');"""%(id, num_append))
             return True
         except mysql.connector.errors.DatabaseError as e:
@@ -132,12 +126,12 @@ def update_user_coins(id:int, append: Union[int, float], description:str, format
     else:
         try:
             result=int(result[0][0])
-            mycursor.execute("""UPDATE BOT_DATA.accounts SET coin=%d
+            mycursor.execute("""UPDATE accounts SET coin=%d
                  WHERE id=%d;"""%(result+num_append, id))
             now = datetime.now()
             now = now.strftime("%Y-%m-%d %H:%M:%S")
             mycursor.execute("""
-                INSERT INTO BOT_DATA.transactions (timestp, qq, changes, balance, description)
+                INSERT INTO `transactions` (timestp, qq, changes, balance, description)
                 VALUES ('%s', %d, %d, %d, '%s');
                 """%(escape_string(now), id, num_append, result+num_append, escape_string(description)))
             return True
@@ -157,9 +151,8 @@ def get_user_transactions(id: int)->list:
             warning("meet exception in get_user_transactions: id should be int, but got {}".format(id))
             return []
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("SELECT * FROM BOT_DATA.transactions where qq=%d ORDER BY `seq` desc limit 20;"%id)
+        mydb, mycursor = newSqlSession(autocommit=False)
+        mycursor.execute("SELECT * FROM transactions where qq=%d ORDER BY `seq` desc limit 20;"%id)
         result=list(mycursor)
         return result
     except mysql.connector.Error as e:

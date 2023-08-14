@@ -3,6 +3,7 @@ from typing import Set, Union, Any, List
 from utils.responseImage import *
 import requests
 from bs4 import BeautifulSoup as BS
+from utils.sqlUtils import newSqlSession
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.channelAPI import send_guild_channel_msg
@@ -253,16 +254,14 @@ class SubscribeJwc(StandardPlugin):
     subscribers = set()
     def __init__(self) -> None:
         if SubscribeJwc.initGuard.acquire(blocking=False):
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            create table if not exists `BOT_DATA`.`jwcSubscriber`(
+            create table if not exists `jwcSubscriber`(
                 `user_id` bigint not null,
                 `subscribe_time` timestamp not null,
                 primary key(`user_id`)
             );""")
-            mycursor.execute("select `user_id` from `BOT_DATA`.`jwcSubscriber`")
+            mycursor.execute("select `user_id` from `jwcSubscriber`")
             for user_id, in list(mycursor):
                 SubscribeJwc.subscribers.add(user_id)
     def judgeTrigger(self, msg: str, data: Any) -> bool:
@@ -271,17 +270,16 @@ class SubscribeJwc(StandardPlugin):
         subscribe = msg == '订阅教务处'
         user_id = data['user_id']
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         try:
             if subscribe:
                 if user_id in SubscribeJwc.subscribers:
                     send(target,"[CQ:reply,id=%d]订阅失败，您已订阅"%data['message_id'], data['message_type'])
                 else:
                     SubscribeJwc.subscribers.add(user_id)
+                    mydb, mycursor = newSqlSession()
                     mycursor.execute("""
-                    insert ignore into `BOT_DATA`.`jwcSubscriber` (`user_id`, `subscribe_time`)
+                    insert ignore into `jwcSubscriber` (`user_id`, `subscribe_time`)
                     values (%d, from_unixtime(%d));"""%(
                         user_id,
                         data['time']
@@ -293,7 +291,7 @@ class SubscribeJwc(StandardPlugin):
                 else:
                     SubscribeJwc.subscribers.remove(user_id)
                     mycursor.execute("""
-                    delete from `BOT_DATA`.`jwcSubscriber` where `user_id` = %d
+                    delete from `jwcSubscriber` where `user_id` = %d
                     """%data['user_id'])
                     send(target,"[CQ:reply,id=%d]取消订阅成功"%data['message_id'], data['message_type'])
         except mysql.connector.Error as e:

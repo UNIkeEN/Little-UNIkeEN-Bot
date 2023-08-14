@@ -75,7 +75,7 @@ class TarotRandom(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         group_id = data['group_id'] if data['message_type']=='group' else 0
         user_id = data['user_id']
-        folders = random.sample(self.resource.keys(), 3)
+        folders = random.sample(list(self.resource.keys()), 3)
         imgNames = [os.path.join(self.resourcePath, random.choice(self.resource[f])) for f in folders]
         imgs = [Image.open(f) for f in imgNames]
         im = draw_tarot(imgs)

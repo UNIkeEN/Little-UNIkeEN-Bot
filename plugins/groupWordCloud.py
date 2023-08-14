@@ -2,7 +2,7 @@ from utils.basicConfigs import *
 from utils.basicEvent import *
 from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin, ScheduleStandardPlugin
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from utils.responseImage_beta import *
 from utils.configAPI import getPluginEnabledGroups
 import wordcloud
@@ -55,7 +55,7 @@ class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
             draw.text((830-size2[0],600+size1[1]), '群 %d'%group_id, fill=PALETTE_GREY, font=FONT_SYHT_M18)
             img.save(picPath)
             if group_id in getPluginEnabledGroups('wcdaily'):
-                send(group_id, '本群昨日词云已生成~','group')
+                # send(group_id, '本群昨日词云已生成~','group')
                 send(group_id, f'[CQ:image,file=files:///{picPath}]','group')
         # end def genSendSaveImg
 
@@ -69,9 +69,8 @@ class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
 
     def genWordCloud(self,group_id)->Optional[Image.Image]:
         try:
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
-            mycursor.execute("SELECT message FROM BOT_DATA.messageRecord WHERE group_id=%d and TO_DAYS(NOW( ))-TO_DAYS(time)<=1 and user_id!=%d"%(group_id, BOT_SELF_QQ))
+            mydb, mycursor = newSqlSession(autocommit=False)
+            mycursor.execute("SELECT message FROM messageRecord WHERE group_id=%d and TO_DAYS(NOW( ))-TO_DAYS(time)<=1 and user_id!=%d"%(group_id, BOT_SELF_QQ))
             result=list(mycursor)
             text = []
 

@@ -9,16 +9,14 @@ from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from utils.basicConfigs import sqlConfig
 import datetime
 from urllib.parse import urlparse
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from threading import Semaphore
 import time
 
 def createBwcSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`bwcRecord`(
+    create table if not exists `bwcRecord`(
         `msgid` bigint unsigned not null,
         `create_time` timestamp default null,
         `title` varchar(300) default null,
@@ -143,17 +141,16 @@ class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
         @return: 如果某个元素没被记录，则返回值会append
         """
         result = []
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mydb.autocommit = True
+        mydb, mycursor = newSqlSession()
+
         for notice in notices:
-            mycursor.execute("""select count(*) from `BOT_DATA`.`bwcRecord`
+            mycursor.execute("""select count(*) from `bwcRecord`
             where msgid = %d
             """%notice['msgid'])
             count = list(mycursor)[0][0]
             if count == 0:
                 result.append(notice)
-                mycursor.execute("""insert into `BOT_DATA`.`bwcRecord` set
+                mycursor.execute("""insert into `bwcRecord` set
                 `msgid` = %s,
                 `create_time` = from_unixtime(%s),
                 `title` = %s,

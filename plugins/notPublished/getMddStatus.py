@@ -1,4 +1,4 @@
-from utils.basicConfigs import sqlConfig
+import mysql.connector
 from utils.responseImage import *
 from utils.basicEvent import send, warning, aioSend
 from typing import Union, Tuple, Any, List, Set
@@ -9,18 +9,16 @@ from datetime import datetime
 import time
 import os.path
 import asyncio
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 try:
     from resources.api.mddApi import mddUrl, mddHeaders
 except ImportError:
     raise NotPublishedException("mdd url and mdd headers are secret")
 
 def createMddRecordSql():
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`mddRecord` (
+    create table if not exists `mddRecord` (
         `seq` bigint unsigned not null auto_increment,
         `time` timestamp not null comment 'current time',
         `mode` bool not null comment '0 if close, 1 if open',
@@ -29,11 +27,9 @@ def createMddRecordSql():
     );""")
 
 def recordMddStatus(mode:int, t: datetime):
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    insert into `BOT_DATA`.`mddRecord` (`time`, `mode`, `week`) values
+    insert into `mddRecord` (`time`, `mode`, `week`) values
     (%s, %s, %s)
     """, (t, mode, t.weekday()))
 
@@ -43,16 +39,14 @@ class SubscribeMdd(StandardPlugin):
     subscribers = set()
     def __init__(self) -> None:
         if SubscribeMdd.initGuard.acquire(blocking=False):
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            create table if not exists `BOT_DATA`.`mddSubscriber`(
+            create table if not exists `mddSubscriber`(
                 `user_id` bigint not null,
                 `subscribe_time` timestamp not null,
                 primary key(`user_id`)
             );""")
-            mycursor.execute("select `user_id` from `BOT_DATA`.`mddSubscriber`")
+            mycursor.execute("select `user_id` from `mddSubscriber`")
             for user_id, in list(mycursor):
                 SubscribeMdd.subscribers.add(user_id)
     def judgeTrigger(self, msg: str, data: Any) -> bool:
@@ -61,9 +55,7 @@ class SubscribeMdd(StandardPlugin):
         subscribe = msg == '订阅麦当劳'
         user_id = data['user_id']
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         try:
             if subscribe:
                 if user_id in SubscribeMdd.subscribers:
@@ -71,7 +63,7 @@ class SubscribeMdd(StandardPlugin):
                 else:
                     SubscribeMdd.subscribers.add(user_id)
                     mycursor.execute("""
-                    insert ignore into `BOT_DATA`.`mddSubscriber` (`user_id`, `subscribe_time`)
+                    insert ignore into `mddSubscriber` (`user_id`, `subscribe_time`)
                     values (%d, from_unixtime(%d));"""%(
                         user_id,
                         data['time']
@@ -83,7 +75,7 @@ class SubscribeMdd(StandardPlugin):
                 else:
                     SubscribeMdd.subscribers.remove(user_id)
                     mycursor.execute("""
-                    delete from `BOT_DATA`.`mddSubscriber` where `user_id` = %d
+                    delete from `mddSubscriber` where `user_id` = %d
                     """%data['user_id'])
                     send(target,"[CQ:reply,id=%d]取消订阅成功"%data['message_id'], data['message_type'])
         except mysql.connector.Error as e:

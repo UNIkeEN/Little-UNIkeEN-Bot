@@ -9,72 +9,60 @@ import requests
 import base64
 import re
 from io import BytesIO
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from threading import Semaphore
 
 import aiohttp, asyncio
 
 def create_mcs_sql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`mcServerStatus` (
+    create table if not exists `mcServerStatus` (
         `group_id` bigint unsigned not null comment '群号',
         `server` char(64) not null default '' comment '服务器ip',
         primary key(`group_id`, `server`)
     )""")
 
 def get_server_list(group_id:str)->List[str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    select `server` from `BOT_DATA`.`mcServerStatus`
+    select `server` from `mcServerStatus`
     where `group_id` = %s""", (group_id,))
     result = list(mycursor)
     return [server for server, in result]
 
 def add_server(group_id:int, server:str)->bool:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    replace into `BOT_DATA`.`mcServerStatus` (`group_id`, `server`)
+    replace into `mcServerStatus` (`group_id`, `server`)
     values (%s, %s)""", (group_id, server))
     return True
 
 def remove_server(group_id:int, server:str)->Tuple[bool, str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""select count(*) from `BOT_DATA`.`mcServerStatus`
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select count(*) from `mcServerStatus`
     where `group_id` = %s and `server` = %s
     """, (group_id, server))
     if list(mycursor)[0][0] == 0:
         return False, '本群尚未添加服务器“%s”'%server
-    mycursor.execute("""delete from `BOT_DATA`.`mcServerStatus`
+    mycursor.execute("""delete from `mcServerStatus`
     where `group_id` = %s and `server` = %s
     """, (group_id, server))
     return True, '移除成功'
 
 def create_mcs_footer_sql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`mcServerStatusFooter` (
+    create table if not exists `mcServerStatusFooter` (
         `group_id` bigint unsigned not null comment '群号',
         `footer` varchar(256) not null default '' comment 'footer',
         primary key(`group_id`)
     )""")
 
 def get_footer(group_id:str)->List[str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    select `footer` from `BOT_DATA`.`mcServerStatusFooter`
+    select `footer` from `mcServerStatusFooter`
     where `group_id` = %s""", (group_id,))
     result = list(mycursor)
     if len(result) > 0:
@@ -84,24 +72,20 @@ def get_footer(group_id:str)->List[str]:
     return result
 
 def set_footer(group_id:int, footer:str)->bool:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    replace into `BOT_DATA`.`mcServerStatusFooter` (`group_id`, `footer`)
+    replace into `mcServerStatusFooter` (`group_id`, `footer`)
     values (%s, %s)""", (group_id, footer))
     return True
 
 def remove_footer(group_id:int)->Tuple[bool, str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""select count(*) from `BOT_DATA`.`mcServerStatusFooter`
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select count(*) from `mcServerStatusFooter`
     where `group_id` = %s
     """, (group_id, ))
     if list(mycursor)[0][0] == 0:
         return False, '尚未设置footer'
-    mycursor.execute("""delete from `BOT_DATA`.`mcServerStatusFooter`
+    mycursor.execute("""delete from `mcServerStatusFooter`
     where `group_id` = %s
     """, (group_id, ))
     return True, '移除成功'
@@ -285,10 +269,13 @@ class McStatusSetFooter(StandardPlugin):
         }
 
 def aio_get_sjmc_info(server_list:List[str]):
+    print(server_list)
     async def get_page(i, addr):
         url=f"https://mc.sjtu.cn/custom/serverlist/?query={addr}"
         async with aiohttp.request('GET', url) as req:
             status = await req.json()
+            if 'hostname' not in status.keys():
+                status['hostname'] = addr
             return i, status
     loop = asyncio.new_event_loop()
     tasks = [loop.create_task(get_page(i, server)) for i, server in enumerate(server_list)]
@@ -297,6 +284,7 @@ def aio_get_sjmc_info(server_list:List[str]):
     result = [r.result() for r in result[0]]
     result = sorted(result, key=lambda x: x[0])
     result = [r[1] for r in result]
+    print(result)
     return result
 
 def draw_sjmc_info(dat, group_id: int):
@@ -368,8 +356,8 @@ def draw_sjmc_info(dat, group_id: int):
                 if port != '25565':
                     res['hostname'] += ' : ' + port
         draw.text((160, fy), new_title, fill=white, font=font_mc_l)
+        draw.text((160, fy+45), res['hostname'], fill=grey, font=font_mc_m)
         if res['online']:
-            draw.text((160, fy+45), res['hostname'], fill=grey, font=font_mc_m)
             txt_size = draw.textsize(f"{res['ping']}ms", font=font_mc_m)
             ping = int(res['ping'])
             clr = red if ping>=100 else green
@@ -402,7 +390,7 @@ def draw_sjmc_info(dat, group_id: int):
     if len(footer) > 0:
         draw.text((60,height-50-40),footer,fill=white,font=font_mc_m)
     draw.text((width/2,height-30), "Powered by LITTLE-UNIkeEN@SJMC", fill=(200,200,200,255), font=font_syht_m, anchor="mm")
-    save_path=os.path.join(SAVE_TMP_PATH,'mc_server_status.png')
+    save_path=os.path.join(ROOT_PATH, SAVE_TMP_PATH,'mc_server_status_%d.png'%group_id)
     img.save(save_path)
     return save_path
 
@@ -443,6 +431,6 @@ def draw_server_ip_list(server_list:List[str]) -> str:
             body = '\n'.join(server_list),
         )
     )
-    save_path=os.path.join(SAVE_TMP_PATH,'mc_server_list.png')
+    save_path=os.path.join(ROOT_PATH, SAVE_TMP_PATH,'mc_server_list.png')
     img.generateImage(save_path)
     return save_path

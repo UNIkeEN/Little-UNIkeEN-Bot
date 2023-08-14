@@ -3,7 +3,7 @@ import random
 import requests
 import datetime
 from io import BytesIO
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
@@ -76,13 +76,12 @@ def sign_in(qq_id:int):
     id= qq_id if isinstance(qq_id, int) else int(qq_id)
     today_str=str(datetime.date.today())
     #first_sign = False
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("SELECT lastSign FROM BOT_DATA.accounts where id=%d"%id)
+    mydb, mycursor = newSqlSession()
+
+    mycursor.execute("SELECT lastSign FROM `accounts` where id=%d"%id)
     result=list(mycursor)
     if len(result)==0:
-        mycursor.execute("""INSERT INTO BOT_DATA.accounts (id, coin, lastSign) 
+        mycursor.execute("""INSERT INTO `accounts` (id, coin, lastSign) 
             VALUES (%d, '0', '1980-01-01')"""%id)
         last_sign_date = '1980-01-01'
     else:
@@ -92,12 +91,12 @@ def sign_in(qq_id:int):
         fortune = random.randint(0,6)
         update_user_coins(id, add_coins, '签到奖励')
         try:
-            mycursor.execute("UPDATE BOT_DATA.accounts SET lastSign='%s', fortune=%d WHERE id=%d;"
+            mycursor.execute("UPDATE `accounts` SET lastSign='%s', fortune=%d WHERE id=%d;"
                 %(escape_string(today_str), fortune, id))
         except mysql.connector.errors.DatabaseError as e:
             warning("sql error in signin: {}".format(e))
         return draw_signinbanner(id, add_coins, get_user_coins(id), fortune)
     else:
-        mycursor.execute("SELECT fortune FROM BOT_DATA.accounts where id=%d"%id)
+        mycursor.execute("SELECT fortune FROM `accounts` where id=%d"%id)
         fortune=list(mycursor)[0][0]
         return draw_signinbanner(id, -1, get_user_coins(id), fortune)

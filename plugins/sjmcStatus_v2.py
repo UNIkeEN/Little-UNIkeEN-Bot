@@ -199,7 +199,7 @@ def draw_sjmc_info(dat, server_group):
             txt_size = draw.textsize("服务器离线", font=font_mc_m)
             draw.text((width-60-txt_size[0], fy+32), "服务器离线", fill=grey, font=font_mc_m)
     draw.text((60,height-50),"欢迎加入SJTU-Minecraft交流群！群号 712514518",fill=white,font=font_mc_m)
-    save_path=os.path.join(SAVE_TMP_PATH,'sjmc_status.png')
+    save_path=os.path.join(SAVE_TMP_PATH,'sjmc_status_{}.png'.format(server_group))
     img.save(save_path)
     return save_path
 

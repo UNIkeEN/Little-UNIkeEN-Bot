@@ -1,13 +1,11 @@
-from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
 from utils.basicEvent import send, get_group_member_list
 from utils.standardPlugin import StandardPlugin
 from utils.configAPI import getGroupAdmins
-
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from threading import Semaphore
 import json
 import re
-from typing import Any, Optional, Dict, List, Tuple, Union
+from typing import Any, Optional, Dict, List, Tuple, Union, Set
 
 from .muaTargets import getTargetsByGroup
 
@@ -17,7 +15,7 @@ class AnnouncementFilter:
             raise NotImplementedError()
 
         @staticmethod
-        def asSet(thing : Any):
+        def asSet(thing : Any)->Set[Any]:
             if isinstance(thing, set):
                 return thing
             if isinstance(thing, list):
@@ -36,8 +34,8 @@ class AnnouncementFilter:
                 return True
             if self.blacklist is None:
                 return True
-            thing = AnnouncementFilter.ThingFilter.asSet(thing)
-            return issubset(thing, self.blacklist)
+            thing:Set[Any] = AnnouncementFilter.ThingFilter.asSet(thing)
+            return thing.issubset(self.blacklist)
 
     class WhiteList(ThingFilter):
         def __init__(self, whitelist : Union[None, List[Any]]):
@@ -93,22 +91,18 @@ class AnnouncementFilter:
             return False, None
 
 def createMuaGroupAnnFilterSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaGroupAnnFilter` (
+    create table if not exists `muaGroupAnnFilter` (
         `group_id` bigint unsigned not null comment '群号',
         `filter` varchar(500) default null comment '过滤器json',
         primary key(`group_id`)
     )""")
 
 def getGroupFilter(groupId:str)->AnnouncementFilter:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    select `filter` from `BOT_DATA`.`muaGroupAnnFilter`
+    select `filter` from `muaGroupAnnFilter`
     where `group_id` = %s""", (groupId,))
     result = list(mycursor)
     if len(result) > 0:
@@ -118,29 +112,25 @@ def getGroupFilter(groupId:str)->AnnouncementFilter:
     return AnnouncementFilter(getTargetsByGroup(groupId), result)
 
 def setGroupFilter(groupId:int, filterStr:str)->bool:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     succ, filterJsonStr = AnnouncementFilter.parseAsFilterJson(filterStr)
     if succ:
         mycursor.execute("""
-        replace into `BOT_DATA`.`muaGroupAnnFilter` (`group_id`, `filter`)
+        replace into `muaGroupAnnFilter` (`group_id`, `filter`)
         values (%s, %s)""", (groupId, filterJsonStr))
         return True
     return False
 
 def rmGroupFilter(groupId:int)->bool:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""select count(*) from `BOT_DATA`.`muaGroupAnnFilter`
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select count(*) from `muaGroupAnnFilter`
     where `group_id` = %s
-    """, (groupId))
+    """, (groupId,))
     if list(mycursor)[0][0] == 0:
         return False
-    mycursor.execute("""delete from `BOT_DATA`.`muaGroupAnnFilter`
+    mycursor.execute("""delete from `muaGroupAnnFilter`
     where `group_id` = %s
-    """, (groupId))
+    """, (groupId,))
     return True
 
 class MuaGroupAnnFilter(StandardPlugin):

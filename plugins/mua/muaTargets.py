@@ -1,61 +1,51 @@
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
+from utils.sqlUtils import newSqlSession
 from utils.standardPlugin import StandardPlugin, NotPublishedException
 from utils.basicEvent import send, warning, get_group_member_list
 from utils.configAPI import getGroupAdmins
 from typing import Dict, Union, Any, List, Tuple, Optional
 import re, os.path, os
-import mysql.connector
+
 from threading import Semaphore
 
 def createMuaTargetSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaGroupTarget` (
+    create table if not exists `muaGroupTarget` (
         `group_id` bigint unsigned not null comment '群号',
         `target` char(20) not null comment 'target MUA ID',
         primary key(`group_id`, `target`)
     )""")
 
 def getGroupsByTarget(target:str)->List[str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    select `group_id` from `BOT_DATA`.`muaGroupTarget`
+    select `group_id` from `muaGroupTarget`
     where `target` = %s""", (target, ))
     result = list(mycursor)
     return [groupId for groupId, in result]
 
 def getTargetsByGroup(groupId:str)->List[str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    select `target` from `BOT_DATA`.`muaGroupTarget`
+    select `target` from `muaGroupTarget`
     where `group_id` = %s""", (groupId,))
     result = list(mycursor)
     return [muaTarget for muaTarget, in result]
 
 def groupBindTarget(groupId:int, muaTarget:str)->bool:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    replace into `BOT_DATA`.`muaGroupTarget` (`group_id`, `target`)
+    replace into `muaGroupTarget` (`group_id`, `target`)
     values (%s, %s)""", (groupId, muaTarget))
     return True
 def groupUnbindTarget(groupId:int, muaTarget:str)->Tuple[bool, str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""select count(*) from `BOT_DATA`.`muaGroupTarget`
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select count(*) from `muaGroupTarget`
     where `group_id` = %s and `target` = %s
     """, (groupId, muaTarget))
     if list(mycursor)[0][0] == 0:
         return False, '本群尚未绑定名为“%s”的MUA ID'%muaTarget
-    mycursor.execute("""delete from `BOT_DATA`.`muaGroupTarget`
+    mycursor.execute("""delete from `muaGroupTarget`
     where `group_id` = %s and `target` = %s
     """, (groupId, muaTarget))
     return True, '解绑成功'

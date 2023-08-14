@@ -1,11 +1,13 @@
 from utils.standardPlugin import StandardPlugin, Any, Union
 import requests
-from utils.basicEvent import *
+from utils.basicEvent import send, warning, startswith_in, init_image_template, draw_rounded_rectangle
 from utils.basicConfigs import *
+from utils.sqlUtils import newSqlSession
 from icalendar import Calendar
 from datetime import datetime, timedelta
-import re
-import mysql.connector
+import re, time
+from typing import Tuple, Any, List
+
 class CanvasiCalUnbind(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg.strip() == '-ics unbind'
@@ -31,11 +33,10 @@ class CanvasiCalBind(StandardPlugin):
     def __init__(self) -> None:
         # 外部服务，防止sql注入、url注入
         self.urlRegex = re.compile(r'https://(canvas.sjtu.edu.cn|oc.sjtu.edu.cn|jicanvas.com)/feeds/calendars/user_[a-zA-Z0-9]{40}.ics')
-        # 检查sql是否开了BOT_DATA.canvasIcs
+        # 检查sql是否开了canvasIcs
         try:
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
-            mycursor.execute("""create table if not exists `BOT_DATA`.`canvasIcs` (
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""create table if not exists `canvasIcs` (
                 `qq` bigint not null,
                 `icsUrl` char(128) not null,
                 primary key (`qq`)
@@ -95,10 +96,8 @@ def unbind_ics(qq_id: Union[int, str])->bool:
     if isinstance(qq_id, str):
         qq_id = int(qq_id)
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("delete from `BOT_DATA`.`canvasIcs` where qq=%d"%(qq_id))
-        mydb.commit()
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("delete from `canvasIcs` where qq=%d"%(qq_id))
         return True
     except BaseException as e:
         warning("error in canvasSync, error: {}".format(e))
@@ -108,10 +107,8 @@ def edit_bind_ics(qq_id: Union[int, str], ics_url: str)->bool:
     if isinstance(qq_id, str):
         qq_id = int(qq_id)
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("replace into `BOT_DATA`.`canvasIcs` values (%d, '%s')"%(qq_id, escape_string(ics_url)))
-        mydb.commit()
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("replace into `canvasIcs` (`icsUrl`, `qq`) values (%s, %s)",(qq_id, ics_url))
         return True
     except BaseException as e:
         warning("error in canvasSync, error: {}".format(e))
@@ -124,9 +121,8 @@ def getCanvas(qq_id) -> Tuple[bool, str]:
     if isinstance(qq_id, str):
         qq_id = int(qq_id)
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("select icsUrl from `BOT_DATA`.`canvasIcs` where qq=%d"%(qq_id))
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("select icsUrl from `canvasIcs` where qq=%d"%(qq_id))
         urls = list(mycursor)
         if len(urls) == 0:
             return False, f"查询失败\n{FAIL_REASON_1}"

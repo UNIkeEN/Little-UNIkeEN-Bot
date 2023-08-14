@@ -1,5 +1,5 @@
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, Job
-from utils.basicConfigs import sqlConfig
+from utils.sqlUtils import newSqlSession
 from utils.basicEvent import send, warning, gocqQuote
 import re
 from typing import List, Tuple, Optional, Union, Dict, Any, Set
@@ -7,25 +7,22 @@ from utils.bilibili_api_fixed import UserFixed
 from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
 import random
 from threading import Semaphore
-import mysql.connector
 import copy
 import time
 def bvToUrl(bvid:str):
     return 'https://www.bilibili.com/video/' + bvid
 
 def createBilibiliTable()->None:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`bilibiliUp` (
+    create table if not exists `bilibiliUp` (
        `uid` bigint unsigned not null,
        `uploadTime` timestamp not null,
        `bvid` char(20) not null,
        primary key (`uid`)
     )""")
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`bilibiliSubscribe` (
+    create table if not exists `bilibiliSubscribe` (
         `group_id` bigint unsigned not null,
         `uid` bigint unsigned not null,
         primary key(`group_id`, `uid`)
@@ -88,10 +85,9 @@ class BilibiliSubscribe(StandardPlugin):
         self.groupUps:Dict[int, Set[int]] = {}
         self._loadFromSql()
     def _loadFromSql(self)->None:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select group_id, uid from `BOT_DATA`.`bilibiliSubscribe`
+        select group_id, uid from `bilibiliSubscribe`
         """)
         for group_id, uid in list(mycursor):
             if group_id not in self.groupUps.keys():
@@ -110,11 +106,9 @@ class BilibiliSubscribe(StandardPlugin):
             self.groupUps[group_id] = set()
         if bilibili_uid not in self.groupUps[group_id]:
             self.groupUps[group_id].add(bilibili_uid)
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
-            mydb.autocommit = True
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            insert ignore into BOT_DATA.bilibiliSubscribe set
+            insert ignore into `bilibiliSubscribe` set
             group_id = %d,
             uid = %d
             """%(group_id, bilibili_uid))
@@ -124,11 +118,9 @@ class BilibiliSubscribe(StandardPlugin):
     def unsubscribeBilibili(self, group_id:int, bilibili_uid:int)->None:
         if group_id in self.groupUps.keys() and bilibili_uid in self.groupUps[group_id]:
             self.groupUps[group_id].discard(bilibili_uid)
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
-            mydb.autocommit = True
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            delete from BOT_DATA.bilibiliSubscribe where
+            delete from `bilibiliSubscribe` where
             group_id = %d and
             uid = %d
             """%(group_id, bilibili_uid))
@@ -261,10 +253,9 @@ class BilibiliMonitor(CronStandardPlugin):
         )]
         """
         if self._prevMeta == None:
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            select unix_timestamp(uploadTime), bvid from BOT_DATA.bilibiliUp where
+            select unix_timestamp(uploadTime), bvid from `bilibiliUp` where
             uid = %d
             """%self.uid)
             meta = list(mycursor)
@@ -278,11 +269,9 @@ class BilibiliMonitor(CronStandardPlugin):
         if self._prevMeta == meta: return
 
         self._prevMeta = meta
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mydb.autocommit = True
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        insert into BOT_DATA.bilibiliUp set
+        insert into `bilibiliUp` set
         uploadTime = from_unixtime(%s),
         bvid = %s,
         uid = %s

@@ -11,7 +11,8 @@ from utils.standardPlugin import (
     PokeStandardPlugin, AddGroupStandardPlugin, 
     EmptyAddGroupPlugin,GuildStandardPlugin
 )
-from utils.configAPI import createBotDataDb, createGlobalConfig, removeInvalidGroupConfigs
+from utils.sqlUtils import createBotDataDb
+from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
 from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
 
 from plugins.autoRepoke import AutoRepoke
@@ -44,6 +45,7 @@ except NotPublishedException as e:
     uaTokenLister, MuaNotice, MuaQuery, MuaAbstract = EmptyPlugin, EmptyPlugin, EmptyPlugin, EmptyPlugin
     MuaGroupBindTarget, MuaGroupUnbindTarget = EmptyPlugin, EmptyPlugin
     MuaGroupAnnFilter = EmptyPlugin
+    MuaTokenLister = EmptyPlugin
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -71,7 +73,7 @@ from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.addGroupRecorder import AddGroupRecorder
 from plugins.fileRecorder import GroupFileRecorder
-from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor
+from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor, MuaLiveMonitor, GetMuaLive
 from plugins.advertisement import McAdManager
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
@@ -159,16 +161,18 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn()], 'signin'),  # 签到
-    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(),
-                        PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor()], 'mclive'),
+    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(), 
+                        PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor(), ], 'mclive'),
                         # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
                         ], 'sjmc'), #MC社服务
     PluginGroupManager([ShowMcStatus(), McStatusAddServer(), McStatusRemoveServer(), McStatusSetFooter(), McStatusRemoveFooter()
                         ], 'mcs'), #MC服务器列表for MUA
     PluginGroupManager([MuaQuery(), MuaAbstract(), MuaAnnHelper(), MuaAnnEditor(), 
                         MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
-                        MuaGroupBindTarget(), MuaGroupUnbindTarget(), MuaGroupAnnFilter(),
-                        PluginGroupManager([MuaNotice()], 'muanotice')], 'mua'), #MC高校联盟服务
+                        MuaGroupBindTarget(), MuaGroupUnbindTarget(), MuaGroupAnnFilter(),GetMuaLive(),
+                        PluginGroupManager([MuaNotice()], 'muanotice'),
+                        PluginGroupManager([MuaLiveMonitor(),], 'mualive'),
+                        ], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
                         PluginGroupManager([SjtuDektMonitor()], 'dekt'),

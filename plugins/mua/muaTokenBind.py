@@ -1,19 +1,16 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
 from utils.basicEvent import send, warning
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import sqlConfig
+from utils.sqlUtils import newSqlSession
 import re, os
-import mysql.connector
 from threading import Semaphore
 from .clientInstance import queryAnnouncement
 from .muaAPI import verifyMuaToken
 
 def createMuaTokenSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaToken` (
+    create table if not exists `muaToken` (
         `user_id` bigint unsigned not null comment '用户QQ号',
         `token_description` char(20) not null comment 'MUA ID, 支持查询',
         `mua_token` varchar(100) not null comment '用户mua token, 不支持查询',
@@ -22,12 +19,10 @@ def createMuaTokenSql():
     )""")
 
 def getAllMuaToken(userId:int)->Dict[str, str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     # token_description是MUA ID
     mycursor.execute("""
-    select `token_description`, `mua_token` from `BOT_DATA`.`muaToken` where `user_id` = %s
+    select `token_description`, `mua_token` from `muaToken` where `user_id` = %s
     """, (userId, ))
     result = {}
     for tokenDescription, muaToken in list(mycursor):
@@ -65,11 +60,10 @@ class MuaTokenBinder(StandardPlugin):
                 send(target, '[CQ:reply,id=%d]与MUA服务器连接失败，无法验证token真实性，请尝试稍后绑定'%data['message_id'], data['message_type'])
                 return 'OK'
             try:
-                mydb = mysql.connector.connect(**sqlConfig)
-                mydb.autocommit = True
-                mycursor = mydb.cursor()
+                mydb, mycursor = newSqlSession()
+
                 mycursor.execute("""
-                replace into `BOT_DATA`.`muaToken` (`user_id`, `token_description`, `mua_token`) values
+                replace into `muaToken` (`user_id`, `token_description`, `mua_token`) values
                 (%s, %s, %s)""", (userId, tokenDescription, token))
                 send(target, '[CQ:reply,id=%d]绑定成功'%data['message_id'], data['message_type'])
             except BaseException as e:
@@ -92,10 +86,8 @@ class MuaTokenBinder(StandardPlugin):
 #           1 使用权
 #           2 拥有权
 def getUserMuaIdPermission(userId:int, muaId:str)->Tuple[bool, str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""select `mua_token`, `empowered` from `BOT_DATA`.`muaToken` where 
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select `mua_token`, `empowered` from `muaToken` where 
     `user_id` = %s and `token_description` = %s""", (userId, muaId))
     result = list(mycursor)
     if len(result) == 0:
@@ -106,10 +98,8 @@ def getUserMuaIdPermission(userId:int, muaId:str)->Tuple[bool, str]:
     return 2
 
 def makeEmpower(userId:int, empowerTargetId:int, muaId:str)->Tuple[bool, str]:
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""select `mua_token`, `empowered` from `BOT_DATA`.`muaToken` where 
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select `mua_token`, `empowered` from `muaToken` where 
     `user_id` = %s and `token_description` = %s""", (userId, muaId))
     result = list(mycursor)
     if len(result) == 0:
@@ -117,11 +107,11 @@ def makeEmpower(userId:int, empowerTargetId:int, muaId:str)->Tuple[bool, str]:
     token, empowered = result[0]
     if empowered:
         return False, '您名为“%s”的MUA ID是他人授予的，系统不支持MUA ID的递归授予，请联系MUA ID的持有者授权'%muaId
-    mycursor.execute("""select count(*) from `BOT_DATA`.`muaToken` where 
+    mycursor.execute("""select count(*) from `muaToken` where 
     `user_id` = %s and `token_description` = %s""", (empowerTargetId, muaId))
     if list(mycursor)[0][0] > 0:
         return False, '您的授予对象已有名为“%s”的MUA ID了，无法绑定重名MUA ID'%muaId
-    mycursor.execute("""insert into `BOT_DATA`.`muaToken` (`user_id`, `token_description`, `mua_token`, `empowered`)
+    mycursor.execute("""insert into `muaToken` (`user_id`, `token_description`, `mua_token`, `empowered`)
     values (%s, %s, %s, true)""", (empowerTargetId, muaId, token))
     return True, '授权成功'
 
@@ -193,17 +183,15 @@ class MuaTokenUnbinder(StandardPlugin):
         userId = data['user_id']
         tokenDescription = self.triggerPattern.findall(msg)[0]
         try:
-            mydb = mysql.connector.connect(**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            select count(*) from `BOT_DATA`.`muaToken` where user_id = %s and `token_description` = %s
+            select count(*) from `muaToken` where user_id = %s and `token_description` = %s
             """, (userId, tokenDescription))
             if list(mycursor)[0][0] == 0:
                 send(target, '[CQ:reply,id=%d]您尚未绑定MUAID为 %s 的token，无法解绑'%(data['message_id'], tokenDescription), data['message_type'])
             else:
                 mycursor.execute("""
-                delete from `BOT_DATA`.`muaToken` where `user_id` = %s and `token_description` = %s
+                delete from `muaToken` where `user_id` = %s and `token_description` = %s
                 """, (userId, tokenDescription))
                 send(target, '[CQ:reply,id=%d]解绑成功'%data['message_id'], data['message_type'])
         except BaseException as e:

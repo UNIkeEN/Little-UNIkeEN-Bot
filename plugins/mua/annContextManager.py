@@ -1,12 +1,11 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
 from utils.basicEvent import send, warning, parse_cqcode
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
 from utils.responseImage_beta import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
 import re, os.path, os
 import requests
-import mysql.connector
-from pymysql.converters import escape_string
+from utils.sqlUtils import newSqlSession
 from .annImgBed import createAnnImgBedSql, dumpMsgToBed, imgUrlToImgBase64
 from .muaTokenBind import getAllMuaToken
 from .clientInstance import sendAnnouncement, deleteAnnouncement
@@ -18,12 +17,10 @@ from .common.subprotocols import Announcement
 def createAnnCtxSql():
     """创建mua通知发布过程中记录上下文环境的sql table
     """
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     # token_description是MUA ID
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaAnnCtx` (
+    create table if not exists `muaAnnCtx` (
         `user_id` bigint unsigned not null comment '发布者qq号',
         `ann_key` char(64) not null comment '活动标识主键，务必不含空字符',
         `create_time` timestamp not null comment '草稿创建时间',
@@ -50,10 +47,8 @@ def recordAidWhenSucc(aid:int, data:Any):
     @aid:  mua服务器返回的通知aid
     @data: 恢复出来的上下文环境
     """
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""update `muaAnnCtx` set
     `editing` = false, `aid` = %s, `released_time` = from_unixtime(%s)
     where user_id = %s and ann_key = %s
     """, (aid, data['time'], data['user_id'], data['ann_key']))
@@ -63,16 +58,14 @@ def recordAidWhenSucc(aid:int, data:Any):
 
 
 def loadAnnContext(userId:int, annKey:str)->Optional[Dict[str, Any]]:
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     # token_description是MUA ID
     mycursor.execute("""
     select `user_id`, `ann_key`, unix_timestamp(`create_time`),
     `title`, `content`, unix_timestamp(`begin_time`), unix_timestamp(`end_time`),
     `info_source`, `tag`, unix_timestamp(`released_time`), `token_description`, 
     `metadata`, `channel`, `target`
-    from `BOT_DATA`.`muaAnnCtx` where `user_id` = %s and `ann_key` = %s
+    from `muaAnnCtx` where `user_id` = %s and `ann_key` = %s
     """, (userId, annKey))
     result = list(mycursor)
     if len(result) == 0:
@@ -250,11 +243,9 @@ class MuaAnnEditor(StandardPlugin):
         self.cqcodePattern = re.compile(r'\[CQ\:.*\]')
 
     def loadContext(self):
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select `user_id`, `ann_key`, `released_time` from `BOT_DATA`.`muaAnnCtx` where `editing` = true;
+        select `user_id`, `ann_key`, `released_time` from `muaAnnCtx` where `editing` = true;
         """)
         for userId, annKey, releasedTime in list(mycursor):
             self.context[userId] = (annKey, releasedTime == None)
@@ -385,14 +376,12 @@ class MuaAnnEditor(StandardPlugin):
         if len(annKey) > 64:
             return False, '创建失败，关键词过长'
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            update `BOT_DATA`.`muaAnnCtx` set `editing` = false
+            update `muaAnnCtx` set `editing` = false
             where `user_id` = %d and `editing` = true"""%(userId, ))
             try:
-                mycursor.execute("""insert into `BOT_DATA`.`muaAnnCtx` 
+                mycursor.execute("""insert into `muaAnnCtx` 
                 (`user_id`, `ann_key`, `create_time`, `editing`) values
                 (%s, %s, from_unixtime(%s), true)""",
                 (userId, annKey, data['time']))
@@ -407,18 +396,16 @@ class MuaAnnEditor(StandardPlugin):
             return False, '创建失败'
 
     def annRm(self, userId:int, annKey:str, data:Any)->Tuple[bool, str]:
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select count(*) from `BOT_DATA`.`muaAnnCtx` 
+        select count(*) from `muaAnnCtx` 
         where user_id = %s and ann_key = %s
         """, (userId, annKey))
         result = list(mycursor)
         if result[0][0] == 0:
             return False, '删除失败，不存在该关键字'
         mycursor.execute("""
-        delete from `BOT_DATA`.`muaAnnCtx` 
+        delete from `muaAnnCtx` 
         where user_id = %s and ann_key = %s
         """, (userId, annKey))
         if userId in self.context.keys() and self.context[userId][0] == annKey:
@@ -426,11 +413,9 @@ class MuaAnnEditor(StandardPlugin):
         return True, '本地记录删除成功'
 
     def annDel(self, userId:int, annKey:str, data:Any)->Tuple[bool, str]:
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select `aid`, `token_description` from `BOT_DATA`.`muaAnnCtx` 
+        select `aid`, `token_description` from `muaAnnCtx` 
         where user_id = %s and ann_key = %s
         """, (userId, annKey))
         result = list(mycursor)
@@ -449,11 +434,9 @@ class MuaAnnEditor(StandardPlugin):
 
     def annLs(self, userId:int, data:Any)->Tuple[bool, str]:
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
+            mydb, mycursor = newSqlSession()
             mycursor.execute("""
-            select `ann_key` from `BOT_DATA`.`muaAnnCtx`
+            select `ann_key` from `muaAnnCtx`
             where `user_id` = %d"""%(userId, ))
             result = [annKey for annKey, in list(mycursor)]
             return True, '读取成功，往期关键字为：\n' + ', '.join(result)
@@ -465,19 +448,17 @@ class MuaAnnEditor(StandardPlugin):
         curKey = self.context.get(userId, None)
         if curKey != None and annKey == curKey[0]:
             return True, '正在编辑该通知，无需切换'
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         mycursor.execute("""
-        select released_time from `BOT_DATA`.`muaAnnCtx` where
+        select released_time from `muaAnnCtx` where
         user_id = %s and ann_key = %s""",(userId, annKey))
         result = list(mycursor)
         if len(result) == 0:
             return False, '切换失败，不存在以“%s”为关键词的通知'%annKey
         released = result[0][0] != None
-        mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+        mycursor.execute("""update `muaAnnCtx` set
         `editing` = false where `user_id` = %s and `editing` = true""",(userId, ))
-        mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+        mycursor.execute("""update `muaAnnCtx` set
         `editing` = true where `user_id` = %s and `ann_key` = %s
         """, (userId, annKey))
         self.context[userId] = (annKey, not released)
@@ -508,10 +489,8 @@ class MuaAnnEditor(StandardPlugin):
             url = cqdict['url']
 
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `content` = if(`content` is null, %s, concat(`content`, %s)) where `user_id` = %s and `ann_key` = %s
             """, (content, content, userId, annKey))
             return True, ('content添加成功，可以继续发送“-annctt 内容”往现有内容后面添加新图文（不会覆盖），'
@@ -529,10 +508,8 @@ class MuaAnnEditor(StandardPlugin):
             '如需修改，请用-anncp命令将该通知复制到新通知，然后编辑发布')
         annKey:str = annKey[0]
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `content` = null where `user_id` = %s and `ann_key` = %s
             """, (userId, annKey))
             return True, ('通知内容已清空')
@@ -540,18 +517,16 @@ class MuaAnnEditor(StandardPlugin):
             return False, 'content删除失败，数据库错误'
     
     def annCp(self, userId:int, srcKey:str, dstKey:str, data:Any)->Tuple[bool, str]:
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         # 1. 看dstKey是不是被占用了
-        mycursor.execute("""select count(*) from `BOT_DATA`.`muaAnnCtx`
+        mycursor.execute("""select count(*) from `muaAnnCtx`
         where user_id = %s and ann_key = %s""", (userId, dstKey))
         if list(mycursor)[0][0] > 0 :
             return False, '关键词“%s”被占用，请用-annrm删掉之前的通知(-annrm只会删除本地记录，不会请求服务器删除)，或换一个没有被占用的关键词'%dstKey
         # 2. 读取
         mycursor.execute("""select `title`, `content`, `begin_time`, `end_time`, `info_source`,
         `tag`, `target`, `channel`, `token_description`, `metadata` from
-        `BOT_DATA`.`muaAnnCtx` where `user_id` = %s and `ann_key` = %s
+        `muaAnnCtx` where `user_id` = %s and `ann_key` = %s
         """, (userId, srcKey))
         result = list(mycursor)
         if len(result) == 0:
@@ -559,10 +534,10 @@ class MuaAnnEditor(StandardPlugin):
         result = result[0]
         # 3. editing写入
         mycursor.execute("""
-        update `BOT_DATA`.`muaAnnCtx` set `editing` = false where
+        update `muaAnnCtx` set `editing` = false where
         `user_id` = %s and `editing` = true""", (userId, ))
         # 4. 写入
-        mycursor.execute("""insert into `BOT_DATA`.`muaAnnCtx` (
+        mycursor.execute("""insert into `muaAnnCtx` (
             `user_id`, `ann_key`,
             `title`, `content`, `begin_time`, `end_time`, `info_source`,
             `tag`, `target`, `channel`, `token_description`, `metadata`,
@@ -594,10 +569,8 @@ class MuaAnnEditor(StandardPlugin):
         if self.cqcodePattern.match(title) != None:
             return False, 'title设置失败，检测到CQ码，请确保title不含at、QQ表情、图片、语音等成分'
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `title` = %s where `user_id` = %s and `ann_key` = %s
             """, (title, userId, annKey))
             return True, 'title设置成功，发送“-anntg 标签(不同标签以空格隔开)”可以编辑通知标签，发送“-annctt 内容”可以编辑通知内容'
@@ -617,10 +590,8 @@ class MuaAnnEditor(StandardPlugin):
         if self.cqcodePattern.match(channel) != None:
             return False, 'channel设置失败，检测到CQ码，请确保channel不含at、QQ表情、图片、语音等成分'
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `channel` = %s where `user_id` = %s and `ann_key` = %s
             """, (channel, userId, annKey))
             return True, ('channel设置成功，请发送“-annttl 标题”编辑通知标题，'
@@ -641,10 +612,8 @@ class MuaAnnEditor(StandardPlugin):
         if len(tgt) > 200:
             return False, 'target设置失败，target总长度超出200字符'
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `target` = %s where `user_id` = %s and `ann_key` = %s
             """, (tgt, userId, annKey))
             return True, 'target设置成功'
@@ -663,10 +632,8 @@ class MuaAnnEditor(StandardPlugin):
         if len(tag) > 200:
             return False, 'tag设置失败，tag总长度超出200字符'
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `tag` = %s where `user_id` = %s and `ann_key` = %s
             """, (tag, userId, annKey))
             return True, ('tag设置成功，继续发送“-annctt 内容”可以编辑通知内容，'
@@ -688,10 +655,8 @@ class MuaAnnEditor(StandardPlugin):
             invalidTime = True
             timeParsed = None
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `begin_time` = %s where `user_id` = %s and `ann_key` = %s
             """, (timeParsed, userId, annKey))
             if invalidTime:
@@ -716,10 +681,8 @@ class MuaAnnEditor(StandardPlugin):
             invalidTime = True
             timeParsed = None
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `end_time` = %s where `user_id` = %s and `ann_key` = %s
             """, (timeParsed, userId, annKey))
             if invalidTime:
@@ -794,10 +757,8 @@ class MuaAnnEditor(StandardPlugin):
         if tokenDescription not in allToken:
             return False, f'绑定失败，您注册的所有MUA ID为：{"、".join(allToken)}，在其中没有发现名为“{tokenDescription}”的ID'
         try:
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mydb.autocommit = True
-            mycursor = mydb.cursor()
-            mycursor.execute("""update `BOT_DATA`.`muaAnnCtx` set
+            mydb, mycursor = newSqlSession()
+            mycursor.execute("""update `muaAnnCtx` set
             `token_description` = %s where `user_id` = %s and `ann_key` = %s
             """, (tokenDescription, userId, annKey))
             return True, ('MUA ID设置成功，请发送“-anncnl 目标频道”设置频道（原版/模组/小游戏/其他），'

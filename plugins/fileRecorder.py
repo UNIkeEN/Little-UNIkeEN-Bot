@@ -3,15 +3,16 @@ from utils.standardPlugin import GroupUploadStandardPlugin, Union, Tuple, Any, L
 from utils.basicEvent import get_group_list, warning
 from utils.basicEvent import get_group_file_system_info, get_group_files_by_folder, get_group_root_files, get_group_file_url
 from utils.basicConfigs import sqlConfig
+from utils.sqlUtils import newSqlSession
 import mysql.connector
 """
 # 筛选file_id:
-select group_id, file_id, file_name, busid, file_size, (file_bin is not null) from BOT_DATA.fileRecord where ...;
+select group_id, file_id, file_name, busid, file_size, (file_bin is not null) from BOT_DATA_%d.fileRecord where ...;
 # 导出文件
-select file_bin from BOT_DATA.fileRecord where group_id = %s and file_id = %s into dumpfile '/var/lib/mysql-files/...';
+select file_bin from BOT_DATA_%d.fileRecord where group_id = %s and file_id = %s into dumpfile '/var/lib/mysql-files/...';
 
 eg:
-mysql>      select file_bin from BOT_DATA.fileRecord where group_id = 604329164 and file_id = '/cf1f95db-5abe-44c3-bba6-29e5b702052c' into dumpfile '/var/lib/mysql-files/tmp.pdf';
+mysql>      select file_bin from BOT_DATA_%d.fileRecord where group_id = 604329164 and file_id = '/cf1f95db-5abe-44c3-bba6-29e5b702052c' into dumpfile '/var/lib/mysql-files/tmp.pdf';
 bash>       sudo mv /var/lib/mysql-files/tmp.pdf /tmp/tmp.pdf
 bash>       sudo chmod 777 /tmp/tmp.pdf
 powershell> scp ubuntu@xxx.xxx:/tmp/tmp.pdf ~/Desktop/
@@ -19,11 +20,9 @@ powershell> scp ubuntu@xxx.xxx:/tmp/tmp.pdf ~/Desktop/
 
 def createSqlFileTable():
     """建表"""
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`fileRecord`(
+    create table if not exists `fileRecord`(
         `group_id` bigint not null,
         `file_id`  char(64) not null,
         `file_name` varchar(500) not null default '',
@@ -41,12 +40,11 @@ class GroupFileRecorder(GroupUploadStandardPlugin):
         createSqlFileTable()
     def uploadFile(self, data)->Union[str, None]:
         file = data['file']
-        mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-        mydb.autocommit = True
+        mydb, mycursor = newSqlSession()
         mycursor = mydb.cursor()
         try:
             mycursor.execute("""
-            insert into `BOT_DATA`.`fileRecord` (
+            insert into `fileRecord` (
                 group_id, file_id, file_name, busid, file_size, upload_time,
                 uploader,  file_url
             ) values (
@@ -67,7 +65,7 @@ class GroupFileRecorder(GroupUploadStandardPlugin):
                 if req.status_code != requests.codes.ok:
                     warning("tencent file API failed in file recorder")
                     return "OK"
-                mycursor.execute("""update `BOT_DATA`.`fileRecord` set `file_bin`= %s
+                mycursor.execute("""update `fileRecord` set `file_bin`= %s
                     where group_id = %s and file_id = %s and busid = %s""",(
                     req.content, data['group_id'], file['id'], file['busid']
                 ))

@@ -3,7 +3,7 @@ import random
 import requests
 import datetime
 from io import BytesIO
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from typing import Union, Any
 from utils.basicEvent import *
 from utils.basicConfigs import *
@@ -102,13 +102,11 @@ def sign_in(qq_id):
     id=str(qq_id)
     today_str=str(datetime.date.today())
     #first_sign = False
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mycursor.execute(f"SELECT lastSign FROM BOT_DATA.accounts where id={str(id)}")
+    mydb, mycursor = newSqlSession()
+    mycursor.execute(f"SELECT lastSign FROM `accounts` where id={str(id)}")
     result=list(mycursor)
     if len(result)==0:
-        mycursor.execute(f"INSERT INTO BOT_DATA.accounts (id, coin, lastSign) VALUES ('{str(id)}', '0', '1980-01-01')")
-        mydb.commit()
+        mycursor.execute(f"INSERT INTO `accounts` (id, coin, lastSign) VALUES ('{str(id)}', '0', '1980-01-01')")
         last_sign_date = '1980-01-01'
     else:
         last_sign_date = str(result[0][0])
@@ -117,14 +115,13 @@ def sign_in(qq_id):
         fortune = random.randint(0,3)
         update_user_coins(id, add_coins, '签到奖励')
         try:
-            mycursor.execute(f"UPDATE BOT_DATA.accounts SET lastSign='{today_str}', fortune='{str(fortune)}' WHERE id='{str(id)}';")
-            mydb.commit()
+            mycursor.execute(f"UPDATE `accounts` SET lastSign='{today_str}', fortune='{str(fortune)}' WHERE id='{str(id)}';")
             print("[LOG] Update Sign_Info: Done!")
         except mysql.connector.errors.DatabaseError as e:
             print(e)
         return draw_signinbanner(qq_id, add_coins, get_user_coins(id), fortune)
     else:
-        mycursor.execute(f"SELECT fortune FROM BOT_DATA.accounts where id={str(id)}")
+        mycursor.execute(f"SELECT fortune FROM `accounts` where id={str(id)}")
         fortune=list(mycursor)[0][0]
         return draw_signinbanner(qq_id, -1, get_user_coins(id), fortune)
 

@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 from io import BytesIO
 from threading import Semaphore
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from utils.configAPI import getPluginEnabledGroups
 from pymysql.converters import escape_string
 from typing import Union, Any
@@ -24,10 +24,8 @@ HELP_LOTTERY=(f"""【祈愿帮助】
 21时，神明将默念三个数字，数字有对应者将得到神明的认可，
 按所中个数1-3分别赠予{PRIZE_NUM[1:]}💰赐礼""")
 def createLotterySql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mycursor = mydb.cursor()
-    mydb.autocommit = True
-    mycursor.execute("""create table if not exists `BOT_DATA`.`lotteries`(
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""create table if not exists `lotteries`(
         `id` bigint unsigned not null auto_increment,
         `timestp` timestamp default null,
         `record` text default null, 
@@ -74,12 +72,10 @@ class _lottery(ScheduleStandardPlugin):
         #     json.dump(lot_base, f2, indent=4)
         # f2.close()
         try:
-            mydb = mysql.connector.connect(**sqlConfig)
-            mycursor = mydb.cursor()
             now = datetime.now()
+            mydb, mycursor = newSqlSession()
             now = now.strftime("%Y-%m-%d %H:%M:%S")
-            mycursor.execute(f"INSERT INTO BOT_DATA.lotteries (timestp, record) VALUES ('{now}', '{new_lot}')")
-            mydb.commit()
+            mycursor.execute(f"INSERT INTO lotteries (timestp, record) VALUES ('{now}', '{new_lot}')")
             print("[LOG] Insert Lottery: Done!")
         except mysql.connector.errors.DatabaseError as e: 
             print(e)
@@ -89,9 +85,8 @@ class _lottery(ScheduleStandardPlugin):
     def tick(self): # 开奖
         key_list = sorted(random.sample(range(1, 11), 3))
 
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("SELECT record FROM BOT_DATA.lotteries")
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("SELECT record FROM lotteries")
         lot_base=list(mycursor)
 
         win_list=[]
@@ -105,7 +100,7 @@ class _lottery(ScheduleStandardPlugin):
             if num_in>0:
                 win_list.append(record)
                 update_user_coins(record['qq'], PRIZE_NUM[num_in], '祈愿成真')
-        mycursor.execute("TRUNCATE TABLE BOT_DATA.lotteries;")
+        mycursor.execute("TRUNCATE TABLE lotteries;")
         win_list = sorted(win_list,key=lambda x:x['prize'],reverse=True)
         card_path=self.make_card(key_list, win_list)
         r_path=os.path.dirname(os.path.realpath(__file__))

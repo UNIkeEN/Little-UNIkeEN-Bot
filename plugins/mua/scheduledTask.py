@@ -5,11 +5,9 @@ import threading
 '''
 schedule.every(37).minutes.do(job) # 每10秒执行一次
 def createMuaAScheduleSql():
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaSchedule` (
+    create table if not exists `muaSchedule` (
         `group_id` bigint unsigned not null comment 'QQ群号',
         `interval` int unsigned not null default 0 comment '周期数',
         `mute_from` char(10) not null comment '静音开始时间段',

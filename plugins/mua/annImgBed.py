@@ -1,14 +1,14 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
 from utils.basicEvent import getImgFromUrl
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
+from utils.basicConfigs import ROOT_PATH
+from utils.sqlUtils import newSqlSession
 import re, os, time
 import uuid
-import mysql.connector
-from pymysql.converters import escape_string
+import requests
 from PIL import Image
 from io import BytesIO
 import base64
-
+from icecream import ic
 ANN_IMGBED_DIR = 'data/annImgBed'
 os.makedirs(os.path.join(ROOT_PATH, ANN_IMGBED_DIR), exist_ok=True)
 
@@ -16,11 +16,9 @@ def createAnnImgBedSql():
     """QQ图片链接容易过期，如果某个图片过期了，但是还存储在通知记录里，就可能导致不好的事情发生。
     因此我们需要实现一个图床，以url为key将图片存储在本地一份，当链接过期时启用图床，
     将图片以base64编码发送给服务器"""
-    mydb = mysql.connector.connect(**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    create table if not exists `BOT_DATA`.`muaAnnImgbed` (
+    create table if not exists `muaAnnImgbed` (
         `img_name` varchar(100) not null,
         `img_url` varchar(300) not null,
         `create_time` timestamp not null,
@@ -35,21 +33,17 @@ def dumpUrlToBed(imgUrl:str)->bool:
     name = str(uuid.uuid4()) + '.' + img.format.lower()
     savePath = os.path.join(ROOT_PATH, ANN_IMGBED_DIR, name)
     img.save(savePath)
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
-    mycursor.execute("""replace into `BOT_DATA`.`muaAnnImgbed`
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""replace into `muaAnnImgbed`
     (`img_name`, `img_url`, `create_time`) values
     (%s, %s, from_unixtime(%s))""",
     (name, imgUrl, int(time.time())))
     return True
 
 def imgUrlToImgPath(imgUrl:str)->Optional[str]:
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
     mycursor.execute("""
-    select `img_name` from `BOT_DATA`.`muaAnnImgbed`
+    select `img_name` from `muaAnnImgbed`
     where `img_url` = %s""", (imgUrl, ))
     result = list(mycursor)
     if len(result) == 0:
@@ -75,17 +69,21 @@ def urlOrBase64ToImage(imgType:str, imgContent:str)->Optional[Image.Image]:
             req = requests.get(url=imgContent)
             if req.status_code == requests.codes.ok:
                 try:
-                    return Image.open(BytesIO(requests.content))
-                except:
+                    return Image.open(BytesIO(req.content))
+                except Exception as e:
+                    ic(e)
                     return None
             else:
+                ic()
                 return None
     elif imgType == 'imgbase64':
         try:
             return Image.open(BytesIO(base64.decode(imgContent)))
-        except:
+        except Exception as e:
+            ic(e)
             return None
     else:
+        ic()
         return None
 
 def dumpMsgToBed(msg:str):
@@ -98,11 +96,10 @@ def dumpMsgToBed(msg:str):
 
 # if True:
 if __name__ == '__main__':
-    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-    mydb.autocommit = True
-    mycursor = mydb.cursor()
+    mydb, mycursor = newSqlSession()
+
     mycursor.execute("""
-    select `img_url`,`img_name` from `BOT_DATA`.`muaAnnImgbed`
+    select `img_url`,`img_name` from `muaAnnImgbed`
     limit 1""")
     result = list(mycursor)
     if len(result) == 0:

@@ -3,7 +3,7 @@ from utils.basicEvent import send, warning, startswith_in, get_avatar_pic, get_g
 from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin
 from PIL import Image, ImageDraw, ImageFont
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from utils.responseImage_beta import *
 import matplotlib.pyplot as plt
 import datetime
@@ -86,15 +86,14 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
     messageWithBotMedal = []
     messageImgEmjMedal = []
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("SELECT message_seq from `BOT_DATA`.`clearChatLog` where user_id = %d and group_id = %d"%(user_id, group_id))
+        mydb, mycursor = newSqlSession()
+        mycursor.execute("SELECT message_seq from `clearChatLog` where user_id = %d and group_id = %d"%(user_id, group_id))
         result=list(mycursor)
         minSeq = None if len(result) == 0 else result[0][0]
         if minSeq == None:
-            mycursor.execute("SELECT time, message FROM BOT_DATA.messageRecord where user_id=%d and group_id=%d"%(user_id, group_id))
+            mycursor.execute("SELECT time, message FROM messageRecord where user_id=%d and group_id=%d"%(user_id, group_id))
         else:
-            mycursor.execute("SELECT time, message FROM BOT_DATA.messageRecord where user_id=%d and group_id=%d and message_seq > %d"%(user_id, group_id, minSeq))
+            mycursor.execute("SELECT time, message FROM messageRecord where user_id=%d and group_id=%d and message_seq > %d"%(user_id, group_id, minSeq))
 
         result=list(mycursor)
         # 消息数量
@@ -284,20 +283,18 @@ def getGroupActivityRank(group_id:int)->Optional[str]:
         elif None:  生成失败
     """
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
+        mydb, mycursor = newSqlSession()
         # 获取群里删除过act的人数
-        mycursor.execute('select count(*) from `BOT_DATA`.`clearChatLog` where group_id=%d'%group_id)
+        mycursor.execute('select count(*) from `clearChatLog` where group_id=%d'%group_id)
         queryPeopleNum = list(mycursor)[0][0] + 15
-        # mycursor.execute("SELECT ANY_VALUE(nickname), ANY_VALUE(card), user_id, COUNT(*) FROM BOT_DATA.messageRecord WHERE group_id=%d and user_id!=%d GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 15;"%(group_id, BOT_SELF_QQ))
-        mycursor.execute("use BOT_DATA")
+        # mycursor.execute("SELECT ANY_VALUE(nickname), ANY_VALUE(card), user_id, COUNT(*) FROM messageRecord WHERE group_id=%d and user_id!=%d GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 15;"%(group_id, BOT_SELF_QQ))
         randNum = random.randint(1e9, 1e10-1)
         tempTableName = 'actRank_'+str(randNum)+'_'+str(group_id)
         tempProcName = 'getNick_'+str(randNum)+'_'+str(group_id)
         mycursor.execute('drop temporary table if exists %s'%(tempTableName))
         mycursor.execute("""
         create temporary table %s 
-        select user_id as u, count(*) as c from BOT_DATA.messageRecord 
+        select user_id as u, count(*) as c from `messageRecord` 
         where group_id=%d and user_id != %d group by user_id
         order by count(user_id) desc limit %d"""%(tempTableName, group_id, BOT_SELF_QQ, queryPeopleNum))
         mycursor.execute("alter table %s add column n varchar(50)"%(tempTableName))
@@ -314,20 +311,20 @@ def getGroupActivityRank(group_id:int)->Optional[str]:
         repeat
         fetch cur into uid;
         select if(card = '', nickname, card) into nick
-        FROM BOT_DATA.messageRecord  
+        FROM `messageRecord`  
         WHERE message_seq = ( 
-            select max(message_seq) from BOT_DATA.messageRecord 
+            select max(message_seq) from `messageRecord` 
             where user_id = uid and group_id = %d
         )  and group_id = %d;
         update %s set n = nick where u = uid;
         
-        select count(*) > 0 from `BOT_DATA`.`clearChatLog` 
+        select count(*) > 0 from `clearChatLog` 
         where group_id = %d and user_id = uid into cleared;
         if cleared then
             update %s set c = (
                 select count(*) from messageRecord 
                 where group_id = %d and user_id = uid and message_seq > (
-                    select `message_seq` from `BOT_DATA`.`clearChatLog`
+                    select `message_seq` from `clearChatLog`
                     where group_id = %d and user_id = uid
                 )
             )where u = uid;

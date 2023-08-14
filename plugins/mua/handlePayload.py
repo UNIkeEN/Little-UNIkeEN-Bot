@@ -185,6 +185,7 @@ def handle_payload_fn(session_id, payload):
         # 全服广播
         # TODO: 根据targets选择广播对象
         if retType == 'LIST':
+            warninged = False
             for groupId in getPluginEnabledGroups('muanotice'):
                 savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'mualist_broadcast_%d.png'%groupId)
                 succ, result, shouldSend = drawMuaBriefListPic(savePath, body, getGroupFilter(groupId))
@@ -192,7 +193,8 @@ def handle_payload_fn(session_id, payload):
                     if shouldSend:
                         send(groupId, '检测到MUA通知更新：')
                         send(groupId, f'[CQ:image,file=files:///{savePath}]')   
-                else:
+                elif not warninged:
+                    warninged = True
                     warning(f'mua图片绘制失败: {result}')
 
 muaClientInstance.set_handle_payload_fn(handle_payload_fn)

@@ -6,7 +6,7 @@ from utils.responseImage_beta import *
 from icalendar import Calendar
 import datetime
 import re
-import mysql.connector
+from utils.sqlUtils import newSqlSession
 from typing import Optional, Dict, List
 
 # 开始时间占位符（当日程不提供开始时间时占位）
@@ -104,9 +104,8 @@ def syncCanvas(qq_id:int)->Optional[List]:
     if isinstance(qq_id, str):
         qq_id = int(qq_id)
     try:
-        mydb = mysql.connector.connect(**sqlConfig)
-        mycursor = mydb.cursor()
-        mycursor.execute("select icsUrl from `BOT_DATA`.`canvasIcs` where qq=%d"%(qq_id))
+        mydb, mycursor = newSqlSession(autocommit=False)
+        mycursor.execute("select icsUrl from `canvasIcs` where qq=%d"%(qq_id))
         urls = list(mycursor)
         if len(urls) == 0:
             return []
