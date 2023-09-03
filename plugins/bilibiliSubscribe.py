@@ -36,9 +36,9 @@ class BilibiliSubscribeHelper(StandardPlugin):
         group_id = data['group_id']
         send(group_id,'订阅帮助: B站订阅帮助\n' 
                     '订阅up:    订阅 <uid>\n'
-                    '取消订阅up: 取消订阅 <uid>\n'
-                    '获取已订阅: 订阅\n'
-                    '注意:  关闭本插件会自动取消订阅所有已订阅的up')
+                    '取消订阅: 取消订阅 <uid>\n'
+                    '获取订阅列表: 订阅\n'
+                    '注意:  关闭本插件会自动取消所有已订阅的up')
         return "OK"
     def getPluginInfo(self) -> dict:
         return {

@@ -51,6 +51,7 @@ def drawMuaListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]], groupAn
                     content = announcement['content']
                     for content_type, content_data in content:
                         if content_type == 'text':
+                            content_data = content_data.replace('\r\n', '\n')
                             raw_content.append(('body', content_data))
                         elif content_type in ['imgurl', 'imgbase64']:
                             img = urlOrBase64ToImage(content_type, content_data)
@@ -131,6 +132,7 @@ def drawMuaBriefListPic(savePath:str, muaList:Dict[str,List[Dict[str, Any]]], gr
                     content = announcement['content']
                     for content_type, content_data in content:
                         if content_type == 'text':
+                            content_data = content_data.replace('\r\n', '\n')
                             raw_content.append(('body', content_data))
                         elif content_type in ['imgurl', 'imgbase64']:
                             img = urlOrBase64ToImage(content_type, content_data)

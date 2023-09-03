@@ -186,6 +186,14 @@ def update_answer(group_id:int, question:str, answer:str, data:Any, tag:str = ''
         warning("exception in faq update_answer: {}".format(e))
         return False
     return True
+def get_questions(group_id:int):
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mycursor = mydb.cursor()
+    mycursor.execute("""select `question` from `BOT_FAQ_DATA`.`%d`
+    where latest = true and deleted = false
+    """%group_id)
+    questions = [q[0] for q in list(mycursor)]
+    return questions
 class AskFAQ(StandardPlugin):
     def __init__(self):
         self.pattern = re.compile(r'^(问|q)\s+(\S+)$')
@@ -198,16 +206,22 @@ class AskFAQ(StandardPlugin):
         if hasMsg:
             ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, question)
         else:
-            ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
-            mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
-            mycursor = mydb.cursor()
-            mycursor.execute("""select `question` from `BOT_FAQ_DATA`.`%d`
-            where latest = true and deleted = false
-            """%group_id)
-            questions = [q[0] for q in list(mycursor)]
-            fuzzy_ans = [fza[0] for fza in fuzzy_process.extract(question, questions, limit=5) if fza[1]>30]
-            if len(fuzzy_ans)>0:
-                ans += "，猜你可能想问：\n{}".format('、'.join(fuzzy_ans))
+            questions = get_questions(group_id)
+            fuzzy_ans = [fza[0] for fza in sorted(fuzzy_process.extract(question, questions, limit=5), key=lambda x:x[1], reverse=True) if fza[1]>30]
+            if msg.startswith('q'):
+                ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
+                if len(fuzzy_ans)>0:
+                    ans += "，猜你可能想问： {}".format('、'.join(fuzzy_ans))
+            else:
+                if len(fuzzy_ans) == 0:
+                    ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
+                else:
+                    question = fuzzy_ans[0]
+                    hasMsg, ans, tag = get_answer(group_id, question)
+                    if hasMsg:
+                        ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, question)
+                    else:
+                        ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
         send(group_id, ans)
 
     def getPluginInfo(self)->Any:
@@ -223,7 +237,7 @@ class AskFAQ(StandardPlugin):
         }
 class MaintainFAQ(StandardPlugin):
     def __init__(self):
-        self.findModPattern = re.compile(r"^\-?faq\s+(\S+)\s*(.*)$")
+        self.findModPattern = re.compile(r"^\-?faq\s+(\S+)\s*(.*)$", re.DOTALL)
         self.modMap = {
             'show': MaintainFAQ.faqShow,
             'ls': MaintainFAQ.faqShow,
@@ -296,7 +310,7 @@ class MaintainFAQ(StandardPlugin):
         
     @staticmethod
     def faqAdd(cmd: str, data):
-        pattern = re.compile(r'^(\S+)\s*(.*)$')
+        pattern = re.compile(r'^(\S+)\s*(.*)$', re.DOTALL)
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -315,7 +329,7 @@ class MaintainFAQ(StandardPlugin):
             
     @staticmethod
     def faqEdit(cmd: str, data):
-        pattern = re.compile(r'^(\S+)\s*(.*)$')
+        pattern = re.compile(r'^(\S+)\s*(.*)$', re.DOTALL)
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
@@ -370,14 +384,14 @@ class MaintainFAQ(StandardPlugin):
                     send(groupId, "[CQ:reply,id=%d]问题删除失败"%(data['message_id']))
     @staticmethod
     def faqAppend(cmd: str, data):
-        pattern = re.compile(r'^(\S+)\s(.*)$')
+        pattern = re.compile(r'^(\S+)\s(.*)$', re.DOTALL)
         qa = pattern.findall(cmd)
         groupId = data['group_id']
         if len(qa) == 0:
             send(groupId, '语法有误，支持语句为: faq append <key> <ans to append>')
         else:
             question, answer = qa[0]
-            status, prevAns, tag = get_answer(groupId, question, tag)
+            status, prevAns, tag = get_answer(groupId, question)
             if not status:
                 send(groupId,"[CQ:reply,id=%d]【%s】问题不存在"%(data['message_id'], question))
             else:
@@ -546,7 +560,8 @@ def draw_answer_history(group_id:int, question:str)->str:
         cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
         footer= '群号 %d'%group_id,
     )
-    for faq_seq, question, answer, latest, deleted, modify_user_id, modify_time, group_tag in list(mycursor):
+    results = list(mycursor)
+    for faq_seq, question, answer, latest, deleted, modify_user_id, modify_time, group_tag in results:
         cardList = []
         title = 'faq_seq = %d'% faq_seq
         if deleted:
@@ -562,6 +577,10 @@ def draw_answer_history(group_id:int, question:str)->str:
             raw_content=cardList,
             titleFontColor=PALETTE_RED if deleted else PALETTE_CYAN,
         ))
+    if len(results) == 0:
+        helpCards.addCard(ResponseImage.NoticeCard(
+            title='暂无历史记录'
+        ))
     savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, '%d-faq-history.png'%(group_id, ))
     helpCards.generateImage(savePath)
     return savePath
@@ -571,8 +590,8 @@ def draw_help_pic(group_id:int)->str:
     @return:    图片存储路径（绝对路径）
     """
     helpWords = (
-        "查询关键字： 'q <key>' / '问 <key>'\n"
-        "问题列表（纯文字）： 'faq (show|ls)\n"
+        "查询关键字： 'q <key>'(精确查询) / '问 <key>'(模糊查询)\n"
+        "问题列表（纯文字）： 'faq (show|ls)'\n"
         "问题列表按拼音排序： 'faq (show|ls) -1'\n"
         "问题列表按tag排序： 'faq (show|ls) -2'\n"
         "新建问题： 'faq (new|add) <key> (<original ans>)'\n"
@@ -581,8 +600,8 @@ def draw_help_pic(group_id:int)->str:
         "删除问题： 'faq del <key>'\n"
         "附加答案： 'faq append <key> <ans to append>'\n"
         "标记分组： 'faq tag <key> <tag>'\n"
-        "回滚(需要权限)： 'faq rollback <key>'\n"
-        "查看记录(需要权限)： 'faq history <key>'\n"
+        "回滚[🔑]： 'faq rollback <key>'\n"
+        "查看记录[🔑]： 'faq history <key>'\n"
         "获取帮助： 'faq help' / '问答帮助'"
     )
     helpCards = ResponseImage(

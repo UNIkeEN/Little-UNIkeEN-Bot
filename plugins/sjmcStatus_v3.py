@@ -269,7 +269,7 @@ class McStatusSetFooter(StandardPlugin):
         }
 
 def aio_get_sjmc_info(server_list:List[str]):
-    print(server_list)
+    # print(server_list)
     async def get_page(i, addr):
         url=f"https://mc.sjtu.cn/custom/serverlist/?query={addr}"
         async with aiohttp.request('GET', url) as req:
@@ -284,7 +284,7 @@ def aio_get_sjmc_info(server_list:List[str]):
     result = [r.result() for r in result[0]]
     result = sorted(result, key=lambda x: x[0])
     result = [r[1] for r in result]
-    print(result)
+    # print(result)
     return result
 
 def draw_sjmc_info(dat, group_id: int):
