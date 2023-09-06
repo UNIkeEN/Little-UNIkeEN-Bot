@@ -209,19 +209,19 @@ class AskFAQ(StandardPlugin):
             questions = get_questions(group_id)
             fuzzy_ans = [fza[0] for fza in sorted(fuzzy_process.extract(question, questions, limit=5), key=lambda x:x[1], reverse=True) if fza[1]>30]
             if msg.startswith('q'):
-                ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
+                ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表"%(data['message_id'])
                 if len(fuzzy_ans)>0:
                     ans += "，猜你可能想问： {}".format('、'.join(fuzzy_ans))
             else:
                 if len(fuzzy_ans) == 0:
-                    ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
+                    ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表"%(data['message_id'])
                 else:
                     question = fuzzy_ans[0]
                     hasMsg, ans, tag = get_answer(group_id, question)
                     if hasMsg:
                         ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, question)
                     else:
-                        ans = "[CQ:reply,id=%d]未查询到信息"%(data['message_id'])
+                        ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表"%(data['message_id'])
         send(group_id, ans)
 
     def getPluginInfo(self)->Any:
@@ -319,7 +319,7 @@ class MaintainFAQ(StandardPlugin):
             question, answer = qa[0]
             status, _, _ = get_answer(groupId, question)
             if status:
-                send(groupId, '[CQ:reply,id=%d]问题【%s】已经存在'%(data['message_id'], question))
+                send(groupId, '[CQ:reply,id=%d]问题【%s】已经存在，请输入faq edit <key> <new value>进行更改'%(data['message_id'], question))
             else:
                 status = update_answer(groupId, question, answer, data)
                 if status:
@@ -344,7 +344,7 @@ class MaintainFAQ(StandardPlugin):
                 if status:
                     send(groupId, "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], answer, question))
                 else:
-                    send(groupId, '[CQ:reply,id=%d]更新失败'%data['message_id'])
+                    send(groupId, '[CQ:reply,id=%d]更新失败，数据库错误'%data['message_id'])
     @staticmethod
     def faqCp(cmd: str, data):
         pattern = re.compile(r'^(\S+)\s+(\S+)$')
@@ -356,13 +356,13 @@ class MaintainFAQ(StandardPlugin):
             prevName, newName = qa[0]
             status, answer, tag = get_answer(groupId, prevName)
             if not status:
-                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在"%(data['message_id'], prevName))
+                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在，请输入faq ls查看问题列表"%(data['message_id'], prevName))
             else:
                 status = update_answer(groupId, newName, answer, data, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], answer, newName))
                 else:
-                    send(groupId, '[CQ:reply,id=%d]问题复制失败'%data['message_id'])
+                    send(groupId, '[CQ:reply,id=%d]问题复制失败，数据库错误'%data['message_id'])
     @staticmethod
     def faqDel(cmd: str, data):
         pattern = re.compile(r'^(\S+)\s*$')
@@ -375,13 +375,13 @@ class MaintainFAQ(StandardPlugin):
             print(question)
             status, _, tag = get_answer(groupId, question)
             if not status:
-                send(groupId, "[CQ:reply,id=%d]问题不存在"%(data['message_id']))
+                send(groupId, "[CQ:reply,id=%d]问题不存在，请输入faq ls查看问题列表"%(data['message_id']))
             else:
                 status = update_answer(groupId, question, '', data, delete=True, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]问题删除成功"%(data['message_id']))
                 else:
-                    send(groupId, "[CQ:reply,id=%d]问题删除失败"%(data['message_id']))
+                    send(groupId, "[CQ:reply,id=%d]问题删除失败，数据库错误"%(data['message_id']))
     @staticmethod
     def faqAppend(cmd: str, data):
         pattern = re.compile(r'^(\S+)\s(.*)$', re.DOTALL)
@@ -400,7 +400,7 @@ class MaintainFAQ(StandardPlugin):
                 if status:
                     send(groupId, "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], answer, question))
                 else:
-                    send(groupId, '[CQ:reply,id=%d]更新失败'%data['message_id'])
+                    send(groupId, '[CQ:reply,id=%d]更新失败，数据库错误'%data['message_id'])
     @staticmethod
     def faqTag(cmd: str, data):
         pattern = re.compile(r'^(\S+)\s+(\S+)$')
@@ -412,13 +412,13 @@ class MaintainFAQ(StandardPlugin):
             question, tag = qa[0]
             status, answer, _ = get_answer(groupId, question)
             if not status:
-                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在"%(data['message_id'], question))
+                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在，请输入faq ls查看问题列表"%(data['message_id'], question))
             else:
                 status = update_answer(groupId, question, answer, data, tag=tag)
                 if status:
                     send(groupId, "[CQ:reply,id=%d]OK"%(data['message_id']))
                 else:
-                    send(groupId, '[CQ:reply,id=%d]更新失败'%data['message_id'])
+                    send(groupId, '[CQ:reply,id=%d]更新失败，数据库错误'%data['message_id'])
     @staticmethod
     def faqRollBack(cmd: str, data):
         groupId = data['group_id']
@@ -435,7 +435,7 @@ class MaintainFAQ(StandardPlugin):
                 if status:
                     send(groupId, '[CQ:reply,id=%d]OK'%data['message_id'])
                 else:
-                    send(groupId, '[CQ:reply,id=%d]记录【%s】不存在'%(data['message_id'], question))
+                    send(groupId, '[CQ:reply,id=%d]记录【%s】不存在，请输入faq ls查看问题列表'%(data['message_id'], question))
     @staticmethod
     def faqHistory(cmd: str, data):
         groupId = data['group_id']
@@ -445,7 +445,7 @@ class MaintainFAQ(StandardPlugin):
             send(groupId, '语法有误，支持语句为: faq history <key>')
         else:
             if data['user_id'] not in getGroupAdmins(groupId):
-                send(groupId, '[CQ:reply,id=%d]您没有查看记录权限'%(data['message_id']))
+                send(groupId, '[CQ:reply,id=%d]您没有查看记录权限，输入faq help获取问答帮助'%(data['message_id']))
             else:
                 question = question[0]
                 picPath = draw_answer_history(groupId, question)

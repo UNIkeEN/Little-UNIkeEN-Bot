@@ -23,11 +23,7 @@ from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
-try:
-    from plugins.signIn_v2 import SignIn
-except Exception as e:
-    print('signin_v2 not imported: {}'.format(e))
-    from plugins.signIn import SignIn
+from plugins.signIn import SignIn
 
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
@@ -52,7 +48,7 @@ from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan
 from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
-from plugins.bilibiliSubscribe import BilibiliSubscribe, BilibiliSubscribeHelper, BilibiliUpSearcher
+from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
 try:
     from plugins.chatWithNLP import ChatWithNLP
 except NotPublishedException as e:
@@ -69,12 +65,13 @@ from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
 from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
-from plugins.goBang import GoBangPlugin
+# from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.addGroupRecorder import AddGroupRecorder
 from plugins.fileRecorder import GroupFileRecorder
-from plugins.sjmcLive import GetSjmcLive, GetFduMcLive, SjmcLiveMonitor, FduMcLiveMonitor, MuaLiveMonitor, GetMuaLive
-from plugins.advertisement import McAdManager
+from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
+from plugins.deprecated.sjmcLive import GetSjmcLive
+# from plugins.advertisement import McAdManager
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
@@ -87,11 +84,7 @@ from plugins.song import ChooseSong
 from plugins.zsmCorups import ZsmGoldSentence
 from plugins.apexStatus import ApexStatusPlugin
 from plugins.clearRecord import ClearRecord, RestoreRecord
-try:
-    from resources.api.getMddCola import IcolaUserBind
-except:
-    print("IcolaUserBind not imported")
-    IcolaUserBind = EmptyPlugin
+from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:
@@ -156,22 +149,24 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(),
-                        SjtuClassroomRecommend(), GetMddStatus(), IcolaUserBind(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+                        SjtuClassroomRecommend(), GetMddStatus(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn()], 'signin'),  # 签到
-    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetFduMcLive(), 
-                        PluginGroupManager([SjmcLiveMonitor(),FduMcLiveMonitor(), ], 'mclive'),
+    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), 
+                        PluginGroupManager([BilibiliLiveMonitor(25567444, 'SJMC', 'mclive'),
+                                            BilibiliLiveMonitor(24716629, '基岩社', 'mclive'), ], 'mclive'),
                         # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
                         ], 'sjmc'), #MC社服务
     PluginGroupManager([ShowMcStatus(), McStatusAddServer(), McStatusRemoveServer(), McStatusSetFooter(), McStatusRemoveFooter()
                         ], 'mcs'), #MC服务器列表for MUA
     PluginGroupManager([MuaQuery(), MuaAbstract(), MuaAnnHelper(), MuaAnnEditor(), 
                         MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
-                        MuaGroupBindTarget(), MuaGroupUnbindTarget(), MuaGroupAnnFilter(),GetMuaLive(),
+                        MuaGroupBindTarget(), MuaGroupUnbindTarget(), MuaGroupAnnFilter(),
+                        GetBilibiliLive(30539032, 'MUA', '-mualive'),
                         PluginGroupManager([MuaNotice()], 'muanotice'),
-                        PluginGroupManager([MuaLiveMonitor(),], 'mualive'),
+                        PluginGroupManager([BilibiliLiveMonitor(30539032, 'MUA', 'mualive'),], 'mualive'),
                         ], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
                         SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
@@ -210,8 +205,8 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     Show2cyPIC(), #ShowSePIC(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(), GetUniAgenda(),
     ShowEE0502Comments(), ZsmGoldSentence(),
-    GetSjmcLive(), GetFduMcLive(),
-    GetMddStatus(), IcolaUserBind(),#SubscribeMdd(),
+    GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
+    GetMddStatus(), #SubscribeMdd(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     ChooseSong(),

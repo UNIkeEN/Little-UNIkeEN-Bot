@@ -455,6 +455,42 @@ class UserFixed(User):
         return request_fixed(
             "GET", url=api["url"], params=params, credential=self.credential
         )
+    def get_dynamics(self, offset: int = 0, need_top: bool = False) -> dict:
+        """
+        获取用户动态。
+
+        Args:
+            offset (str, optional):     该值为第一次调用本方法时，数据中会有个 next_offset 字段，
+
+                                        指向下一动态列表第一条动态（类似单向链表）。
+
+                                        根据上一次获取结果中的 next_offset 字段值，
+
+                                        循环填充该值即可获取到全部动态。
+
+                                        0 为从头开始。
+                                        Defaults to 0.
+
+            need_top (bool, optional):  显示置顶动态. Defaults to False.
+
+        Returns:
+            dict: 调用接口返回的内容。
+        """
+        api = API_USER["info"]["dynamic"]
+        params = {
+            "host_uid": self.get_uid(),
+            "offset_dynamic_id": offset,
+            "need_top": 1 if need_top else 0,
+        }
+        data = request_fixed(
+            "GET", url=api["url"], params=params, credential=self.credential
+        )
+        # card 字段自动转换成 JSON。
+        if "cards" in data:
+            for card in data["cards"]:
+                card["card"] = json.loads(card["card"])
+                card["extend_json"] = json.loads(card["extend_json"])
+        return data
 if __name__ == '__main__':
     liveRoom = LiveRoomFixed(24716629)
     print(liveRoom.get_room_info())
