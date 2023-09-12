@@ -108,7 +108,7 @@ def edit_bind_ics(qq_id: Union[int, str], ics_url: str)->bool:
         qq_id = int(qq_id)
     try:
         mydb, mycursor = newSqlSession()
-        mycursor.execute("replace into `canvasIcs` (`icsUrl`, `qq`) values (%s, %s)",(qq_id, ics_url))
+        mycursor.execute("replace into `canvasIcs` (`icsUrl`, `qq`) values (%s, %s)",(ics_url, qq_id))
         return True
     except BaseException as e:
         warning("error in canvasSync, error: {}".format(e))

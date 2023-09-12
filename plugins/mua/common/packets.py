@@ -29,7 +29,7 @@ class Packet:
 class ClientAuthPacket(Packet):
     TYPE = "CLIENT_AUTH"
 
-    AUTH_DEFAULT = "DEFAULT"
+    AUTH_DEFAULT = "UNION"
 
     def __init__(self, auth_type, auth_field):
         self.auth_type = auth_type

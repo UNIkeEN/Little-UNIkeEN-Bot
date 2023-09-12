@@ -50,8 +50,8 @@ class ChineseChessPlugin(StandardPlugin):
         self.defeatCommands = ['认输', '掀棋盘', '不下了', '结束对局']
         self.ckptCommands = ['保存对局']
         self.chessdbCommands = ['谱招', '谱着']
-        self.games:Dict[str, Game] = {}
-        # self.timers: Dict[str, ] = {}
+        self.games:Dict[int, Game] = {}
+        # self.timers: Dict[int, ] = {}
         self.matchMovePattern = re.compile(r"^\S\S[a-iA-I平进退上下][0-9一二三四五六七八九]$")
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return (msg in self.startCommands or 
@@ -139,11 +139,14 @@ class ChineseChessPlugin(StandardPlugin):
         elif self.match_move(msg):
             game = self.games.get(group_id, None)
             if game == None:
-                send(target, '[CQ:reply,id={}]群内没有对局，请先发起对局'.format(data['message_id']), data['message_type'])
+                if self.get_move(msg, game) != None:
+                    send(target, '[CQ:reply,id={}]群内没有对局，请先发起对局'.format(data['message_id']), data['message_type'])
             elif game.player_black == None or game.player_red == None:
-                send(target, '[CQ:reply,id={}]游戏尚未开始，请先回复“应战”接受对局'.format(data['message_id']), data['message_type'])
+                if self.get_move(msg, game) != None:
+                    send(target, '[CQ:reply,id={}]游戏尚未开始，请先回复“应战”接受对局'.format(data['message_id']), data['message_type'])
             elif game.player_next != None and game.player_next.id != user_id:
-                send(target, '[CQ:reply,id={}]不是你的回合'.format(data['message_id']), data['message_type'])
+                if self.get_move(msg, game) != None:
+                    send(target, '[CQ:reply,id={}]不是你的回合'.format(data['message_id']), data['message_type'])
             else:
                 move = self.get_move(msg, game)
                 if move == None:

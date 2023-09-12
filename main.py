@@ -111,6 +111,14 @@ except NotPublishedException as e:
 
 from plugins.gocqWatchDog import GocqWatchDog
 
+from plugins.notPublished.sjtuSql import (
+    SearchSjtuSqlAllPrivate,
+    SearchSjtuSqlAll,
+    SearchSjtuSql,
+    SearchSjtuSqlPIC,
+)
+from plugins.notPublished.sjtuSqlGroupingVerication import SjtuSqlGroupingVerify
+
 ###### end not published plugins
 
 def sqlInit():
@@ -155,7 +163,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), 
-                        PluginGroupManager([BilibiliLiveMonitor(25567444, 'SJMC', 'mclive'),
+                        PluginGroupManager([BilibiliLiveMonitor(25567444, '交大MC社', 'mclive'),
                                             BilibiliLiveMonitor(24716629, '基岩社', 'mclive'), ], 'mclive'),
                         # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
                         ], 'sjmc'), #MC社服务
@@ -187,6 +195,9 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     PluginGroupManager([ChooseSong()], 'song'),
+    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
+    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(), 
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
@@ -207,6 +218,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     GetMddStatus(), #SubscribeMdd(),
+    SearchSjtuSqlAllPrivate(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     ChooseSong(),
@@ -221,7 +233,8 @@ GroupPokeList:List[PokeStandardPlugin] = [
 AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     AddGroupRecorder(), # place this plugin to the first place
     SjtuPlusGroupingVerify('dytwzzb',[]),
-    SjtuPlusGroupingVerify('test',[]),
+    SjtuPlusGroupingVerify('test',[604329164,613024311]),
+    SjtuSqlGroupingVerify([604329164,613024311]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 helperForPrivateControl.setPluginList(GroupPluginList)
