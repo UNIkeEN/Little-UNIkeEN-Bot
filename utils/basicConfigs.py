@@ -2,24 +2,16 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 import enum
 # from utils.basicEvent import get_login_info
-HTTP_URL="http://127.0.0.1:5701" #go-cqhttp
+HTTP_URL="http://127.0.0.1:5700" #go-cqhttp
 
 APPLY_GROUP_ID=[]
 
 APPLY_GUILD_ID = [ # guild test
-    # ('651039383982389627', '267764859'),
-    # ('651039383982389627', '267795135'),
 ]
 
 MAIN_GUILD = { # guild test
-    'guild_id': '', # '651039383982389627',
-    'channels':{
-        # 'chat': '267764859',
-        # 'mdd': '267795135',
-        # 'dekt': '267800522',
-        # 'bwc': '267836446',
-        # 'jwc': '267805890',
-    }
+    'guild_id': '',
+    'channels':{}
 }
 
 JAC_COOKIE = '' # for dekt
@@ -34,7 +26,7 @@ MAIL_PASS = ''
 # BOT_SELF_QQ=get_login_info()['user_id']
 BOT_SELF_QQ=0
 
-VERSION_TXT="""version：开源1.2.0版本
+VERSION_TXT="""version：muaLTS版本，见Little-UNIkeEN-Bot的muaLTS分支
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
 sqlConfig = {
