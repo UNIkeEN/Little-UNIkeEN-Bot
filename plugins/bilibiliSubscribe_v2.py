@@ -84,8 +84,7 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
             ]))
         elif dynamicType == 1:
             # 1: 转发动态
-            originUser = dynamicInfo['card']['origin_user']['info']['uname']
-            body = '转发了 %s 的动态'%originUser
+            body = dynamicInfo['card']['item']['content']
             card.addCard(ResponseImage.RichContentCard([
                 ('title', uname, ),
                 ('subtitle',pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'), ),
@@ -93,6 +92,52 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
                 ('separator', ),
                 ('body', body, ),
             ]))
+            if 'origin' in dynamicInfo['card'].keys():
+                originUser = dynamicInfo['card']['origin_user']['info']['uname']
+                origin = json.loads(dynamicInfo['card']['origin'])
+                originPubtime = None
+                if 'publish_time' in origin.keys():
+                    originPubtime = datetime.datetime.fromtimestamp(origin['publish_time'])
+                elif 'upload_time' in origin.keys():
+                    originPubtime = datetime.datetime.fromtimestamp(origin['upload_time'])
+                elif 'timestamp' in origin.keys():
+                    originPubtime = datetime.datetime.fromtimestamp(origin['timestamp'])
+                elif 'ctime' in origin.keys():
+                    originPubtime = datetime.datetime.fromtimestamp(origin['ctime'])
+                elif origin.get('item', {}).get('upload_time', None) != None:
+                    originPubtime = datetime.datetime.fromtimestamp(origin['item']['upload_time'])
+
+                originImgs = []
+                for imgInfo in origin.get('pictures', []):
+                    originImgs.append(('illustration', imgInfo['img_src']))
+                if 'pic' in origin.keys():
+                    originImgs.append(('illustration', origin['pic']))
+                for imgUrl in origin.get('image_urls', []):
+                    originImgs.append(('illustration', imgUrl))
+                for imgInfo in origin.get('item', {}).get('pictures', []):
+                    originImgs.append(('illustration', imgInfo['img_src']))
+                originContents = []
+                if 'title' in origin.keys():
+                    originContents.append(('subtitle', origin['title']))
+                if 'summary' in origin.keys():
+                    originContents.append(('body', origin['summary']))
+                if "description" in origin.get('item', {}).keys():
+                    originContents.append(('body', origin['item']['description']))
+                card.addCard(ResponseImage.RichContentCard([
+                    ('title', originUser, ),
+                    ('subtitle',originPubtime.strftime('更新于 %Y-%m-%d %H:%M:%S') if originPubtime != None else '未知的发布时间', ),
+                    ('keyword','类型： 被转发的动态',),
+                    ('separator', ),
+                    *originContents,
+                    *originImgs,
+                ]))
+            else:
+                card.addCard(ResponseImage.RichContentCard([
+                    ('title', '失效的动态', ),
+                    ('keyword','类型： 被转发的动态',),
+                    ('separator', ),
+                    ('subtitle', '原动态已失效', ),
+                ]))
 
         elif dynamicType in [2, 4]:
             # 2: 动态, 4: 直播预约
@@ -107,13 +152,45 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
                 body = cardItem['content']
             elif 'title' in cardItem.keys():
                 body = cardItem['title']
-                
+            addonCards = []
+            for addonCard in dynamicInfo.get('display', {}).get("add_on_card_info", []):
+                if 'ugc_attach_card' not in addonCard.keys(): continue
+                attachCard = addonCard['ugc_attach_card']
+                addonCards.append(('separator', ))
+                if 'title' in attachCard.keys():
+                    addonCards.append(('subtitle', attachCard['title']))
+                if 'desc_second' in attachCard.keys():
+                    addonCards.append(('body', attachCard['desc_second']))
+                if 'play_url' in attachCard.keys():
+                    addonCards.append(('body', attachCard['play_url']))
+                if 'image_url' in attachCard.keys():
+                    addonCards.append(('illustration', attachCard['image_url']))
             card.addCard(ResponseImage.RichContentCard([
                 ('title', uname, ),
                 ('subtitle',pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'), ),
                 ('keyword','类型： 动态',),
                 ('separator', ),
                 ('body', body, ),
+                *imgs,
+                *addonCards,
+            ]))
+        elif dynamicType == 64:
+            # 64: 文章
+            imgs = []
+            dynamicCard = dynamicInfo['card']
+            for imgUrl in dynamicCard.get('image_urls', []):
+                imgs.append(('illustration', imgUrl))
+            contents = []
+            if 'title' in dynamicCard.keys():
+                contents.append(('subtitle', dynamicCard['title']))
+            if 'summary' in dynamicCard.keys():
+                contents.append(('body', dynamicCard['summary']))
+            card.addCard(ResponseImage.RichContentCard([
+                ('title', uname, ),
+                ('subtitle',pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'), ),
+                ('keyword','类型： 文章',),
+                ('separator', ),
+                *contents,
                 *imgs,
             ]))
         else:
@@ -359,16 +436,16 @@ class BilibiliMonitor(CronStandardPlugin):
     def writeMeta(self, uploadTime:int, dynamicId:int)->None:
         """写入up主本次上传数据"""
         meta = (uploadTime, dynamicId)
-        if self._prevMeta == meta: return
-
         self._prevMeta = meta
         mydb, mycursor = newSqlSession()
+        print(uploadTime, dynamicId, self.uid)
         mycursor.execute("""
-        insert ignore into `bilibiliDynamic` set
+        replace into `bilibiliDynamic` set
         uploadTime = from_unixtime(%s),
         dynamicId = %s,
         uid = %s
         """, (uploadTime, dynamicId, self.uid))
+
     def cancel(self,) -> None:
         if self.job != None: 
             self.job.remove()
