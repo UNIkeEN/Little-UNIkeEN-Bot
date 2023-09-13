@@ -51,7 +51,6 @@ from plugins.getPermission import GetPermission, AddPermission, DelPermission, S
 # from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
 from plugins.addGroupRecorder import AddGroupRecorder
-from plugins.fileRecorder import GroupFileRecorder
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.deprecated.sjmcLive import GetSjmcLive
 # from plugins.advertisement import McAdManager
@@ -264,7 +263,7 @@ def post_data():
                     break
     # 上传文件处理
     elif flag == NoticeType.GroupUpload:
-        for event in [GroupFileRecorder()]:
+        for event in []:
             event.uploadFile(data)
     # 群内拍一拍回拍
     elif flag==NoticeType.GroupPoke: 
