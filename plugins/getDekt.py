@@ -58,7 +58,7 @@ def DownloadActlist():
             del cookie['expiry']
         driver.add_cookie(cookie)
     driver.get("https://dekt.sjtu.edu.cn/h5/")
-    time.sleep(3)
+    time.sleep(7)
     result = proxy.har
     #print(result)
     for entry in result['log']['entries']:
