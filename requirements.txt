@@ -29,3 +29,5 @@ wordcloud
 mysql-connector-python
 pyjsparser
 websockets
+cairosvg # for chess plugin
+chess    # for chess plugin

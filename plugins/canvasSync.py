@@ -32,7 +32,7 @@ class CanvasiCalUnbind(StandardPlugin):
 class CanvasiCalBind(StandardPlugin): 
     def __init__(self) -> None:
         # 外部服务，防止sql注入、url注入
-        self.urlRegex = re.compile(r'https://(canvas.sjtu.edu.cn|oc.sjtu.edu.cn|jicanvas.com)/feeds/calendars/user_[a-zA-Z0-9]{40}.ics')
+        self.urlRegex = re.compile(r'https://(canvas\.sjtu\.edu\.cn|oc\.sjtu\.edu\.cn|jicanvas\.com)/feeds/calendars/user\_[a-zA-Z0-9]{40}\.ics')
         # 检查sql是否开了canvasIcs
         try:
             mydb, mycursor = newSqlSession()
@@ -49,9 +49,17 @@ class CanvasiCalBind(StandardPlugin):
         msg=msg.replace('-ics bind','',1).strip()
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         if self.urlRegex.match(msg) == None or len(msg) > 110:
-            send(target,'格式错误，请检查ics链接符合格式:\n'+
-                r're.compile(r"https://(canvas|oc.sjtu.edu.cn|jicanvas.com)/feeds/calendars/user_[a-zA-Z0-9]{40}.ics")'+
-                "\n【已做防注入处理】", data['message_type'])
+            send(target,
+                 '格式错误，请检查ics链接格式是否正确\n'
+                 '目前支持的canvas网站有：\n'
+                 '1. canvas.sjtu.edu.cn\n'
+                 '2. oc.sjtu.edu.cn\n'
+                 '3. jicanvas.com\n\n'
+                 '请群聊或私聊使用-ics bind url 绑定您的Canvas iCal馈送链接\n'
+                 'url可在 canvas（oc.sjtu.edu.cn） - 日历📅 - 日历馈送 中获取\n\n'
+                 '指令示例：\n'
+                 '-ics bind https://oc.sjtu.edu.cn/feeds/calendars/user_0123456789012345678901234567890123456789.ics'
+                , data['message_type'])
         else:
             if edit_bind_ics(data['user_id'], msg):
                 send(target,"绑定成功", data['message_type'])
@@ -114,9 +122,6 @@ def edit_bind_ics(qq_id: Union[int, str], ics_url: str)->bool:
         warning("error in canvasSync, error: {}".format(e))
         return False
 
-FAIL_REASON_1="请群聊或私聊使用-ics bind url 绑定您的Canvas iCal馈送链接\n url可在 canvas - 日历📅 - 日历馈送 中获取"
-FAIL_REASON_2="无法获取或解析日历文件"
-
 def getCanvas(qq_id) -> Tuple[bool, str]:
     if isinstance(qq_id, str):
         qq_id = int(qq_id)
@@ -125,7 +130,15 @@ def getCanvas(qq_id) -> Tuple[bool, str]:
         mycursor.execute("select icsUrl from `canvasIcs` where qq=%d"%(qq_id))
         urls = list(mycursor)
         if len(urls) == 0:
-            return False, f"查询失败\n{FAIL_REASON_1}"
+            return False, (
+                "查询失败\n"
+                "请群聊或私聊使用-ics bind <url> 绑定您的Canvas iCal馈送链接\n"
+                "<url>可在 canvas - 日历📅 - 日历馈送 中获取\n"
+                "目前支持的canvas网站有：\n"
+                "1. canvas.sjtu.edu.cn\n"
+                "2. oc.sjtu.edu.cn\n"
+                "3. jicanvas.com"
+            )
         else:
             url = urls[0][0]
     except BaseException as e:
@@ -135,7 +148,7 @@ def getCanvas(qq_id) -> Tuple[bool, str]:
     try:
         ret = requests.get(url=url)
         if ret.status_code != requests.codes.ok:
-            return False, f"查询失败\n{FAIL_REASON_2}"
+            return False, "查询失败\n无法获取或解析日历文件"
         data = ret.content
         gcal = Calendar.from_ical(data)
         event_list = []
@@ -156,7 +169,7 @@ def getCanvas(qq_id) -> Tuple[bool, str]:
         return True, DrawEventListPic(event_list, qq_id)
     except Exception as e:
         print(e)
-        return False, f"查询失败\n{FAIL_REASON_2}"
+        return False, "查询失败\n无法获取或解析日历文件"
 
 def DrawEventListPic(event_list, qq_id):
     proceed_list = []

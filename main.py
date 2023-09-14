@@ -79,6 +79,7 @@ from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuCla
 from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
 from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
+from plugins.chess import ChessPlugin, ChessHelper
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 from plugins.song import ChooseSong
 from plugins.zsmCorups import ZsmGoldSentence
@@ -185,8 +186,11 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
+    PluginGroupManager([ChessPlugin(), ChessHelper()], 'chess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     PluginGroupManager([ChooseSong()], 'song'),
+    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
