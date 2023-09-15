@@ -73,6 +73,8 @@ class Game:
             return False
     def outcome(self)->Optional[chess.Outcome]:
         return self.board.outcome()
+    def fen(self)->str:
+        return self.board.fen()
     # def save_record(self, session_id: str)->GameRecord:
     #     record = GameRecord(game_id=self.id, session_id=session_id)
     #     if self.player_white:

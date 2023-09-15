@@ -23,7 +23,10 @@ class ChessHelper(StandardPlugin):
             '认输：   认输\n'
             '下棋： e7e8/e7e8q\n'
             '在坐标后加棋子字母表示升变，如“e7e8q”表示升变为后\n'
-            '悔棋： 悔棋'
+            '悔棋： 悔棋\n'
+            '棋子： \n'
+            '♖R ♘N ♗B ♕Q ♔K ♙P\n'
+            '♜r ♞n ♝b ♛q ♚k ♟p'
         ), data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
@@ -77,8 +80,6 @@ class ChessPlugin(StandardPlugin):
             game = self.games.get(group_id, None)
             if game == None:
                 send(target, '[CQ:reply,id={}]尚未有人发起战斗，请输入 下象棋、-lxq、执黑下象棋 发起挑战'.format(data['message_id']), data['message_type'])
-            elif len(game.history) <= 1:
-                send(target, '[CQ:reply,id={}]对局尚未开始'.format(data['message_id']), data['message_type'])
             else:
                 fen = game.fen()
                 send(target, fen, data['message_type'])
@@ -181,7 +182,7 @@ class ChessPlugin(StandardPlugin):
                     send(target, f'[CQ:image,file=files:///{imgPath}]', data['message_type'])
                 else:
                     send(target, f"[CQ:reply,id={data['message_id']}]查询失败", data['message_type'])
-                
+        return 'OK'
     def match_move(self, msg:str)->bool:
         return self.matchMovePattern.match(msg) != None
     def get_move(self, msg, _)->Optional[Move]:
@@ -192,8 +193,8 @@ class ChessPlugin(StandardPlugin):
             return None
     def getPluginInfo(self, )->Any:
         return {
-            'name': 'ChineseChessPlugin',
-            'description': '中国象棋',
+            'name': 'ChessPlugin',
+            'description': '国际象棋',
             'commandDescription': '下象棋/-lxq',
             'usePlace': ['group', ],
             'showInHelp': True,

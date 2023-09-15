@@ -183,7 +183,7 @@ class ChineseChessPlugin(StandardPlugin):
                     send(target, f'[CQ:image,file=files:///{imgPath}]', data['message_type'])
                 else:
                     send(target, f"[CQ:reply,id={data['message_id']}]查询失败", data['message_type'])
-                
+        return 'OK'
     def match_move(self, msg:str)->bool:
         return self.matchMovePattern.match(msg) != None
     def get_move(self, msg, game):
