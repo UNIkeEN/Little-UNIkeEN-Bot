@@ -349,6 +349,7 @@ class BilibiliMonitor(CronStandardPlugin):
         self.job: Optional[Job] = None
 
         self.cumulativeNetworkErrCount = 0
+        # _prevMeta: [prevUploadTime, prevDynamicId]
         self._prevMeta:Optional[Tuple[int, int]] = None
         self.baseInterval = 3 * 60 + random.randint(0, 100)
 
@@ -392,24 +393,31 @@ class BilibiliMonitor(CronStandardPlugin):
             isVideo = latestDynamic['desc']['type'] == 8
             dynamicId = latestDynamic['desc']['dynamic_id']
             prevMeta = self.getPrevMeta()
-            if prevMeta == None or prevMeta != (uploadTime, dynamicId):
-                self.writeMeta(uploadTime, dynamicId)
-                author = gocqQuote(latestDynamic['desc']['user_profile']['info']['uname'])
-                imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'biliDynamic-%d.png'%dynamicId)
-                succ, drawInfo = drawDynamicCard(latestDynamic, imgPath)
-                if not succ:
-                    warning('draw bilibili dynamic cards failed! uid = %d, bvid = %d, reason: %s'%(self.uid, dynamicId, drawInfo))
-                if isVideo:
-                    bvid = latestDynamic['desc']['bvid']
-                    for group in self.groupList:
-                        send(group, f'本群订阅UP主 【{author}】 更新视频啦！\n\n链接：{bvToUrl(bvid)}')
-                        if succ:
-                            send(group, f'[CQ:image,file=files:///{imgPath}]')
-                else:
-                    for group in self.groupList:
-                        send(group, f'本群订阅UP主 【{author}】 更新动态啦！\n\n链接：{dynamicIdToUrl(dynamicId)}')
-                        if succ:
-                            send(group, f'[CQ:image,file=files:///{imgPath}]')
+            if prevMeta != None and prevMeta[1] == dynamicId: return
+            # 校验upload time
+            if uploadTime > int(datetime.datetime.now().timestamp()):
+                warning('invalid uploadTime {} in bilibili dynamic {}'.format(uploadTime, dynamicId))
+                return
+            if prevMeta != None and uploadTime < prevMeta[0]:
+                return
+            # 写入并广播
+            self.writeMeta(uploadTime, dynamicId)
+            author = gocqQuote(latestDynamic['desc']['user_profile']['info']['uname'])
+            imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'biliDynamic-%d.png'%dynamicId)
+            succ, drawInfo = drawDynamicCard(latestDynamic, imgPath)
+            if not succ:
+                warning('draw bilibili dynamic cards failed! uid = %d, bvid = %d, reason: %s'%(self.uid, dynamicId, drawInfo))
+            if isVideo:
+                bvid = latestDynamic['desc']['bvid']
+                for group in self.groupList:
+                    send(group, f'本群订阅UP主 【{author}】 更新视频啦！\n\n链接：{bvToUrl(bvid)}')
+                    if succ:
+                        send(group, f'[CQ:image,file=files:///{imgPath}]')
+            else:
+                for group in self.groupList:
+                    send(group, f'本群订阅UP主 【{author}】 更新动态啦！\n\n链接：{dynamicIdToUrl(dynamicId)}')
+                    if succ:
+                        send(group, f'[CQ:image,file=files:///{imgPath}]')
         except KeyError as e:
             warning('bilibili api error, uid = %d: %s'%(self.uid, str(e)))
         except BaseException as e:
