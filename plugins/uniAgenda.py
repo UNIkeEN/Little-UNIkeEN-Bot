@@ -17,7 +17,9 @@ example_event = [title, subtitle, time_begin, time_end, font_color, back_color, 
 '''
 
 # 预置全局事件项（可用于公告/活动）
-preset_eventlist = [['麦当劳每日免费雪碧', '发送命令【-icola】了解如何用小马自动领券~  (技术支持: Teruteru)',datetime.datetime(2023, 6, 28, 10, 00, 00), datetime.datetime(2023, 9, 5, 23, 59, 59), (35,210,137,255), (214,255,238,255), None],]
+preset_eventlist = [
+    # ['麦当劳每日免费雪碧', '发送命令【-icola】了解如何用小马自动领券~  (技术支持: Teruteru)',datetime.datetime(2023, 6, 28, 10, 00, 00), datetime.datetime(2023, 9, 5, 23, 59, 59), (35,210,137,255), (214,255,238,255), None],
+]
 
 TEXT_WEEK_LIST=['一','二','三','四','五','六','日']
 

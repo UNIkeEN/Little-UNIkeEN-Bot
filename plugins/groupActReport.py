@@ -3,7 +3,7 @@ from utils.basicEvent import send, warning, startswith_in, get_avatar_pic, get_g
 from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin
 from PIL import Image, ImageDraw, ImageFont
-from utils.sqlUtils import newSqlSession
+from utils.sqlUtils import newSqlSession, mysql
 from utils.responseImage_beta import *
 import matplotlib.pyplot as plt
 import datetime

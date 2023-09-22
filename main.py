@@ -43,7 +43,7 @@ from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
-from plugins.groupBan import GroupBan
+from plugins.groupBan import GroupBan, UserBan, BanImplement, GetBanList
 from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
 from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
@@ -85,12 +85,14 @@ gocqWatchDog = GocqWatchDog(60)
 groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
 getXjmcBilibili = GetBilibiliLive(30143840, '西交MC团队', '-xjmclive')
 getFdmcBilibili = GetBilibiliLive(24716629, '基岩社', '-fdmclive')
+banImpl = BanImplement()
 
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
-    groupMessageRecorder,
+    groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
     GetPermission(), 
-    PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin()], 'permission'), # 权限
+    PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin(),
+                        UserBan(banImpl), GetBanList()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
     PluginGroupManager([GroupCalendarHelper(), GroupCalendarManager()], 'calendar'),
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安

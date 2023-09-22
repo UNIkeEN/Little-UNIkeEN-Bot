@@ -7,10 +7,9 @@ from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from utils.configAPI import getPluginEnabledGroups
 from threading import Timer, Semaphore
 from utils.bilibili_api_fixed import LiveRoomFixed
-from bilibili_api.exceptions.LiveException import LiveException
-from bilibili_api.exceptions.ApiException import ApiException
+from bilibili_api.exceptions import LiveException, ApiException, ResponseCodeException
 from datetime import datetime
-import os.path
+import os.path, random
 
 def createBilibiliLiveSql():
     mydb, mycursor = newSqlSession(autocommit=True)
@@ -79,7 +78,7 @@ class BilibiliLiveMonitor(StandardPlugin, CronStandardPlugin):
             createBilibiliLiveSql()
         prevStatus = self.loadLiveStatus()
         self.prevStatus = prevStatus if prevStatus != None else False
-        self.start(5, 30)
+        self.start(5, 21+random.randint(0, 19))
 
     def dumpLiveStatus(self, status: bool):
         mydb, mycursor = newSqlSession(autocommit=True)
@@ -97,7 +96,11 @@ class BilibiliLiveMonitor(StandardPlugin, CronStandardPlugin):
         return result[0][0]
     
     def tick(self):
-        roomInfo = self.liveRoom.get_room_info()['room_info']
+        try:
+            roomInfo = self.liveRoom.get_room_info()['room_info']
+        except ResponseCodeException as e:
+            print(e)
+            return
         currentStatus = roomInfo['live_status'] == 1
         if currentStatus != self.prevStatus:
             self.prevStatus = currentStatus

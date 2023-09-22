@@ -221,7 +221,7 @@ class McStatusRemoveFooter(StandardPlugin):
         return {
             'name': 'McStatusRemoveFooter',
             'description': '移除群聊mcs列表底部文字',
-            'commandDescription': '-mcsrmfoter',
+            'commandDescription': '-mcsrmfooter',
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': ['mcServerStatusFooter'],
