@@ -31,19 +31,32 @@ if __name__ == '__main__':
 
 ## 账号相关配置
 
-完成对接后，请继续修改 `utils/basicConfig.py` 。示例如下：
+完成对接后，请继续修改 `utils/basicConfig.py`。其中部分需要修改的部分示例如下：
 
 ```python
-APPLY_GROUP_ID = [111, 222]
-ROOT_ADMIN_ID = [333, 444]
-BOT_SELF_QQ = 555
-VERSION_TXT = '版本号1.0'
-sqlConfig = {
-    'host': '127.0.0.1',
-    'user': 'root',
-    'passwd': {YOUR_SQL_PASSWORD}
+ROOT_ADMIN_ID=[# 在这里面的QQ号是ROOT用户
+    123,  # 这个QQ号只是一个示例
+    456,  # 这个QQ号只是一个示例
+]
+
+WARNING_ADMIN_ID = [# 在这里面的QQ号会收到BOT的warning
+    123,  # 这个QQ号只是一个示例
+    789,  # 这个QQ号只是一个示例
+]
+
+# 下面这两个东西是gocq掉线的时候watchdog发邮件用的
+MAIL_USER = 'xxxxxxxx@qq.com'  # 请参考QQ邮箱pop3发送方法
+MAIL_PASS = 'xxxxxxxxxxxxxxx'
+
+# BOT自己的QQ **很重要，一定要改**
+BOT_SELF_QQ=12345   # 这个QQ号只是一个示例
+
+sqlConfig = { # mysql配置
+    'host': '127.0.0.1', # mysql网络地址，127.0.0.1表示部署在本机的sql
+    'user': '***',       # mysql用户名
+    'passwd': '*****',   # mysql密码
+    'port': 3306,        # mysql端口，默认3306，非3306端口需要填写此字段
 }
-TXT_PERMISSION_DENIED = "该功能尚未打开哦"
 ```
 
 以上各常量的具体解释如下：

@@ -15,6 +15,7 @@ nav:
       - '配置 gocqhttp': 'get-start/set-driver.md'
       - '配置 SQL': 'get-start/set-sql.md'
       - '部署 Bot': 'get-start/deployment.md'
+      - 'muaLTS分支': 'get-start/muaLTS.md'
       - '遇到问题': 'get-start/question.md'
     - 插件:
       - '插件入门': 'plugin/introduction.md'
