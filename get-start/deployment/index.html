@@ -2058,17 +2058,30 @@
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5701</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="_2">账号相关配置</h2>
-<p>完成对接后，请继续修改 <code>utils/basicConfig.py</code> 。示例如下：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">APPLY_GROUP_ID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">111</span><span class="p">,</span> <span class="mi">222</span><span class="p">]</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">ROOT_ADMIN_ID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">333</span><span class="p">,</span> <span class="mi">444</span><span class="p">]</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">BOT_SELF_QQ</span> <span class="o">=</span> <span class="mi">555</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">VERSION_TXT</span> <span class="o">=</span> <span class="s1">&#39;版本号1.0&#39;</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">sqlConfig</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="s1">&#39;passwd&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">YOUR_SQL_PASSWORD</span><span class="p">}</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">TXT_PERMISSION_DENIED</span> <span class="o">=</span> <span class="s2">&quot;该功能尚未打开哦&quot;</span>
+<p>完成对接后，请继续修改 <code>utils/basicConfig.py</code>。其中部分需要修改的部分示例如下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">ROOT_ADMIN_ID</span><span class="o">=</span><span class="p">[</span><span class="c1"># 在这里面的QQ号是ROOT用户</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="mi">123</span><span class="p">,</span>  <span class="c1"># 这个QQ号只是一个示例</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="mi">456</span><span class="p">,</span>  <span class="c1"># 这个QQ号只是一个示例</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">WARNING_ADMIN_ID</span> <span class="o">=</span> <span class="p">[</span><span class="c1"># 在这里面的QQ号会收到BOT的warning</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="mi">123</span><span class="p">,</span>  <span class="c1"># 这个QQ号只是一个示例</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="mi">789</span><span class="p">,</span>  <span class="c1"># 这个QQ号只是一个示例</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">]</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># 下面这两个东西是gocq掉线的时候watchdog发邮件用的</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">MAIL_USER</span> <span class="o">=</span> <span class="s1">&#39;xxxxxxxx@qq.com&#39;</span>  <span class="c1"># 请参考QQ邮箱pop3发送方法</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">MAIL_PASS</span> <span class="o">=</span> <span class="s1">&#39;xxxxxxxxxxxxxxx&#39;</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1"># BOT自己的QQ **很重要，一定要改**</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">BOT_SELF_QQ</span><span class="o">=</span><span class="mi">12345</span>   <span class="c1"># 这个QQ号只是一个示例</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="n">sqlConfig</span> <span class="o">=</span> <span class="p">{</span> <span class="c1"># mysql配置</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="c1"># mysql网络地址，127.0.0.1表示部署在本机的sql</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;***&#39;</span><span class="p">,</span>       <span class="c1"># mysql用户名</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="s1">&#39;passwd&#39;</span><span class="p">:</span> <span class="s1">&#39;*****&#39;</span><span class="p">,</span>   <span class="c1"># mysql密码</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">3306</span><span class="p">,</span>        <span class="c1"># mysql端口，默认3306，非3306端口需要填写此字段</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="p">}</span>
 </code></pre></div>
 <p>以上各常量的具体解释如下：</p>
 <table>
