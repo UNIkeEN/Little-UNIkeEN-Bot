@@ -69,7 +69,7 @@ class BanImplement(StandardPlugin):
         self.banList:Dict[int, Set[int]] = {}
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return data['user_id'] in self.banList.get(data['group_id'], set())
-    def executeEvent(self, msg: str, data: Any) -> str | None:
+    def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {
@@ -139,7 +139,7 @@ class UserBan(StandardPlugin):
         
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return self.triggerPattern.match(msg) != None
-    def executeEvent(self, msg: str, data: Any) -> str | None:
+    def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         groupId = data['group_id']
         enforcementPersonnel = data['user_id']
         banType, banTarget = self.triggerPattern.findall(msg)[0]
@@ -203,7 +203,7 @@ def drawGroupBanInfo(groupId:int, groupBanInfo:List[Tuple[int, int, datetime.dat
 class GetBanList(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg in ['-banlist'] and data['user_id'] in getGroupAdmins(groupId=data['group_id'])
-    def executeEvent(self, msg: str, data: Any) -> str | None:
+    def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         groupId = data['group_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'banList-%d.png'%groupId)
         succ, reason = drawGroupBanInfo(groupId, loadGroupBanInfo(groupId), savePath)

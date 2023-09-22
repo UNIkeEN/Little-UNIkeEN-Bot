@@ -190,8 +190,6 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChessPlugin(), ChessHelper()], 'chess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     PluginGroupManager([ChooseSong()], 'song'),
-    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
-                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, 
