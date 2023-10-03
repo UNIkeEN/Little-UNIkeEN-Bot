@@ -15,6 +15,7 @@ import random
 BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
             '-help','-st','-lib','-hs','-mdd',
             '-jwc','-dekt','-mc','-sjmc','-fdc',
+            '-xjtumc', '-mcs', '-xjmclive',
             '-tjmc','-mclive','-sjmclive',
             '-fdmclive','小马，','小🦄，',
             '小马,','小🦄,','-mycoins','-mytrans',
@@ -22,7 +23,8 @@ BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
             '来点图图',
             '决斗','接受决斗','ttzf','izf',
             '-myact', '-wc', '-actrank','-bwc',
-            '-bwrs','-bdrs','-zhrs', '-actclear']
+            '-bwrs','-bdrs','-zhrs', '-actclear',
+            '-lxq', '执黑下象棋', '问答帮助']
 
 class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:

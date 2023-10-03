@@ -24,7 +24,7 @@ from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, 
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
 from plugins.signIn import SignIn
-
+from plugins.thanksLUB import ThanksLUB
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
@@ -138,7 +138,7 @@ banImpl = BanImplement()
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
-    GetPermission(), 
+    GetPermission(), ThanksLUB(),
     PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin(),
                         UserBan(banImpl), GetBanList()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
@@ -192,7 +192,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChooseSong()], 'song'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
-    helper, 
+    helper, ThanksLUB(),
     ShowStatus(),ServerMonitor(),
     LsGroup(), GroupApply(), PrivateControl(), helperForPrivateControl,
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),

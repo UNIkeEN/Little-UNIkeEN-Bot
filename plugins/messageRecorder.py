@@ -104,6 +104,7 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
         # 多线程获取离线期间的聊天记录
         latestResultSeq = getLatestRecordSeq()
         self._getGroupMessageThread = threading.Thread(target=getGroupMessageThread,args=(latestResultSeq,))
+        self._getGroupMessageThread.daemon = True
         self._getGroupMessageThread.start()
     def recallMessage(self, data: Any):
         try:

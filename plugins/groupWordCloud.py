@@ -61,6 +61,7 @@ class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
 
         for group_id in APPLY_GROUP_ID:
             thread = Thread(target=genSendSaveImg, args=(group_id,))
+            thread.daemon = True
             thread.start()
             threadPool.append(thread)
 
