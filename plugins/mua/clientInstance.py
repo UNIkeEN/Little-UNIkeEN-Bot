@@ -89,6 +89,7 @@ def clientInstanceMainloop():
         print('!!!!MUA SESSIONLOST')
         time.sleep(1)
 __muaClientInstanceMainloop = threading.Thread(target=clientInstanceMainloop)
+__muaClientInstanceMainloop.daemon = True
 __muaClientInstanceMainloop.start()
 
 

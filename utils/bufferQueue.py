@@ -12,7 +12,8 @@ class BufferQueue():
         self.feedInterval = feedInterval
         self.feeder = Thread(target=self._feedThread)
         self.worker = Thread(target=self._workThread)
-
+        self.feeder.daemon = True
+        self.worker.daemon = True
     def _acquire(self):
         self.emptyResource.acquire(blocking=True)
         func, args, kwargs = self.queue.get(block=True)

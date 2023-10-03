@@ -85,7 +85,7 @@ class MuaTokenBinder(StandardPlugin):
 # @return:  0 没有权限
 #           1 使用权
 #           2 拥有权
-def getUserMuaIdPermission(userId:int, muaId:str)->Tuple[bool, str]:
+def getUserMuaIdPermission(userId:int, muaId:str)->int:
     mydb, mycursor = newSqlSession()
     mycursor.execute("""select `mua_token`, `empowered` from `muaToken` where 
     `user_id` = %s and `token_description` = %s""", (userId, muaId))

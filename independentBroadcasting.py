@@ -1,4 +1,5 @@
 from utils.configsLoader import loadApplyGroupId
+from utils.basicConfigs import SAVE_TMP_PATH, ROOT_PATH
 from utils.basicEvent import send
 from utils.configAPI import getPluginEnabledGroups
 loadApplyGroupId()
