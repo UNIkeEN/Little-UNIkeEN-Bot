@@ -1,9 +1,9 @@
 from typing import Union, Any
 import psutil
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, PluginGroupManager
-from utils.responseImage import *
+from utils.basic_event import *
+from utils.basic_configs import *
+from utils.standard_plugin import StandardPlugin, PluginGroupManager
+from utils.response_image import *
 import os.path
 import re
 class ShowHelp(StandardPlugin): 

@@ -1,9 +1,9 @@
 from typing import Dict, Union, Any, List, Tuple
-from utils.basicEvent import send, warning
+from utils.basic_event import send, warning
 from utils.configAPI import getGroupAdmins
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, APPLY_GROUP_ID
-from utils.responseImage import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
+from utils.standard_plugin import StandardPlugin
+from utils.basic_configs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, APPLY_GROUP_ID
+from utils.response_image import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
 import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector

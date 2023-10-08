@@ -1,9 +1,9 @@
-from utils.basicEvent import send, warning, get_group_msg_history
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
+from utils.basic_event import send, warning, get_group_msg_history
+from utils.standard_plugin import StandardPlugin, CronStandardPlugin
 from typing import Optional, List, Dict, Any, Union, Tuple
 from utils.configAPI import getPluginEnabledGroups
-from utils.basicConfigs import IMAGES_PATH, ROOT_PATH
-from utils.sqlUtils import newSqlSession
+from utils.basic_configs import IMAGES_PATH, ROOT_PATH
+from utils.sql_utils import newSqlSession
 from pymysql.converters import escape_string
 from threading import Semaphore
 import time

@@ -4,7 +4,7 @@ from typing import Callable
 
 from .common.packets import *
 from .common.subprotocols import *
-from utils.basicEvent import warning
+from utils.basic_event import warning
 
 class Client:
     def __init__(self, id, token, server):

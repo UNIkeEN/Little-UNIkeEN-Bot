@@ -4,9 +4,9 @@ from PIL import Image, ImageDraw, ImageFont
 import datetime
 import re
 from typing import Union, Any, Optional, Dict
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
+from utils.basic_event import *
+from utils.basic_configs import *
+from utils.standard_plugin import StandardPlugin, CronStandardPlugin
 from threading import Semaphore
 from utils.configAPI import getPluginEnabledGroups
 TXT_ONELINE_SIZE=745

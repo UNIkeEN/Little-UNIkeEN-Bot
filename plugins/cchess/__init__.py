@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from io import BytesIO
 from typing import Dict, Iterable, List, NoReturn, Union, Any, Optional
 
-from utils.basicEvent import send, warning
-from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
-from utils.standardPlugin import StandardPlugin
+from utils.basic_event import send, warning
+from utils.basic_configs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
+from utils.standard_plugin import StandardPlugin
 from .board import MoveResult
 from .config import Config
 from .engine import EngineError

@@ -5,9 +5,9 @@ import chess
 from chess import Termination, Move
 from .game import Game, Player
 from io import BytesIO
-from utils.basicEvent import send, warning
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
+from utils.basic_event import send, warning
+from utils.standard_plugin import StandardPlugin
+from utils.basic_configs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
 import os
 from PIL import Image
 class ChessHelper(StandardPlugin):

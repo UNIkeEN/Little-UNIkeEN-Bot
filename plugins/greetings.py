@@ -1,7 +1,7 @@
 from typing import Union, Any
 import random
-from utils.basicEvent import *
-from utils.standardPlugin import StandardPlugin
+from utils.basic_event import *
+from utils.standard_plugin import StandardPlugin
 
 GOODMORNING_LIST = [
     "时间最会骗人，但也能让你明白，这个世界没有什么不能失去的，离去的都是风景，留下的才是人生，走到最后的，就是对的人。早安！",

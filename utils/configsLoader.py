@@ -1,5 +1,5 @@
-from .basicConfigs import APPLY_GROUP_ID
-from .sqlUtils import newSqlSession
+from .basic_configs import APPLY_GROUP_ID
+from .sql_utils import newSqlSession
 from typing import Optional, List, Tuple
 
 def createApplyGroupsSql():

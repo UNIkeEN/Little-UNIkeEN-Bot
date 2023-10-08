@@ -2,33 +2,33 @@ import os
 from flask import Flask, request
 from enum import IntEnum
 from typing import List, Tuple, Any, Dict
-from utils.standardPlugin import NotPublishedException
-from utils.basicConfigs import APPLY_GROUP_ID, APPLY_GUILD_ID
+from utils.standard_plugin import NotPublishedException
+from utils.basic_configs import APPLY_GROUP_ID, APPLY_GUILD_ID
 from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
-from utils.accountOperation import create_account_sql
-from utils.standardPlugin import (
+from utils.account_operation import create_account_sql
+from utils.standard_plugin import (
     StandardPlugin, PluginGroupManager, EmptyPlugin,
     PokeStandardPlugin, AddGroupStandardPlugin, 
     EmptyAddGroupPlugin,GuildStandardPlugin
 )
-from utils.sqlUtils import createBotDataDb
+from utils.sql_utils import createBotDataDb
 from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
-from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
+from utils.basic_event import get_group_list, warning, set_friend_add_request, set_group_add_request
 
-from plugins.autoRepoke import AutoRepoke
+from plugins.auto_repoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ
-from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
+from plugins.group_calendar import GroupCalendarHelper, GroupCalendarManager
 from plugins.greetings import MorningGreet, NightGreet
-from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
-from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
+from plugins.check_coins import CheckCoins, AddAssignedCoins, CheckTransactions
+from plugins.super_emoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
-from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
-from plugins.signIn import SignIn
-from plugins.thanksLUB import ThanksLUB
+from plugins.hot_search import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
+from plugins.sign_in import SignIn
+from plugins.thanks_lub import ThanksLUB
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
-from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
-from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.sjmcStatus_v3 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
+from plugins.sjtu_info import SjtuCanteenInfo, SjtuLibInfo
+from plugins.sjmc_status_v2 import ShowSjmcStatus
+from plugins.sjmc_status_v3 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
 try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
         MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
@@ -44,73 +44,73 @@ except NotPublishedException as e:
     MuaTokenLister = EmptyPlugin
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
-from plugins.show2cyPic import Show2cyPIC, ShowSePIC
+from plugins.show_to_cy_pic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
-from plugins.groupBan import GroupBan, UserBan, BanImplement, GetBanList
-from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
-from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
+from plugins.group_ban import GroupBan, UserBan, BanImplement, GetBanList
+from plugins.private_control import PrivateControl, LsGroup, GroupApply, HelpInGroup
+from plugins.bilibili_subscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
 try:
-    from plugins.chatWithNLP import ChatWithNLP
+    from plugins.chat_with_nlp import ChatWithNLP
 except NotPublishedException as e:
     ChatWithNLP = EmptyPlugin
     print('ChatWithNLP not imported: {}'.format(e))
-from plugins.chatWithAnswerbook import ChatWithAnswerbook
+from plugins.chat_with_answerbook import ChatWithAnswerbook
 try:
-    from plugins.getDekt import SjtuDekt, SjtuDektMonitor
+    from plugins.get_dekt import SjtuDekt, SjtuDektMonitor
 except NotPublishedException as e:
     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
     print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
-from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor, GetJwcForGuild#, SubscribeJwc
-from plugins.sjtuSchoolGate import SjtuSchoolGate
-from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
-from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
-from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
+from plugins.get_jwc import GetSjtuNews, GetJwc, SjtuJwcMonitor, GetJwcForGuild#, SubscribeJwc
+from plugins.sjtu_school_gate import SjtuSchoolGate
+from plugins.sjtu_bwc import SjtuBwc, SjtuBwcMonitor
+from plugins.canvas_sync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
+from plugins.get_permission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
 # from plugins.goBang import GoBangPlugin
-from plugins.messageRecorder import GroupMessageRecorder
-from plugins.addGroupRecorder import AddGroupRecorder
-from plugins.fileRecorder import GroupFileRecorder
-from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
-from plugins.deprecated.sjmcLive import GetSjmcLive
+from plugins.message_recorder import GroupMessageRecorder
+from plugins.add_group_recorder import AddGroupRecorder
+from plugins.file_recorder import GroupFileRecorder
+from plugins.bilibili_live import GetBilibiliLive, BilibiliLiveMonitor
+from plugins.deprecated.sjmc_live import GetSjmcLive
 # from plugins.advertisement import McAdManager
-from plugins.groupActReport import ActReportPlugin, ActRankPlugin
-from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
-from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
-from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
-from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
-from plugins.makeJoke import MakeJoke
-from plugins.uniAgenda import GetUniAgenda
+from plugins.group_act_report import ActReportPlugin, ActRankPlugin
+from plugins.group_word_cloud import wordCloudPlugin, GenWordCloud
+from plugins.random_num import TarotRandom, RandomNum, ThreeKingdomsRandom
+from plugins.sjtu_classroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
+from plugins.sjtu_classroom_recorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
+from plugins.make_joke import MakeJoke
+from plugins.uni_agenda import GetUniAgenda
 from plugins.chess import ChessPlugin, ChessHelper
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 from plugins.song import ChooseSong
-from plugins.zsmCorups import ZsmGoldSentence
-from plugins.apexStatus import ApexStatusPlugin
-from plugins.clearRecord import ClearRecord, RestoreRecord
-from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
+from plugins.zsm_corups import ZsmGoldSentence
+from plugins.apex_status import ApexStatusPlugin
+from plugins.clear_record import ClearRecord, RestoreRecord
+from plugins.bilibili_live import GetBilibiliLive, BilibiliLiveMonitor
 try:
-    from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
+    from plugins.not_published.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:
     Chai_Jile = EmptyPlugin
     Yuan_Jile = EmptyPlugin
     print('Chai_Jile, Yuan_Jile not imported: {}'.format(e))
 try:
-    from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
+    from plugins.not_published.get_mdd_status import GetMddStatus, MonitorMddStatus#, SubscribeMdd
 except NotPublishedException as e:
     GetMddStatus, MonitorMddStatus = EmptyPlugin, EmptyPlugin
     print('GetMddStatus, MonitorMddStatus not imported: {}'.format(e))
 
 try:
-    from plugins.notPublished.EE0502 import ShowEE0502Comments
+    from plugins.not_published.ee0502 import ShowEE0502Comments
 except NotPublishedException as e:
     ShowEE0502Comments = EmptyPlugin
     print('ShowEE0502Comments not imported: {}'.format(e))
 
 try:
-    from plugins.notPublished.sjtuPlusGroupingVerication import SjtuPlusGroupingVerify
+    from plugins.not_published.sjtu_plus_grouping_verication import SjtuPlusGroupingVerify
 except NotPublishedException as e:
     SjtuPlusGroupingVerify = EmptyAddGroupPlugin
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
 
-from plugins.gocqWatchDog import GocqWatchDog
+from plugins.gocq_watch_dog import GocqWatchDog
 
 ###### end not published plugins
 

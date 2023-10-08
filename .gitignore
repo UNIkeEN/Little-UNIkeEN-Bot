@@ -6,3 +6,4 @@ data/
 test.py
 test.ipynb
 site/
+.idea/

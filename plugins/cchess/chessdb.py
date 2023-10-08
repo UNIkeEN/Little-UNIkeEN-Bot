@@ -2,9 +2,9 @@ import requests
 from typing import Optional, Dict, Any, List
 from .game import Game
 from PIL import Image, ImageDraw, ImageFont
-from utils.responseImage_beta import FONT_SYHT_M24
+from utils.response_image_beta import FONT_SYHT_M24
 from .move import Move
-from utils.basicEvent import warning
+from utils.basic_event import warning
 
 def queryChessdb(fen:str)->Optional[List[Dict[str, Any]]]:
     url = 'https://www.chessdb.cn/chessdb.php'

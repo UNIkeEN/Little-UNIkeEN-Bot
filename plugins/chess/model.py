@@ -1,5 +1,5 @@
 from datetime import datetime
-from utils.sqlUtils import newSqlSession
+from utils.sql_utils import newSqlSession
 raise NotImplementedError
 class GameRecord():
     @staticmethod

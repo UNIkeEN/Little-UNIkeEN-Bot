@@ -12,9 +12,9 @@ import datetime
 import string
 from pathlib import Path
 from typing import Union, Any
-from utils.basicEvent import send, startswith_in
-from utils.basicConfigs import ROOT_PATH, IMAGES_PATH, SAVE_TMP_PATH, font_hywh_85w, font_hywh_85w_ms, font_syht_m
-from utils.standardPlugin import StandardPlugin
+from utils.basic_event import send, startswith_in
+from utils.basic_configs import ROOT_PATH, IMAGES_PATH, SAVE_TMP_PATH, font_hywh_85w, font_hywh_85w_ms, font_syht_m
+from utils.standard_plugin import StandardPlugin
 
 class GenshinDailyNote(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:

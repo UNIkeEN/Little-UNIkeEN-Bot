@@ -1,10 +1,10 @@
-from .neteaseMusicApi import search_song as searchSongNeteaseAPI
+from .netease_music_api import search_song as searchSongNeteaseAPI
 
 from typing import Union, Any, List, Dict, Tuple
-from utils.standardPlugin import StandardPlugin
-from utils.basicEvent import send, warning, gocqQuote
-from utils.basicConfigs import SAVE_TMP_PATH, ROOT_PATH
-from utils.responseImage_beta import *
+from utils.standard_plugin import StandardPlugin
+from utils.basic_event import send, warning, gocqQuote
+from utils.basic_configs import SAVE_TMP_PATH, ROOT_PATH
+from utils.response_image_beta import *
 import re
 import json
 import time
