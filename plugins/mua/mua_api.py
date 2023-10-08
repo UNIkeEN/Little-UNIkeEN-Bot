@@ -1,7 +1,8 @@
 import requests
 from typing import Tuple, Optional, Dict
 
-def verifyMuaToken(token:str)->Tuple[bool, str]:
+
+def verify_mua_token(token: str) -> Tuple[bool, str]:
     """校验MUA token是否合法
     @token: MUA token
     @return:
@@ -18,7 +19,8 @@ def verifyMuaToken(token:str)->Tuple[bool, str]:
     else:
         return succ, 'false'
 
-def getTargetGroupMapping(muaToken:str)->Optional[Dict[int, str]]:
+
+def get_target_group_mapping(muaToken: str) -> Optional[Dict[int, str]]:
     """获取 群号-MUAID 之间的对应关系
     @muaToken: 查询者的MUA Token
     @return:

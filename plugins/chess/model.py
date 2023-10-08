@@ -1,10 +1,13 @@
 from datetime import datetime
-from utils.sql_utils import newSqlSession
+from utils.sql_utils import new_sql_session
+
 raise NotImplementedError
+
+
 class GameRecord():
     @staticmethod
-    def createSql():
-        mydb, mycursor = newSqlSession()
+    def create_sql():
+        mydb, mycursor = new_sql_session()
         mycursor.execute("""
         create table if not exists `chessGameRecord`(
             `group_id` big int unsigned not null,
@@ -12,6 +15,7 @@ class GameRecord():
             primary key (`group_id`)
         )
         """)
+
     __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(primary_key=True)

@@ -6,6 +6,7 @@ from .common.packets import *
 from .common.subprotocols import *
 from utils.basic_event import warning
 
+
 class Client:
     def __init__(self, id, token, server):
         self.ws = None
@@ -14,16 +15,16 @@ class Client:
         self.server = server
         self.handle_payload_fn = None
 
-    def set_handle_payload_fn(self, payload_fn:Callable):
+    def set_handle_payload_fn(self, payload_fn: Callable):
         self.handle_payload_fn = payload_fn
 
-    async def send_payload(self, payload : PayloadPacket):
+    async def send_payload(self, payload: PayloadPacket):
         print('-------------------')
         print(payload.to_json())
         print('-------------------')
         await self.ws.send(payload.to_json())
 
-    async def handle_payload(self, payload : PayloadPacket):
+    async def handle_payload(self, payload: PayloadPacket):
         sessionId = payload.get_session_id()
         if self.handle_payload_fn != None:
             try:
@@ -32,8 +33,8 @@ class Client:
                 warning(f'exception in handling mua payload: {e}, payload: {str(payload)}')
         else:
             print("[WARNING]: handle_payload_fn is None")
-            
-    async def send_packet(self, packet : Packet):
+
+    async def send_packet(self, packet: Packet):
         await self.ws.send(packet.to_json())
 
     async def authenticate(self):
@@ -52,6 +53,6 @@ class Client:
                 print("[ERROR] Received unknown packet!")
                 continue
             await self.handle_payload(payload)
-            
+
     async def connect(self):
         self.ws = await websockets.connect(self.server, ssl=ssl.SSLContext())

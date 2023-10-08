@@ -15,6 +15,7 @@ import requests
 from Crypto.Cipher import AES
 from typing import List, Dict
 
+
 # 从a-z,A-Z,0-9中随机获取16位字符
 def get_random():
     random_str = ''.join(random.sample(string.ascii_letters + string.digits, 16))
@@ -104,8 +105,10 @@ def get_reply(params, encSecKey):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.text
 
-def search_song(song_name:str)->List[Dict]:
-    d = {"csrf_token": "", "hlpretag": "<span class=\"s-fc7\">", "hlposttag": "</span>", "s": song_name, "type": "1", "offset": "0",
+
+def search_song(song_name: str) -> List[Dict]:
+    d = {"csrf_token": "", "hlpretag": "<span class=\"s-fc7\">", "hlposttag": "</span>", "s": song_name, "type": "1",
+         "offset": "0",
          "total": "true", "limit": "30"}
     d = json.dumps(d)
     random_param = get_random()
@@ -115,10 +118,12 @@ def search_song(song_name:str)->List[Dict]:
     songs = result.get('songs', [])
     return songs
 
+
 # 方法入口
 if __name__ == '__main__':
     song_name = input('请输入歌曲名称，按回车键搜索：')
-    d = {"csrf_token": "", "hlpretag": "<span class=\"s-fc7\">", "hlposttag": "</span>", "s": song_name, "type": "1", "offset": "0",
+    d = {"csrf_token": "", "hlpretag": "<span class=\"s-fc7\">", "hlposttag": "</span>", "s": song_name, "type": "1",
+         "offset": "0",
          "total": "true", "limit": "30"}
     d = json.dumps(d)
     random_param = get_random()
@@ -129,7 +134,7 @@ if __name__ == '__main__':
         song_list = json.loads(song_list)['result']['songs']
         for i, item in enumerate(song_list):
             item = json.dumps(item)
-            print(str(i+1) + "：" + json.loads(str(item))['name'])
+            print(str(i + 1) + "：" + json.loads(str(item))['name'])
             d = {"ids": "[" + str(json.loads(str(item))['id']) + "]", "level": "standard", "encodeType": "",
                  "csrf_token": ""}
             d = json.dumps(d)

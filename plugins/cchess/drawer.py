@@ -35,8 +35,8 @@ def draw_board(board: "Board", sameside: bool = True) -> BytesIO:
                 y = 450 + 300 * i
 
             if draw_mark and (
-                (i == from_pos.x and j == from_pos.y)
-                or (i == to_pos.x and j == to_pos.y)
+                    (i == from_pos.x and j == from_pos.y)
+                    or (i == to_pos.x and j == to_pos.y)
             ):
                 bg.paste(mark, (x, y), mask=mark)
 

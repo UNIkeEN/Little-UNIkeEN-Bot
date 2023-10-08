@@ -3,18 +3,20 @@ from utils.basic_event import send, warning, set_group_add_request
 from typing import Any, Union, List, Dict, Tuple, Optional
 import requests, requests.exceptions
 import re
+
 try:
     from resources.api.sjtuPlusKey import SJTU_PLUS_GROUP_VERIFY_KEYS
 except ImportError:
     raise NotPublishedException("sjtu plus key is secret")
-    
+
+
 class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
     @staticmethod
-    def commentToCode(comment:str)->str:
+    def comment_to_code(comment: str) -> str:
         code = comment.split('\n', maxsplit=1)[-1].split('：', maxsplit=1)[-1]
         return code
 
-    def __init__(self, apiKeyName:str, appliedGroups:List[int]) -> None:
+    def __init__(self, apiKeyName: str, appliedGroups: List[int]) -> None:
         self.apiKeyName = apiKeyName
         self.appliedGroups = appliedGroups
         self.apiKey = SJTU_PLUS_GROUP_VERIFY_KEYS[apiKeyName]
@@ -22,12 +24,12 @@ class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
         assert isinstance(self.apiKey, str)
         assert isinstance(self.appliedGroups, list) and all([isinstance(x, int) for x in self.appliedGroups])
 
-    def judgeTrigger(self, data: Any) -> bool:
+    def judge_trigger(self, data: Any) -> bool:
         return (data['group_id'] in self.appliedGroups and
-            self.triggerPattern.match(self.commentToCode(data['comment'])) != None)
-    
-    def addGroupVerication(self, data: Any) -> Union[str, None]:
-        vcode = self.triggerPattern.findall(self.commentToCode(data['comment']))[0]
+                self.triggerPattern.match(self.comment_to_code(data['comment'])) != None)
+
+    def add_group_verication(self, data: Any) -> Union[str, None]:
+        vcode = self.triggerPattern.findall(self.comment_to_code(data['comment']))[0]
         if isinstance(vcode, tuple):
             vcode = vcode[0]
         result = self.verify(data['user_id'], vcode)
@@ -37,8 +39,8 @@ class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
             else:
                 set_group_add_request(data['flag'], data['sub_type'], False, '请确认您复制了正确的sjtu plus验证码')
         return 'OK'
-        
-    def verify(self, qq_number: int, token: str)->Optional[bool]:
+
+    def verify(self, qq_number: int, token: str) -> Optional[bool]:
         data = {
             'qq_number': str(qq_number),
             'token': token,

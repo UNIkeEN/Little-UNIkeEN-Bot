@@ -1,6 +1,6 @@
 from utils.standard_plugin import StandardPlugin, CronStandardPlugin, Job
-from utils.sql_utils import newSqlSession
-from utils.basic_event import send, warning, gocqQuote
+from utils.sql_utils import new_sql_session
+from utils.basic_event import send, warning, gocq_quote
 from utils.response_image_beta import *
 from utils.basic_configs import ROOT_PATH, SAVE_TMP_PATH, APPLY_GROUP_ID
 import re, json
@@ -11,12 +11,18 @@ import random
 from threading import Semaphore
 import copy
 import time, datetime
-def bvToUrl(bvid:str):
+
+
+def bv_to_url(bvid: str):
     return 'https://www.bilibili.com/video/' + bvid
-def dynamicIdToUrl(dynamicId:int):
+
+
+def dynamic_id_to_url(dynamicId: int):
     return 'https://www.bilibili.com/opus/' + str(dynamicId)
-def createBilibiliTable()->None:
-    mydb, mycursor = newSqlSession()
+
+
+def create_bilibili_table() -> None:
+    mydb, mycursor = new_sql_session()
     mycursor.execute("""
     create table if not exists `bilibiliDynamic` (
         `uid` bigint unsigned not null,
@@ -31,7 +37,8 @@ def createBilibiliTable()->None:
         primary key(`group_id`, `uid`)
     )""")
 
-def durationToStr(duration:int)->str:
+
+def duration_to_str(duration: int) -> str:
     if not isinstance(duration, int) or duration < 0:
         raise Exception('invalid input in durationToStr')
     hours = duration // 3600
@@ -39,12 +46,14 @@ def durationToStr(duration:int)->str:
     minutes = duration // 60
     seconds = duration % 60
     if hours == 0:
-        result = '%02d:%02d'%(minutes, seconds)
+        result = '%02d:%02d' % (minutes, seconds)
         return result
     else:
-        result = '%d:%02d:%02d'%(hours, minutes, seconds)
+        result = '%d:%02d:%02d' % (hours, minutes, seconds)
         return result
-def makeThumbnails(pictures:List[Dict[str, Any]]):
+
+
+def make_thumbnails(pictures: List[Dict[str, Any]]):
     """TODO: make thumbnails
     first step: aioget, if len(pic) == 1 or 2 or >= 3
     second step: 
@@ -52,10 +61,13 @@ def makeThumbnails(pictures:List[Dict[str, Any]]):
         else: resize, img = img[:, from:to,:]
     third step: paste to Image
     """
-def dimensionToStr(dimension:Dict[str, int])->int:
-    return '%s x %s'%(dimension['width'], dimension['height'])
 
-def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
+
+def dimension_to_str(dimension: Dict[str, int]) -> int:
+    return '%s x %s' % (dimension['width'], dimension['height'])
+
+
+def draw_dynamic_card(dynamicInfo: Dict[str, Any], savePath: str) -> Tuple[bool, str]:
     try:
         card = ResponseImage(
             title='B站动态更新',
@@ -69,28 +81,28 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
                 '标题： ', dynamicInfo['card']['title'], '\n',
                 '简介： ', dynamicInfo['card']['desc'], '\n',
                 'IP： ', dynamicInfo['card']['pub_location'], '\n',
-                '时长： ', durationToStr(dynamicInfo['card']['duration']), '\n',
+                '时长： ', duration_to_str(dynamicInfo['card']['duration']), '\n',
                 '链接： ', dynamicInfo['card']['short_link_v2'], '\n',
-                '分辨率： ', dimensionToStr(dynamicInfo['card']['dimension'])
+                '分辨率： ', dimension_to_str(dynamicInfo['card']['dimension'])
             ])
             coverLink = dynamicInfo['card']['pic']
-            card.addCard(ResponseImage.RichContentCard([
-                ('title', uname, ),
+            card.add_card(ResponseImage.RichContentCard([
+                ('title', uname,),
                 ('subtitle', pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'),),
-                ('keyword', '类型： 视频', ),
-                ('separator', ),
-                ('body', body, ),
+                ('keyword', '类型： 视频',),
+                ('separator',),
+                ('body', body,),
                 ('illustration', coverLink,),
             ]))
         elif dynamicType == 1:
             # 1: 转发动态
             body = dynamicInfo['card']['item']['content']
-            card.addCard(ResponseImage.RichContentCard([
-                ('title', uname, ),
-                ('subtitle',pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'), ),
-                ('keyword','类型： 转发动态',),
-                ('separator', ),
-                ('body', body, ),
+            card.add_card(ResponseImage.RichContentCard([
+                ('title', uname,),
+                ('subtitle', pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'),),
+                ('keyword', '类型： 转发动态',),
+                ('separator',),
+                ('body', body,),
             ]))
             if 'origin' in dynamicInfo['card'].keys():
                 originUser = dynamicInfo['card']['origin_user']['info']['uname']
@@ -123,20 +135,21 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
                     originContents.append(('body', origin['summary']))
                 if "description" in origin.get('item', {}).keys():
                     originContents.append(('body', origin['item']['description']))
-                card.addCard(ResponseImage.RichContentCard([
-                    ('title', originUser, ),
-                    ('subtitle',originPubtime.strftime('更新于 %Y-%m-%d %H:%M:%S') if originPubtime != None else '未知的发布时间', ),
-                    ('keyword','类型： 被转发的动态',),
-                    ('separator', ),
+                card.add_card(ResponseImage.RichContentCard([
+                    ('title', originUser,),
+                    ('subtitle', originPubtime.strftime(
+                        '更新于 %Y-%m-%d %H:%M:%S') if originPubtime != None else '未知的发布时间',),
+                    ('keyword', '类型： 被转发的动态',),
+                    ('separator',),
                     *originContents,
                     *originImgs,
                 ]))
             else:
-                card.addCard(ResponseImage.RichContentCard([
-                    ('title', '失效的动态', ),
-                    ('keyword','类型： 被转发的动态',),
-                    ('separator', ),
-                    ('subtitle', '原动态已失效', ),
+                card.add_card(ResponseImage.RichContentCard([
+                    ('title', '失效的动态',),
+                    ('keyword', '类型： 被转发的动态',),
+                    ('separator',),
+                    ('subtitle', '原动态已失效',),
                 ]))
 
         elif dynamicType in [2, 4]:
@@ -156,7 +169,7 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
             for addonCard in dynamicInfo.get('display', {}).get("add_on_card_info", []):
                 if 'ugc_attach_card' not in addonCard.keys(): continue
                 attachCard = addonCard['ugc_attach_card']
-                addonCards.append(('separator', ))
+                addonCards.append(('separator',))
                 if 'title' in attachCard.keys():
                     addonCards.append(('subtitle', attachCard['title']))
                 if 'desc_second' in attachCard.keys():
@@ -165,12 +178,12 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
                     addonCards.append(('body', attachCard['play_url']))
                 if 'image_url' in attachCard.keys():
                     addonCards.append(('illustration', attachCard['image_url']))
-            card.addCard(ResponseImage.RichContentCard([
-                ('title', uname, ),
-                ('subtitle',pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'), ),
-                ('keyword','类型： 动态',),
-                ('separator', ),
-                ('body', body, ),
+            card.add_card(ResponseImage.RichContentCard([
+                ('title', uname,),
+                ('subtitle', pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'),),
+                ('keyword', '类型： 动态',),
+                ('separator',),
+                ('body', body,),
                 *imgs,
                 *addonCards,
             ]))
@@ -185,34 +198,38 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
                 contents.append(('subtitle', dynamicCard['title']))
             if 'summary' in dynamicCard.keys():
                 contents.append(('body', dynamicCard['summary']))
-            card.addCard(ResponseImage.RichContentCard([
-                ('title', uname, ),
-                ('subtitle',pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'), ),
-                ('keyword','类型： 文章',),
-                ('separator', ),
+            card.add_card(ResponseImage.RichContentCard([
+                ('title', uname,),
+                ('subtitle', pubtime.strftime('更新于 %Y-%m-%d %H:%M:%S'),),
+                ('keyword', '类型： 文章',),
+                ('separator',),
                 *contents,
                 *imgs,
             ]))
         else:
-            return False, 'unsupported dynamic info type: %d'%dynamicType
-        card.generateImage(savePath=savePath)
+            return False, 'unsupported dynamic info type: %d' % dynamicType
+        card.generate_image(savePath=savePath)
         return True, savePath
     except KeyError as e:
         return False, 'KeyError: ' + str(e)
     except BaseException as e:
         return False, 'BaseException: ' + str(e)
+
+
 class BilibiliSubscribeHelper(StandardPlugin):
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return msg in ["B站订阅帮助", "b站订阅帮助"] and data['message_type']=='group'
-    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        return msg in ["B站订阅帮助", "b站订阅帮助"] and data['message_type'] == 'group'
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
-        send(group_id,'订阅帮助: B站订阅帮助\n' 
-                    '订阅up:    订阅 <uid>\n'
-                    '取消订阅: 取消订阅 <uid>\n'
-                    '获取订阅列表: 订阅\n'
-                    '注意:  关闭本插件会自动取消所有已订阅的up')
+        send(group_id, '订阅帮助: B站订阅帮助\n'
+                       '订阅up:    订阅 <uid>\n'
+                       '取消订阅: 取消订阅 <uid>\n'
+                       '获取订阅列表: 订阅\n'
+                       '注意:  关闭本插件会自动取消所有已订阅的up')
         return "OK"
-    def getPluginInfo(self) -> dict:
+
+    def get_plugin_info(self) -> dict:
         return {
             'name': 'BilibiliSubscribeHelper',
             'description': 'B站订阅帮助',
@@ -224,23 +241,26 @@ class BilibiliSubscribeHelper(StandardPlugin):
             'author': 'Unicorn',
         }
 
+
 class BilibiliSubscribe(StandardPlugin):
     initGuard = Semaphore()
+
     def __init__(self) -> None:
         """
         self.bUps: uid -> UserFixed
         self.groupUps: group_id -> Set[uid: int]
         """
         if self.initGuard.acquire(blocking=False):
-            createBilibiliTable()
+            create_bilibili_table()
         self.pattern1 = re.compile(r'^订阅\s*(\d+)$')
         self.pattern2 = re.compile(r'^取消订阅\s*(\d+)$')
         self.pattern3 = re.compile(r'^订阅$')
-        self.bUps:Dict[int, BilibiliMonitor] = {}
-        self.groupUps:Dict[int, Set[int]] = {}
-        self._loadFromSql()
-    def _loadFromSql(self)->None:
-        mydb, mycursor = newSqlSession()
+        self.bUps: Dict[int, BilibiliMonitor] = {}
+        self.groupUps: Dict[int, Set[int]] = {}
+        self._load_from_sql()
+
+    def _load_from_sql(self) -> None:
+        mydb, mycursor = new_sql_session()
         mycursor.execute("""
         select group_id, uid from `bilibiliSubscribe`
         """)
@@ -251,39 +271,41 @@ class BilibiliSubscribe(StandardPlugin):
                 self.bUps[uid] = BilibiliMonitor(uid)
             self.groupUps[group_id].add(uid)
             if group_id in APPLY_GROUP_ID:
-                self.bUps[uid].addGroup(group_id)
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return self.pattern1.match(msg) != None or\
-               self.pattern2.match(msg) != None or\
-               self.pattern3.match(msg) != None
+                self.bUps[uid].add_group(group_id)
 
-    def subscribeBilibili(self, group_id:int, bilibili_uid:int)->None:
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        return self.pattern1.match(msg) != None or \
+            self.pattern2.match(msg) != None or \
+            self.pattern3.match(msg) != None
+
+    def subscribe_bilibili(self, group_id: int, bilibili_uid: int) -> None:
         if group_id not in self.groupUps.keys():
             self.groupUps[group_id] = set()
         if bilibili_uid not in self.groupUps[group_id]:
             self.groupUps[group_id].add(bilibili_uid)
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             mycursor.execute("""
             insert ignore into `bilibiliSubscribe` set
             group_id = %d,
             uid = %d
-            """%(group_id, bilibili_uid))
+            """ % (group_id, bilibili_uid))
         if bilibili_uid not in self.bUps.keys():
             self.bUps[bilibili_uid] = BilibiliMonitor(bilibili_uid)
-        self.bUps[bilibili_uid].addGroup(group_id)
-    def unsubscribeBilibili(self, group_id:int, bilibili_uid:int)->None:
+        self.bUps[bilibili_uid].add_group(group_id)
+
+    def unsubscribe_bilibili(self, group_id: int, bilibili_uid: int) -> None:
         if group_id in self.groupUps.keys() and bilibili_uid in self.groupUps[group_id]:
             self.groupUps[group_id].discard(bilibili_uid)
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             mycursor.execute("""
             delete from `bilibiliSubscribe` where
             group_id = %d and
             uid = %d
-            """%(group_id, bilibili_uid))
+            """ % (group_id, bilibili_uid))
         if bilibili_uid in self.bUps.keys():
-            self.bUps[bilibili_uid].delGroup(group_id)
+            self.bUps[bilibili_uid].del_group(group_id)
 
-    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
         if self.pattern1.match(msg) != None:
             uid = self.pattern1.findall(msg)[0]
@@ -291,8 +313,8 @@ class BilibiliSubscribe(StandardPlugin):
             try:
                 u = UserFixed(uid)
                 userInfo = u.get_user_info()
-                self.subscribeBilibili(group_id, uid)
-                name = gocqQuote(userInfo['name'])
+                self.subscribe_bilibili(group_id, uid)
+                name = gocq_quote(userInfo['name'])
                 send(group_id, f'订阅成功！\nname: {name}\nuid: {uid}')
             except ResponseCodeException as e:
                 send(group_id, f'好像没找到这个UP:\n{e}')
@@ -301,32 +323,33 @@ class BilibiliSubscribe(StandardPlugin):
         elif self.pattern2.match(msg) != None:
             uid = self.pattern2.findall(msg)[0]
             uid = int(uid)
-            self.unsubscribeBilibili(group_id, uid)
-            send(group_id, '[CQ:reply,id=%d]OK'%data['message_id'])
+            self.unsubscribe_bilibili(group_id, uid)
+            send(group_id, '[CQ:reply,id=%d]OK' % data['message_id'])
         elif self.pattern3.match(msg) != None:
-            ups = self.subscribeList(group_id)
+            ups = self.subscribe_list(group_id)
             if len(ups) == 0:
-                send(group_id, '[CQ:reply,id=%d]本群还没有订阅up哦~'%data['message_id'])
+                send(group_id, '[CQ:reply,id=%d]本群还没有订阅up哦~' % data['message_id'])
             else:
                 try:
                     metas = [up.get_user_info() for up in ups]
                     metas = [f"name: {m['name']}\nuid: {m['mid']}" for m in metas]
-                    send(group_id,f'本群订阅的up有：\n\n'+'\n----------\n'.join(metas))
+                    send(group_id, f'本群订阅的up有：\n\n' + '\n----------\n'.join(metas))
                 except BaseException as e:
                     send(group_id, 'bilibili api error')
                     warning('bilibili get_user_info error: {}'.format(e))
         return "OK"
-    def onStateChange(self, nextState: bool, data: Any) -> None:
+
+    def on_state_change(self, nextState: bool, data: Any) -> None:
         group_id = data['group_id']
         if nextState or group_id not in self.groupUps.keys(): return
         for uid in copy.deepcopy(self.groupUps[group_id]):
-            self.unsubscribeBilibili(group_id, uid)
-    
-    def subscribeList(self, group_id:int)->List[UserFixed]:
+            self.unsubscribe_bilibili(group_id, uid)
+
+    def subscribe_list(self, group_id: int) -> List[UserFixed]:
         uids = self.groupUps.get(group_id, set())
         return [self.bUps[uid].bUser for uid in uids]
 
-    def getPluginInfo(self) -> dict:
+    def get_plugin_info(self) -> dict:
         return {
             'name': 'BilibiliSubscribe',
             'description': '订阅B站up',
@@ -337,29 +360,33 @@ class BilibiliSubscribe(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
+
 class BilibiliMonitor(CronStandardPlugin):
     """bilibili up主监控类
     self.uid: 被监控的up主uid
     self.groupList
     """
-    def __init__(self, uid:int) -> None:
-        self.uid:int = uid
+
+    def __init__(self, uid: int) -> None:
+        self.uid: int = uid
         self.bUser = UserFixed(uid=uid)
         self.groupList = set()
         self.job: Optional[Job] = None
 
         self.cumulativeNetworkErrCount = 0
         # _prevMeta: [prevUploadTime, prevDynamicId]
-        self._prevMeta:Optional[Tuple[int, int]] = None
+        self._prevMeta: Optional[Tuple[int, int]] = None
         self.baseInterval = 3 * 60 + random.randint(0, 100)
 
-    def addGroup(self, group_id:int):
+    def add_group(self, group_id: int):
         self.groupList.add(group_id)
         if self.job == None:
             self.job = self.start(0, self.baseInterval)
         else:
             self.resume()
-    def delGroup(self, group_id:int):
+
+    def del_group(self, group_id: int):
         self.groupList.discard(group_id)
         if len(self.groupList) == 0:
             self.pause()
@@ -371,7 +398,7 @@ class BilibiliMonitor(CronStandardPlugin):
         except BaseException as e:
             dynamics = None
             time.sleep(3)
-        if dynamics == None: 
+        if dynamics == None:
             self.cumulativeNetworkErrCount += 1
             if self.cumulativeNetworkErrCount >= 3:
                 # warning('bilibili subscribe api failed!')
@@ -392,7 +419,7 @@ class BilibiliMonitor(CronStandardPlugin):
             uploadTime = latestDynamic['desc']['timestamp']
             isVideo = latestDynamic['desc']['type'] == 8
             dynamicId = latestDynamic['desc']['dynamic_id']
-            prevMeta = self.getPrevMeta()
+            prevMeta = self.get_prev_meta()
             if prevMeta != None and prevMeta[1] == dynamicId: return
             # 校验upload time
             if uploadTime > int(datetime.datetime.now().timestamp()):
@@ -401,29 +428,31 @@ class BilibiliMonitor(CronStandardPlugin):
             if prevMeta != None and uploadTime < prevMeta[0]:
                 return
             # 写入并广播
-            self.writeMeta(uploadTime, dynamicId)
-            author = gocqQuote(latestDynamic['desc']['user_profile']['info']['uname'])
-            imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'biliDynamic-%d.png'%dynamicId)
-            succ, drawInfo = drawDynamicCard(latestDynamic, imgPath)
+            self.write_meta(uploadTime, dynamicId)
+            author = gocq_quote(latestDynamic['desc']['user_profile']['info']['uname'])
+            imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'biliDynamic-%d.png' % dynamicId)
+            succ, drawInfo = draw_dynamic_card(latestDynamic, imgPath)
             if not succ:
-                warning('draw bilibili dynamic cards failed! uid = %d, bvid = %d, reason: %s'%(self.uid, dynamicId, drawInfo))
+                warning('draw bilibili dynamic cards failed! uid = %d, bvid = %d, reason: %s' % (
+                self.uid, dynamicId, drawInfo))
             if isVideo:
                 bvid = latestDynamic['desc']['bvid']
                 for group in self.groupList:
-                    send(group, f'本群订阅UP主 【{author}】 更新视频啦！\n\n链接：{bvToUrl(bvid)}')
+                    send(group, f'本群订阅UP主 【{author}】 更新视频啦！\n\n链接：{bv_to_url(bvid)}')
                     if succ:
                         send(group, f'[CQ:image,file=files:///{imgPath}]')
             else:
                 for group in self.groupList:
-                    send(group, f'本群订阅UP主 【{author}】 更新动态啦！\n\n链接：{dynamicIdToUrl(dynamicId)}')
+                    send(group, f'本群订阅UP主 【{author}】 更新动态啦！\n\n链接：{dynamic_id_to_url(dynamicId)}')
                     if succ:
                         send(group, f'[CQ:image,file=files:///{imgPath}]')
         except KeyError as e:
-            warning('bilibili api error, uid = %d: %s'%(self.uid, str(e)))
+            warning('bilibili api error, uid = %d: %s' % (self.uid, str(e)))
         except BaseException as e:
             warning('base excption in BilibiliMonitor: {}'.format(e))
             self.cancel()
-    def getPrevMeta(self)->Optional[Tuple[int, int]]:
+
+    def get_prev_meta(self) -> Optional[Tuple[int, int]]:
         """获取该up主记录在册的前一次上传数据
         @return: Optional[(
             [0]: int: uploadTime unix时间戳
@@ -431,21 +460,21 @@ class BilibiliMonitor(CronStandardPlugin):
         )]
         """
         if self._prevMeta == None:
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             mycursor.execute("""
             select unix_timestamp(uploadTime), `dynamicId` from `bilibiliDynamic` where
             uid = %d
-            """%self.uid)
+            """ % self.uid)
             meta = list(mycursor)
             if len(meta) != 0:
                 self._prevMeta = meta[0]
         return self._prevMeta
-        
-    def writeMeta(self, uploadTime:int, dynamicId:int)->None:
+
+    def write_meta(self, uploadTime: int, dynamicId: int) -> None:
         """写入up主本次上传数据"""
         meta = (uploadTime, dynamicId)
         self._prevMeta = meta
-        mydb, mycursor = newSqlSession()
+        mydb, mycursor = new_sql_session()
         print(uploadTime, dynamicId, self.uid)
         mycursor.execute("""
         replace into `bilibiliDynamic` set
@@ -454,14 +483,17 @@ class BilibiliMonitor(CronStandardPlugin):
         uid = %s
         """, (uploadTime, dynamicId, self.uid))
 
-    def cancel(self,) -> None:
-        if self.job != None: 
+    def cancel(self, ) -> None:
+        if self.job != None:
             self.job.remove()
+
     def pause(self) -> None:
         if self.job != None:
             self.job.pause()
+
     def resume(self) -> None:
         if self.job != None:
             self.job.resume()
-    def __del__(self,):
+
+    def __del__(self, ):
         self.cancel()

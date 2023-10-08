@@ -1,7 +1,7 @@
 from typing import Any, Union
-from .bot_protocol_base import parseProtocolHead, BotProtocolType, BotProtocolBase, protocolClassification
+from .bot_protocol_base import parse_protocol_head, BotProtocolType, BotProtocolBase, protocol_classification
 from utils.standard_plugin import StandardPlugin, CronStandardPlugin
-from utils.sql_utils import newSqlSession
+from utils.sql_utils import new_sql_session
 from utils.basic_event import send, warning
 from utils.basic_configs import BOT_SELF_QQ
 
@@ -15,9 +15,9 @@ class BotProtocolStatusQuery(BotProtocolBase):
     def __init__(self, uuid:str, targetId:int):
         self.uuid = uuid
         self.targetId = targetId
-    def getType(self) -> BotProtocolType:
+    def get_type(self) -> BotProtocolType:
         return BotProtocolType.STATUS_QUERY
-    def toStr(self) -> str:
+    def to_str(self) -> str:
         return (
             'LUB_NET_PROTOCOL 000001\n'
             'STATUS QUERY\n'
@@ -25,11 +25,11 @@ class BotProtocolStatusQuery(BotProtocolBase):
             f'{self.targetId}'
         )
     @staticmethod
-    def fromStr(text:str)->"BotProtocolStatusQuery":
+    def from_str(text:str)-> "BotProtocolStatusQuery":
         texts = text.strip().split('\n')
         if len(texts) != 4:
             raise ValueError('len(lines) != 4')
-        succ, reason = parseProtocolHead(texts[0])
+        succ, reason = parse_protocol_head(texts[0])
         if not succ:
             raise ValueError('Head Parse Error: {}'.format(reason))
         uuid = texts[2].strip()
@@ -46,27 +46,27 @@ class BotProtocolStatusReply(BotProtocolBase):
     """
     def __init__(self, uuid:str):
         self.uuid = uuid
-    def getType(self) -> BotProtocolType:
+    def get_type(self) -> BotProtocolType:
         return BotProtocolType.STATUS_REPLY
-    def toStr(self) -> str:
+    def to_str(self) -> str:
         return (
             'LUB_NET_PROTOCOL 000001\n'
             'STATUS REPLY\n'
             f'{self.uuid}'
         )
     @staticmethod
-    def fromStr(text:str)->"BotProtocolStatusReply":
+    def from_str(text:str)-> "BotProtocolStatusReply":
         texts = text.strip().split('\n')
         if len(texts) != 3:
             raise ValueError('len(lines) != 3')
-        succ, reason = parseProtocolHead(texts[0])
+        succ, reason = parse_protocol_head(texts[0])
         if not succ:
             raise ValueError('Head Parse Error: {}'.format(reason))
         uuid = texts[2].strip()
         return BotProtocolStatusReply(uuid=uuid)
 
 def createStatusSql():
-    mydb, mycursor = newSqlSession()
+    mydb, mycursor = new_sql_session()
     mycursor.execute("""create table if not exists `botStatusMonitor`(
         `network_group` bigint unsigned not null,
         `target_id` bigint not null,
@@ -82,19 +82,19 @@ class BotStatusMonitor(StandardPlugin, CronStandardPlugin):
             self.start()
     def tick(self) -> None:
         pass
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
-        protocolType = protocolClassification(msg)
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        protocolType = protocol_classification(msg)
         return protocolType == BotProtocolType.STATUS_REPLY
-    def executeEvent(self, msg: str, data: Any) -> Union[str, None]:
+    def execute_event(self, msg: str, data: Any) -> Union[str, None]:
         groupId = data['group_id']
         try:
-            reply = BotProtocolStatusReply.fromStr(msg)
+            reply = BotProtocolStatusReply.from_str(msg)
         except ValueError as e:
             print(e)
             return 'OK'
 
         return 'OK'
-    def getPluginInfo(self, )->Any:
+    def get_plugin_info(self, )->Any:
         return {
             'name': 'BotStatusMonitor',
             'description': '机器人组网 - 状态监控',
@@ -107,21 +107,21 @@ class BotStatusMonitor(StandardPlugin, CronStandardPlugin):
         }
 
 class BotStatusReply(StandardPlugin):
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
-        protocolType = protocolClassification(msg)
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        protocolType = protocol_classification(msg)
         return protocolType == BotProtocolType.STATUS_QUERY
-    def executeEvent(self, msg: str, data: Any) -> Union[str, None]:
+    def execute_event(self, msg: str, data: Any) -> Union[str, None]:
         groupId = data['group_id']
         try:
-            query = BotProtocolStatusQuery.fromStr(msg)
+            query = BotProtocolStatusQuery.from_str(msg)
         except ValueError as e:
             print(e)
             return 'OK'
         if query.targetId != BOT_SELF_QQ: return 'OK'
         reply = BotProtocolStatusReply(query.uuid)
-        send(groupId, reply.toStr())
+        send(groupId, reply.to_str())
         return "OK"
-    def getPluginInfo(self, )->Any:
+    def get_plugin_info(self, )->Any:
         return {
             'name': 'BotStatusReply',
             'description': '机器人组网 - 状态回应',

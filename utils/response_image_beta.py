@@ -186,7 +186,7 @@ class ResponseImage():
             super().__init__('rich-content', params)
 
     # 画圆角矩形
-    def drawRoundedRectangle(self, x1, y1, x2, y2, fill, r = 8, border=False, borderColor = PALETTE_GREY_BORDER, borderWidth = 1, target = None): 
+    def draw_rounded_rectangle(self, x1, y1, x2, y2, fill, r = 8, border=False, borderColor = PALETTE_GREY_BORDER, borderWidth = 1, target = None):
         if target == None:
             draw = self.draw
         else:
@@ -209,18 +209,18 @@ class ResponseImage():
         return target
 
     # 增加卡片 (允许使用Card类或字典形式输入)
-    def addCard(self, card):
+    def add_card(self, card):
         if isinstance(card, self.Card):
             self.cardList.append(card.data)
         elif isinstance(card, dict):
             self.cardList.append(card)
 
-    def addCardList(self, clist):
+    def add_card_list(self, clist):
         for card in clist:
-            self.addCard(card)
+            self.add_card(card)
     
     # autoSize计算高度
-    def calcHeight(self):
+    def calc_height(self):
         width, height = self.width, 0
         cardList = self.cardList
         txt_size = FONT_HYWH_36.getsize(self.title)
@@ -245,7 +245,7 @@ class ResponseImage():
                 else:
                     txtWidthLimit = w_card - 2*SPACE_NORMAL
                     if cardList[i].get('illustration') != None:
-                        image = self.openImage(cardList[i]['illustration'])
+                        image = self.open_image(cardList[i]['illustration'])
                         if image.width > w_card - 2*SPACE_NORMAL:
                             h_card += int(image.height * (w_card - 2*SPACE_NORMAL) / image.width)
                             h_card += SPACE_ROW
@@ -257,19 +257,19 @@ class ResponseImage():
                 subtitleColor = PALETTE_GREY_SUBTITLE if cardList[i].get('subtitleFontColor') == None else cardList[i]['subtitleFontColor']
                 bodyColor = PALETTE_GREY_SUBTITLE if cardList[i].get('bodyFontColor') == None else cardList[i]['bodyFontColor']
                 if cardList[i].get('title') != None:
-                    parsed, h = self.parseLine(cardList[i]['title'], self.cardTitleFont, txtWidthLimit)
+                    parsed, h = self.parse_line(cardList[i]['title'], self.cardTitleFont, txtWidthLimit)
                     cardList[i]['content'].extend([('title', t, titleColor) for t in parsed])
                     h_card += h
                 if cardList[i].get('subtitle') != None:
-                    parsed, h = self.parseLine(cardList[i]['subtitle'], self.cardSubtitleFont, txtWidthLimit)
+                    parsed, h = self.parse_line(cardList[i]['subtitle'], self.cardSubtitleFont, txtWidthLimit)
                     cardList[i]['content'].extend([('subtitle', t, subtitleColor) for t in parsed])
                     h_card += h
                 if cardList[i].get('keyword') != None:
-                    parsed, h = self.parseLine(cardList[i]['keyword'], self.cardSubtitleFont, txtWidthLimit)
+                    parsed, h = self.parse_line(cardList[i]['keyword'], self.cardSubtitleFont, txtWidthLimit)
                     cardList[i]['content'].extend([('keyword', t, self.primaryColor) for t in parsed])
                     h_card += h
                 if cardList[i].get('body') != None:
-                    parsed, h = self.parseLine(cardList[i]['body'], self.cardBodyFont, txtWidthLimit)
+                    parsed, h = self.parse_line(cardList[i]['body'], self.cardBodyFont, txtWidthLimit)
                     cardList[i]['content'].extend([('body', t, bodyColor) for t in parsed])
                     h_card += h
                 if (cardList[i].get('icon') != None) and h_card <= (2*SPACE_NORMAL+90):
@@ -289,7 +289,7 @@ class ResponseImage():
                             cardList[i]['content'].append(cnt)
                             continue
                         if cnt[0]=='illustration':
-                            image = self.openImage(cnt[1])
+                            image = self.open_image(cnt[1])
                             if image.width > txtWidthLimit:
                                 h_card += int(image.height * (txtWidthLimit) / image.width)
                                 h_card += SPACE_ROW
@@ -310,7 +310,7 @@ class ResponseImage():
                         elif cnt[0]=='body':
                             font = self.cardBodyFont
                             color = PALETTE_GREY_CONTENT if len(cnt)<=2 else cnt[2]
-                        parsed, h = self.parseLine(cnt[1], font, txtWidthLimit)
+                        parsed, h = self.parse_line(cnt[1], font, txtWidthLimit)
                         cardList[i]['content'].extend([(cnt[0], t, color) for t in parsed])
                         h_card += h
                 if (cardList[i].get('icon') != None) and h_card <= (2*SPACE_NORMAL+90):
@@ -339,7 +339,7 @@ class ResponseImage():
         self.cardList = cardList
 
     # 分行
-    def parseLine(self, raw_txt, font, widthLimit):
+    def parse_line(self, raw_txt, font, widthLimit):
         txt_parse = []
         txt_line = ""
         height = 0
@@ -368,7 +368,7 @@ class ResponseImage():
         return txt_parse, height
 
     # 解码 base64
-    def decodeBase64(self, src):
+    def decode_base64(self, src):
         # 1、信息提取
         result = re.search("data:image/(?P<ext>.*?);base64,(?P<data>.*)", src, re.DOTALL)
         if result:
@@ -385,14 +385,14 @@ class ResponseImage():
         return filename
 
     # 处理图像链接
-    def openImage(self, url):
+    def open_image(self, url):
         if isinstance(url, Image.Image): # 传入已经画好的图片对象
             return url
         if isinstance(url, BytesIO):
             return Image.open(url)
         if isinstance(url, str):
             if url[:4]=="data": # 传入图片地址
-                img_ = Image.open(self.decodeBase64(url))
+                img_ = Image.open(self.decode_base64(url))
             elif url[:4]=="http":
                 url_ = requests.get(url)
                 img_ = Image.open(BytesIO(url_.content))
@@ -405,7 +405,7 @@ class ResponseImage():
         raise RuntimeError('unknow url format')
 
     # 绘制
-    def drawImage(self):
+    def draw_image(self):
         # 绘制背景
         width, height = self.width, self.height
         self.img = Image.new('RGBA', (width, height), self.backColor)
@@ -413,7 +413,7 @@ class ResponseImage():
         draw = self.draw
         # 绘制标题
         txt_size = FONT_HYWH_36.getsize(self.title)
-        self.drawRoundedRectangle(x1=width/2-txt_size[0]/2-15, y1=40, x2=width/2+txt_size[0]/2+15,y2=txt_size[1]+70, fill=self.titleColor)
+        self.draw_rounded_rectangle(x1=width / 2 - txt_size[0] / 2 - 15, y1=40, x2=width / 2 + txt_size[0] / 2 + 15, y2=txt_size[1] + 70, fill=self.titleColor)
         draw.text((width/2-txt_size[0]/2,55), self.title, fill=PALETTE_WHITE, font=FONT_HYWH_36)
         top = txt_size[1]+115
         top_0 = top
@@ -438,15 +438,15 @@ class ResponseImage():
             y_top = top
             backColor = PALETTE_WHITE if card.get('backColor') == None else card['backColor']
             if card['style']=='blank':
-                self.drawRoundedRectangle(x1=cardLeft, y1=top, x2=cardRight, y2=top+card['height']-SPACE_NORMAL, fill=backColor, border = True)
+                self.draw_rounded_rectangle(x1=cardLeft, y1=top, x2=cardRight, y2=top + card['height'] - SPACE_NORMAL, fill=backColor, border = True)
                 top += card['height']
                 self.blankList.append((cardLeft, top, cardRight, top+card['height']-SPACE_NORMAL))
                 continue
-            self.drawRoundedRectangle(x1=cardLeft, y1=top, x2=cardRight, y2=top+card['height']-SPACE_NORMAL, fill=backColor, border = True)
+            self.draw_rounded_rectangle(x1=cardLeft, y1=top, x2=cardRight, y2=top + card['height'] - SPACE_NORMAL, fill=backColor, border = True)
             y_top += SPACE_NORMAL
             x_left = cardLeft + SPACE_NORMAL
             if card['style'] in ['normal', 'rich-content'] and card.get('icon') != None :
-                img_icon = (self.openImage(card['icon'])).resize((90,90))
+                img_icon = (self.open_image(card['icon'])).resize((90, 90))
                 self.img.paste(img_icon, (int(x_left), y_top))
                 x_left += (90+SPACE_NORMAL)
             titleColor = PALETTE_BLACK if card.get('titleFontColor') == None else card['titleFontColor']
@@ -476,13 +476,13 @@ class ResponseImage():
                             if line[1]>=0.9:
                                 clrfront = PALETTE_RED
                                 clrback = PALETTE_LIGHTRED
-                        self.drawRoundedRectangle(x_l, y_top, x_r, y_top+SPACE_ROW, fill=clrback, r=3.5)
+                        self.draw_rounded_rectangle(x_l, y_top, x_r, y_top + SPACE_ROW, fill=clrback, r=3.5)
                         if line[1]>0:
-                            self.drawRoundedRectangle(x_l, y_top, x_l+(x_r-x_l)*(line[1] if line[1]>=0.01 else 0.01), y_top+SPACE_ROW, fill=clrfront, r=3.5)
+                            self.draw_rounded_rectangle(x_l, y_top, x_l + (x_r - x_l) * (line[1] if line[1] >= 0.01 else 0.01), y_top + SPACE_ROW, fill=clrfront, r=3.5)
                         y_top += (3*SPACE_ROW)
                         continue
                     if line[0] in ['illustration']:
-                        illu = self.openImage(line[1])
+                        illu = self.open_image(line[1])
                         # print(line[1])
                         if illu.width > card['width'] - 2*(SPACE_NORMAL):
                             illu = illu.resize((int(card['width'] - 2*SPACE_NORMAL), int(illu.height * (card['width'] - 2*SPACE_NORMAL) / illu.width)))
@@ -503,24 +503,24 @@ class ResponseImage():
                     y_top += (txt_size[1]+SPACE_ROW) 
             
             if card['style']=='notice' and card.get('illustration') != None:
-                illu = self.openImage(card['illustration'])
+                illu = self.open_image(card['illustration'])
                 if illu.width > card['width'] - 2*(SPACE_NORMAL):
                     illu = illu.resize((int(card['width'] - 2*SPACE_NORMAL), int(illu.height * (card['width'] - 2*SPACE_NORMAL) / illu.width)))
                 self.img.paste(illu, (int(cardLeft+(card['width']-illu.width)/2), y_top))
                 y_top += (illu.height+SPACE_ROW)
             top += card['height']
 
-    def generateImage(self, savePath = None):
+    def generate_image(self, savePath = None):
         '''生成图片:
         参数: savePath 为保存路径
         返回值: 绘制完成的 Image 对象'''
-        self.calcHeight()
-        self.drawImage()
+        self.calc_height()
+        self.draw_image()
         if savePath!=None:
             self.img.save(savePath)
         return self.img.copy()
         
-    def getBlankCoord(self):
+    def get_blank_coord(self):
         return self.blankList
         
 class CardDrawError(Exception):

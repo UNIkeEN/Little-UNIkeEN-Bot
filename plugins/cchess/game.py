@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-
 from .board import Board
 from .config import Config
 from .engine import UCCIEngine

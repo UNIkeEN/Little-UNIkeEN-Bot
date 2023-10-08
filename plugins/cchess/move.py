@@ -6,7 +6,6 @@ from .piece import PieceType
 if TYPE_CHECKING:
     from .board import Board
 
-
 NUM_CHI = ["一", "二", "三", "四", "五", "六", "七", "八", "九"]
 NUM_DIGIT = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 PIECE_DICT: Dict[str, Tuple[str, ...]] = {
@@ -115,10 +114,10 @@ class Move:
     @staticmethod
     def valid_coord(coord: str) -> bool:
         return (
-            len(coord) == 2
-            and ord("a") <= ord(coord[0]) <= ord("i")
-            and coord[1].isdigit()
-            and 0 <= int(coord[1]) <= 9
+                len(coord) == 2
+                and ord("a") <= ord(coord[0]) <= ord("i")
+                and coord[1].isdigit()
+                and 0 <= int(coord[1]) <= 9
         )
 
     @staticmethod
@@ -144,10 +143,10 @@ class Move:
             direc = -1
 
         if direc != 0 and piece_type in (
-            PieceType.KING,
-            PieceType.CANNON,
-            PieceType.ROOK,
-            PieceType.PAWN,
+                PieceType.KING,
+                PieceType.CANNON,
+                PieceType.ROOK,
+                PieceType.PAWN,
         ):
             move_num = abs(diff_x)
         else:
@@ -230,7 +229,7 @@ class Move:
             return COUNT345_CHI_DICT[s]
 
         def find_piece(
-            col: int, piece_type: PieceType, count: int = 1, min_count: int = 1
+                col: int, piece_type: PieceType, count: int = 1, min_count: int = 1
         ) -> Optional[Pos]:
             """找到某一纵线上第n个某种类型的棋子"""
             col -= 1
@@ -243,10 +242,10 @@ class Move:
             return col_pos[count - 1]
 
         if (
-            valid_piece(move_str[0])
-            and valid_num(move_str[1])
-            and valid_direc(move_str[2])
-            and valid_num(move_str[3])
+                valid_piece(move_str[0])
+                and valid_num(move_str[1])
+                and valid_direc(move_str[2])
+                and valid_num(move_str[3])
         ):
             """常规情况：
             第１字是棋子的名称。如“马”或“车”。
@@ -266,10 +265,10 @@ class Move:
             from_pos = find_piece(col_num, piece_type)
 
         elif (
-            valid_count2(move_str[0])
-            and valid_piece(move_str[1])
-            and valid_direc(move_str[2])
-            and valid_num(move_str[3])
+                valid_count2(move_str[0])
+                and valid_piece(move_str[1])
+                and valid_direc(move_str[2])
+                and valid_num(move_str[3])
         ):
             """当一方有２个名称相同的棋子位于同一纵线时，需要用“前”或“后”来加以区别：
             如：
@@ -291,10 +290,10 @@ class Move:
                     break
 
         elif (
-            valid_count345(move_str[0])
-            and valid_num(move_str[1])
-            and valid_direc(move_str[2])
-            and valid_num(move_str[3])
+                valid_count345(move_str[0])
+                and valid_num(move_str[1])
+                and valid_direc(move_str[2])
+                and valid_num(move_str[3])
         ):
             """当兵卒在同一纵线达到３个，用前中后区分，达到更多用前二三四五区分
             如：
@@ -323,10 +322,10 @@ class Move:
             if not board.moveside:
                 direc = -direc
             if piece_type in (
-                PieceType.KING,
-                PieceType.CANNON,
-                PieceType.ROOK,
-                PieceType.PAWN,
+                    PieceType.KING,
+                    PieceType.CANNON,
+                    PieceType.ROOK,
+                    PieceType.PAWN,
             ):
                 to_x = from_pos.x + move_num * direc
                 to_y = from_pos.y

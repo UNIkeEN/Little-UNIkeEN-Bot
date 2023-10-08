@@ -121,26 +121,26 @@ class Board:
         """获取指定位置的棋子"""
         piece = self._board[pos.x][pos.y]
         if piece and (
-            (self.moveside == piece.color)
-            if sameside
-            else (self.moveside != piece.color)
+                (self.moveside == piece.color)
+                if sameside
+                else (self.moveside != piece.color)
         ):
             return piece
 
     def get_piece_pos(
-        self, piece_type: Optional[PieceType] = None, sameside: bool = True
+            self, piece_type: Optional[PieceType] = None, sameside: bool = True
     ) -> Iterator[Pos]:
         """获取指定类型的棋子，`piece_type`为空表示所有类型"""
         for row, line in enumerate(self._board):
             for col, piece in enumerate(line):
                 if (
-                    piece
-                    and (piece_type is None or piece.piece_type == piece_type)
-                    and (
+                        piece
+                        and (piece_type is None or piece.piece_type == piece_type)
+                        and (
                         (self.moveside == piece.color)
                         if sameside
                         else (self.moveside != piece.color)
-                    )
+                )
                 ):
                     yield Pos(row, col)
 
@@ -167,18 +167,18 @@ class Board:
             for dx, dy in ((1, 0), (0, 1), (-1, 0), (0, -1)):
                 to_pos = Pos(from_pos.x + dx, from_pos.y + dy)
                 if (
-                    (0 <= to_pos.x <= 2 or 7 <= to_pos.x <= 9)
-                    and 3 <= to_pos.y <= 5
-                    and to_pos not in self_pos
+                        (0 <= to_pos.x <= 2 or 7 <= to_pos.x <= 9)
+                        and 3 <= to_pos.y <= 5
+                        and to_pos not in self_pos
                 ):
                     yield to_pos
         elif piece_type == PieceType.ADVISOR:
             for dx, dy in ((1, 1), (-1, -1), (1, -1), (-1, 1)):
                 to_pos = Pos(from_pos.x + dx, from_pos.y + dy)
                 if (
-                    (0 <= to_pos.x <= 2 or 7 <= to_pos.x <= 9)
-                    and 3 <= to_pos.y <= 5
-                    and to_pos not in self_pos
+                        (0 <= to_pos.x <= 2 or 7 <= to_pos.x <= 9)
+                        and 3 <= to_pos.y <= 5
+                        and to_pos not in self_pos
                 ):
                     yield to_pos
         elif piece_type == PieceType.BISHOP:
@@ -188,22 +188,22 @@ class Board:
                     (from_pos.x + to_pos.x) // 2, (from_pos.y + to_pos.y) // 2
                 )
                 if (
-                    to_pos.valid()
-                    and mid_pos.x not in [4, 5]
-                    and to_pos not in self_pos
-                    and mid_pos not in total_pos
+                        to_pos.valid()
+                        and mid_pos.x not in [4, 5]
+                        and to_pos not in self_pos
+                        and mid_pos not in total_pos
                 ):
                     yield to_pos
         elif piece_type == PieceType.KNIGHT:
             for dx, dy in (
-                (2, 1),
-                (-2, -1),
-                (-2, 1),
-                (2, -1),
-                (1, 2),
-                (-1, -2),
-                (-1, 2),
-                (1, -2),
+                    (2, 1),
+                    (-2, -1),
+                    (-2, 1),
+                    (2, -1),
+                    (1, 2),
+                    (-1, -2),
+                    (-1, 2),
+                    (1, -2),
             ):
                 to_pos = Pos(from_pos.x + dx, from_pos.y + dy)
                 if abs(dx) == 1:
@@ -211,9 +211,9 @@ class Board:
                 else:
                     mid_pos = Pos((from_pos.x + to_pos.x) // 2, from_pos.y)
                 if (
-                    to_pos.valid()
-                    and to_pos not in self_pos
-                    and mid_pos not in total_pos
+                        to_pos.valid()
+                        and to_pos not in self_pos
+                        and mid_pos not in total_pos
                 ):
                     yield to_pos
         elif piece_type == PieceType.PAWN:
@@ -384,10 +384,10 @@ class Board:
 
     def is_game_over(self) -> bool:
         return (
-            self.is_dead()
-            or self.is_king_face_to_face()
-            or self.halfmove >= 60
-            or self.is_checked_dead()
+                self.is_dead()
+                or self.is_king_face_to_face()
+                or self.halfmove >= 60
+                or self.is_checked_dead()
         )
 
     def push(self, move: Move) -> Optional[MoveResult]:

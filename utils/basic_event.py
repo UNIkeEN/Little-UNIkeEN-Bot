@@ -13,7 +13,8 @@ import aiohttp, asyncio
 from utils.buffer_queue import BufferQueue
 from io import BytesIO
 
-def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
+
+def get_img_from_url(cqImgUrl: str) -> Optional[Image.Image]:
     """从cq img url中下载图片
     @cqImgUrl: 从gocqhttp获取的图片url
     @return:
@@ -33,7 +34,8 @@ def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
     else:
         return None
 
-def get_avatar_pic(id: int)->Union[None, bytes]:
+
+def get_avatar_pic(id: int) -> Union[None, bytes]:
     """获取QQ头像
     @id: qq号
     @return:
@@ -46,7 +48,8 @@ def get_avatar_pic(id: int)->Union[None, bytes]:
     else:
         return url_avatar.content
 
-def get_group_avatar_pic(id: int)->Union[None, bytes]:
+
+def get_group_avatar_pic(id: int) -> Union[None, bytes]:
     """获取群头像
     @id: 群号
     @return:
@@ -59,7 +62,8 @@ def get_group_avatar_pic(id: int)->Union[None, bytes]:
     else:
         return url_avatar.content
 
-def parse_cqcode(cqcode:str)->Optional[Tuple[str, Dict[str,str]]]:
+
+def parse_cqcode(cqcode: str) -> Optional[Tuple[str, Dict[str, str]]]:
     """解析CQ码
     @cqcode: CQ码
     @return: 
@@ -75,7 +79,7 @@ def parse_cqcode(cqcode:str)->Optional[Tuple[str, Dict[str,str]]]:
         return None
     result = result[0].split(',')
     cqtype = cqtypePattern.findall(result[0])
-    if len(cqtype) == 0: 
+    if len(cqtype) == 0:
         print('len cqtype == 0')
         return None
     cqtype = cqtype[0]
@@ -89,14 +93,15 @@ def parse_cqcode(cqcode:str)->Optional[Tuple[str, Dict[str,str]]]:
         cqdict[cqkey] = cqvalue
     return cqtype, cqdict
 
-def get_login_info()->dict:
+
+def get_login_info() -> dict:
     """获取登录号信息
     @return: {
         'nickname': QQ昵称,
         'user_id':  QQ号
     }
     """
-    url = HTTP_URL+"/get_login_info"
+    url = HTTP_URL + "/get_login_info"
     try:
         loginInfo = requests.get(url).json()
         if loginInfo['status'] != 'ok':
@@ -109,34 +114,40 @@ def get_login_info()->dict:
         warning("key error in get_login_info: {}".format(e))
     return 0, ''
 
-def gocqQuote(text:str)->str:
+
+def gocq_quote(text: str) -> str:
     """go-cqhttp文本转义
     参考链接： https://docs.go-cqhttp.org/cqcode/#%E8%BD%AC%E4%B9%89
     """
-    return text.replace('&','&amp;').replace('[','&#91;').replace(']','&#93;').replace(',','&#44;')
+    return text.replace('&', '&amp;').replace('[', '&#91;').replace(']', '&#93;').replace(',', '&#44;')
 
-groupSendBufferQueue = BufferQueue(1, 1) # L1 cache
-groupSendBufferQueueCache = BufferQueue(3, 6) # L2 cache
+
+groupSendBufferQueue = BufferQueue(1, 1)  # L1 cache
+groupSendBufferQueueCache = BufferQueue(3, 6)  # L2 cache
 groupSendBufferQueue.start()
 groupSendBufferQueueCache.start()
-def send(id: int, message: str, type:str='group')->None:
+
+
+def send(id: int, message: str, type: str = 'group') -> None:
     """发送消息
     id: 群号或者私聊对象qq号
     message: 消息
     type: Union['group', 'private'], 默认 'group'
     """
-    url = HTTP_URL+"/send_msg"
-    if type=='group':
+    url = HTTP_URL + "/send_msg"
+    if type == 'group':
         params = {
             "message_type": type,
             "group_id": id,
             "message": message
         }
+
         def cachedDo(url, params):
-            groupSendBufferQueueCache.put(requests.get, (url,), {'params':params})
+            groupSendBufferQueueCache.put(requests.get, (url,), {'params': params})
+
         groupSendBufferQueue.put(cachedDo, (url, params))
         # requests.get(url, params=params)
-    elif type=='private':
+    elif type == 'private':
         params = {
             "message_type": type,
             "user_id": id,
@@ -163,20 +174,22 @@ def send(id: int, message: str, type:str='group')->None:
     #     except:
     #         pass
     # ###
-async def aioSend(id: int, message: str, type:str='group')->None:
+
+
+async def aio_send(id: int, message: str, type: str = 'group') -> None:
     """异步发送消息
     id: 群号或者私聊对象qq号
     message: 消息
     type: Union['group', 'private'], 默认 'group'
     """
-    url = HTTP_URL+"/send_msg"
-    if type=='group':
+    url = HTTP_URL + "/send_msg"
+    if type == 'group':
         params = {
             "message_type": type,
             "group_id": id,
             "message": message
         }
-    elif type=='private':
+    elif type == 'private':
         params = {
             "message_type": type,
             "user_id": id,
@@ -185,7 +198,8 @@ async def aioSend(id: int, message: str, type:str='group')->None:
     async with aiohttp.request('GET', url, params=params) as req:
         pass
 
-def get_group_list()->list:
+
+def get_group_list() -> list:
     """获取群聊列表
     @return:
         [
@@ -201,7 +215,7 @@ def get_group_list()->list:
         ]
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%88%97%E8%A1%A8
     """
-    url = HTTP_URL+"/get_group_list"
+    url = HTTP_URL + "/get_group_list"
     try:
         groupList = json.loads(requests.get(url).text)
         if groupList['status'] != 'ok':
@@ -212,7 +226,8 @@ def get_group_list()->list:
         warning("error in get_group_list, error: {}".format(e))
         return []
 
-def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->list:
+
+def get_group_msg_history(group_id: int, message_seq: Union[int, None] = None) -> list:
     """获取群消息历史记录
     @message_seq:
         起始消息序号, 可通过 get_msg 获得
@@ -221,21 +236,22 @@ def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->li
     @return: 从起始序号开始的前19条消息
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%B6%88%E6%81%AF%E5%8E%86%E5%8F%B2%E8%AE%B0%E5%BD%95
     """
-    url = HTTP_URL+"/get_group_msg_history"
+    url = HTTP_URL + "/get_group_msg_history"
     try:
         params = {
             "group_id": group_id
         }
         if message_seq != None:
             params["message_seq"] = message_seq
-            
+
         messageHistory = requests.get(url, params=params).json()
         if messageHistory['status'] != 'ok':
             if messageHistory['msg'] == 'MESSAGES_API_ERROR' or messageHistory['msg'] == 'GROUP_INFO_API_ERROR':
                 print("group {} meet '{}' error".format(group_id, messageHistory['msg']))
             else:
-                warning("get_group_msg_history requests not return ok\nmessages = {}\ngroup_id={}\nmessage_seq={}".format(
-                messageHistory, group_id, message_seq))
+                warning(
+                    "get_group_msg_history requests not return ok\nmessages = {}\ngroup_id={}\nmessage_seq={}".format(
+                        messageHistory, group_id, message_seq))
             return []
         return messageHistory['data']['messages']
     except requests.JSONDecodeError as e:
@@ -243,12 +259,14 @@ def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->li
     except BaseException as e:
         warning('error in get_group_msg_history, error: {}'.format(e))
     return []
-def get_essence_msg_list(group_id: int)->list:
+
+
+def get_essence_msg_list(group_id: int) -> list:
     """获取精华消息列表
     @group_id:  群号
     @return:    精华消息列表
     """
-    url = HTTP_URL+"/get_essence_msg_list"
+    url = HTTP_URL + "/get_essence_msg_list"
     try:
         params = {
             "group_id": group_id
@@ -263,16 +281,19 @@ def get_essence_msg_list(group_id: int)->list:
     except BaseException as e:
         warning("error in get_essence_msg_list, error: {}".format(e))
     return []
-def set_friend_add_request(flag, approve=True)->None:
+
+
+def set_friend_add_request(flag, approve=True) -> None:
     """处理加好友"""
-    url = HTTP_URL+"/set_friend_add_request"
+    url = HTTP_URL + "/set_friend_add_request"
     params = {
         "flag": flag,
         "approve": approve
     }
     requests.get(url, params=params)
-    
-def get_group_file_system_info(group_id: int)->dict:
+
+
+def get_group_file_system_info(group_id: int) -> dict:
     """获取群文件系统信息
     @group_id: 群号
     @return: {
@@ -283,7 +304,7 @@ def get_group_file_system_info(group_id: int)->dict:
     }
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF
     """
-    url = HTTP_URL+"/get_group_file_system_info"
+    url = HTTP_URL + "/get_group_file_system_info"
     params = {
         "group_id": group_id,
     }
@@ -299,7 +320,8 @@ def get_group_file_system_info(group_id: int)->dict:
         warning("base exception in get_group_file_system_info: {}".format(e))
     return {}
 
-def get_group_root_files(group_id: int)->dict:
+
+def get_group_root_files(group_id: int) -> dict:
     """获取群根目录文件列表
     @group_id: 群号
     @return: {
@@ -308,7 +330,7 @@ def get_group_root_files(group_id: int)->dict:
     }
     参考链接: https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%A0%B9%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
     """
-    url = HTTP_URL+"/get_group_root_files"
+    url = HTTP_URL + "/get_group_root_files"
     params = {
         "group_id": group_id,
     }
@@ -324,7 +346,8 @@ def get_group_root_files(group_id: int)->dict:
         warning("base exception in get_group_root_files: {}".format(e))
     return {}
 
-def get_group_files_by_folder(group_id: int, folder_id: str)->dict:
+
+def get_group_files_by_folder(group_id: int, folder_id: str) -> dict:
     """获取群子目录文件列表
     @group_id: 群号
     @folder_id: 文件夹id
@@ -334,7 +357,7 @@ def get_group_files_by_folder(group_id: int, folder_id: str)->dict:
     }
     参考链接: https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%AD%90%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
     """
-    url = HTTP_URL+"/get_group_files_by_folder"
+    url = HTTP_URL + "/get_group_files_by_folder"
     params = {
         "group_id": group_id,
     }
@@ -350,7 +373,8 @@ def get_group_files_by_folder(group_id: int, folder_id: str)->dict:
         warning("base exception in get_group_files_by_folder: {}".format(e))
     return {}
 
-def get_group_member_info(group_id: int, user_id: int, no_cache: bool=False)->Union[dict, None]:
+
+def get_group_member_info(group_id: int, user_id: int, no_cache: bool = False) -> Union[dict, None]:
     """获取群成员信息
     @group_id: 群号
     @user_id: 群成员qq
@@ -378,7 +402,7 @@ def get_group_member_info(group_id: int, user_id: int, no_cache: bool=False)->Un
         } if ok
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E4%BF%A1%E6%81%AF
     """
-    url = HTTP_URL+"/get_group_member_info"
+    url = HTTP_URL + "/get_group_member_info"
     params = {
         "group_id": group_id,
         "user_id": user_id,
@@ -396,7 +420,8 @@ def get_group_member_info(group_id: int, user_id: int, no_cache: bool=False)->Un
         warning("base exception in get_group_member_info: {}".format(e))
     return None
 
-def isGroupOwner(group_id:int, user_id:int)->bool:
+
+def is_group_owner(group_id: int, user_id: int) -> bool:
     """判断该成员是否为群主
     @group_id: 群号
     @user_id:  待判断的成员QQ
@@ -406,7 +431,8 @@ def isGroupOwner(group_id:int, user_id:int)->bool:
     memberInfo = get_group_member_info(group_id, user_id)
     return memberInfo != None and memberInfo.get('role', '') == 'owner'
 
-def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
+
+def get_group_member_list(group_id: int, no_cache: bool = False) -> Union[None, dict]:
     """获取群成员列表
     @group_id: 群号
     @no_cache: 是否不使用缓存（使用缓存可能更新不及时, 但响应更快）
@@ -415,7 +441,7 @@ def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
         see get_group_member_info
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E5%88%97%E8%A1%A8
     """
-    url = HTTP_URL+"/get_group_member_list"
+    url = HTTP_URL + "/get_group_member_list"
     params = {
         "group_id": group_id,
         "no_cache": no_cache,
@@ -432,14 +458,15 @@ def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
         warning("base exception in get_group_member_list: {}".format(e))
     return None
 
-def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, None]:
+
+def get_group_file_url(group_id: int, file_id: str, busid: int) -> Union[str, None]:
     """获取群文件资源链接
     @group_id: 群号
     @file_id: 文件id
     @busid: 文件类型
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
     """
-    url = HTTP_URL+"/get_group_file_url"
+    url = HTTP_URL + "/get_group_file_url"
     params = {
         "group_id": group_id,
     }
@@ -455,14 +482,15 @@ def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, Non
         warning("base exception in get_group_file_url: {}".format(e))
     return None
 
-def set_group_ban(group_id:int, user_id:int, duration:int)->None:
+
+def set_group_ban(group_id: int, user_id: int, duration: int) -> None:
     """群组单人禁言
     @group_id: 群号
     @user_id:  用户QQ号
     @duration: 禁言时间，单位：秒
     参考链接： https://docs.go-cqhttp.org/api/#%E7%BE%A4%E7%BB%84%E5%8D%95%E4%BA%BA%E7%A6%81%E8%A8%80
     """
-    url = HTTP_URL+"/set_group_ban"
+    url = HTTP_URL + "/set_group_ban"
     params = {
         "group_id": group_id,
         "user_id": user_id,
@@ -473,14 +501,15 @@ def set_group_ban(group_id:int, user_id:int, duration:int)->None:
     except BaseException as e:
         warning("base exception in set_group_ban: {}".format(e))
 
-def get_group_system_msg()->Optional[Dict[str, List[Dict[str, Any]]]]:
+
+def get_group_system_msg() -> Optional[Dict[str, List[Dict[str, Any]]]]:
     """获取群系统消息（加群信息、邀请加群信息）
     @return: Optional[{
         'invited_requests': [{'request_id'}, ...]
     }]
     参考链接： https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E7%B3%BB%E7%BB%9F%E6%B6%88%E6%81%AF
     """
-    url = HTTP_URL+"/get_group_system_msg"
+    url = HTTP_URL + "/get_group_system_msg"
     try:
         req = requests.get(url)
         if req.status_code != requests.codes.ok:
@@ -497,7 +526,8 @@ def get_group_system_msg()->Optional[Dict[str, List[Dict[str, Any]]]]:
         warning('base exception in get_group_system_msg: {}'.format(e))
     return None
 
-def set_group_add_request(flag: str, sub_type: str, approve: bool, reason: str="")->None:
+
+def set_group_add_request(flag: str, sub_type: str, approve: bool, reason: str = "") -> None:
     """处理加群请求/处理加群邀请
     @flag: 加群请求的 flag（需从上报的数据中获得）
     @sub_type: 'add' 或 'invite', 需要和上报消息中的 sub_type 字段相符
@@ -508,7 +538,7 @@ def set_group_add_request(flag: str, sub_type: str, approve: bool, reason: str="
     if sub_type not in ['add', 'invite']:
         warning('sub_type should either `add` or `invite`, but: {}'.format(sub_type))
         return
-    url = HTTP_URL+"/set_group_add_request"
+    url = HTTP_URL + "/set_group_add_request"
     params = {
         'flag': flag,
         'sub_type': sub_type,
@@ -520,13 +550,15 @@ def set_group_add_request(flag: str, sub_type: str, approve: bool, reason: str="
     except BaseException as e:
         warning('base exception in set_group_add_request: {}'.format(e))
 
+
 warningBufferQueue = BufferQueue(3, 1)
 warningBufferQueue.start()
 
-def warning(what:str)->None:
+
+def warning(what: str) -> None:
     """warning to admins"""
     stack = traceback.format_exc()
-    what = '[warning]\n' + what 
+    what = '[warning]\n' + what
     what += '\n\n[location]\n' + stack
     admin_users = WARNING_ADMIN_ID
     admin_groups = []
@@ -538,47 +570,53 @@ def warning(what:str)->None:
         warningBufferQueue.put(send, args=(admin, what, 'group'))
         # send(admin, what, 'group')
 
-def startswith_in(msg, checklist)->bool:
+
+def startswith_in(msg, checklist) -> bool:
     """判断字符串是否以checkList中的内容开头"""
     for i in checklist:
         if msg.startswith(i):
             return True
     return False
 
+
 # 画图相关
-def draw_rounded_rectangle(img, x1, y1, x2, y2, fill, r=7): 
+def draw_rounded_rectangle(img, x1, y1, x2, y2, fill, r=7):
     draw = ImageDraw.Draw(img)
-    draw.ellipse((x1, y1, x1+2*r, y1+2*r), fill=fill)
-    draw.ellipse((x2-2*r, y1, x2, y1+2*r), fill=fill)
-    draw.ellipse((x1, y2-2*r, x1+2*r, y2), fill=fill)
-    draw.ellipse((x2-2*r, y2-2*r, x2, y2), fill=fill)
-    draw.rectangle((x1+r,y1,x2-r,y2),fill=fill)
-    draw.rectangle((x1,y1+r,x2,y2-r),fill=fill)
-    return(img)
+    draw.ellipse((x1, y1, x1 + 2 * r, y1 + 2 * r), fill=fill)
+    draw.ellipse((x2 - 2 * r, y1, x2, y1 + 2 * r), fill=fill)
+    draw.ellipse((x1, y2 - 2 * r, x1 + 2 * r, y2), fill=fill)
+    draw.ellipse((x2 - 2 * r, y2 - 2 * r, x2, y2), fill=fill)
+    draw.rectangle((x1 + r, y1, x2 - r, y2), fill=fill)
+    draw.rectangle((x1, y1 + r, x2, y2 - r), fill=fill)
+    return (img)
+
 
 def init_image_template(title, width, height, clr):
     img = Image.new('RGBA', (width, height), (235, 235, 235, 255))
     draw = ImageDraw.Draw(img)
-    txt_size = draw.textsize(title,font=font_hywh_85w_ms)
-    img = draw_rounded_rectangle(img, x1=width/2-txt_size[0]/2-15, y1=40, x2=width/2+txt_size[0]/2+15,y2=txt_size[1]+70, fill=clr)
-    draw.text((width/2-txt_size[0]/2,55), title, fill=(255,255,255,255), font=font_hywh_85w_ms)
-    txt_size = draw.textsize('Powered By Little-UNIkeEN-Bot',font=font_syhtmed_18)
-    draw.text((width/2-txt_size[0]/2, height-50), 'Powered By Little-UNIkeEN-Bot', fill=(115,115,115,255), font = font_syhtmed_18)
+    txt_size = draw.textsize(title, font=font_hywh_85w_ms)
+    img = draw_rounded_rectangle(img, x1=width / 2 - txt_size[0] / 2 - 15, y1=40, x2=width / 2 + txt_size[0] / 2 + 15,
+                                 y2=txt_size[1] + 70, fill=clr)
+    draw.text((width / 2 - txt_size[0] / 2, 55), title, fill=(255, 255, 255, 255), font=font_hywh_85w_ms)
+    txt_size = draw.textsize('Powered By Little-UNIkeEN-Bot', font=font_syhtmed_18)
+    draw.text((width / 2 - txt_size[0] / 2, height - 50), 'Powered By Little-UNIkeEN-Bot', fill=(115, 115, 115, 255),
+              font=font_syhtmed_18)
     return img, draw, txt_size[1]
+
 
 # 语音相关
 def send_genshin_voice(sentence):
     timeNow = str(time.time()).replace('.', '-')
-    speaker = random.choice(['枫原万叶', '可莉', '钟离',  '雷电将军',  '甘雨', '八重神子', '宵宫',  '胡桃'])
-    num='1234567890'
+    speaker = random.choice(['枫原万叶', '可莉', '钟离', '雷电将军', '甘雨', '八重神子', '宵宫', '胡桃'])
+    num = '1234567890'
     zw_num = '一二三四五六七八九十'
     for i in range(len(num)):
-        sentence = sentence.replace(num[i],zw_num[i])
-    response = requests.get(f"http://233366.proxy.nscc-gz.cn:8888/?text={sentence}&speaker={speaker}&length_factor=0.5&noise=0.4&format=mp3")
+        sentence = sentence.replace(num[i], zw_num[i])
+    response = requests.get(
+        f"http://233366.proxy.nscc-gz.cn:8888/?text={sentence}&speaker={speaker}&length_factor=0.5&noise=0.4&format=mp3")
     if response.status_code != requests.codes.ok:
         raise RuntimeError("genshin voice api failed")
     file_path = "data/voice/{}.mp3".format(timeNow)
     with open(file_path, "wb") as code:
         code.write(response.content)
     return file_path
-

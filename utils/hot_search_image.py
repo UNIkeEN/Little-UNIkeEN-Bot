@@ -63,7 +63,7 @@ class HotSearchUnit():
         self._splitedText = None
         self._calcedHeight = None
 
-    def parseLine(self)->List[str]:
+    def parse_line(self)->List[str]:
         if self._splitedText != None:
             return self._splitedText
         lineWidth = self.width - self.marginLeft - self.marginRight
@@ -71,7 +71,7 @@ class HotSearchUnit():
             raise RuntimeError('line width too narrow')
         result:List[str] = []
         res = self.text
-        def parseOneLine(txt:str, targetWidth:int)->Tuple[str, str]:
+        def parse_one_line(txt:str, targetWidth:int)->Tuple[str, str]:
             lh, rh = 0, len(txt)
             while lh < rh:
                 mid = (lh+rh+1)>>1
@@ -82,15 +82,15 @@ class HotSearchUnit():
                     rh = mid - 1
             return txt[:lh], txt[lh:]
         while len(res) > 0:
-            text, res = parseOneLine(res, lineWidth)
+            text, res = parse_one_line(res, lineWidth)
             result.append(text)
         self._splitedText = result
         return result
             
-    def calcHeight(self)->int:
+    def calc_height(self)->int:
         if self._calcedHeight != None:
             return self._calcedHeight
-        tmp = self.parseLine()
+        tmp = self.parse_line()
         height = self.marginUp + self.marginDown
         height += (len(tmp) - 1) * self.rowSpacing
         height += sum([self.font.getsize(line)[1] for line in tmp])
@@ -107,7 +107,7 @@ class HotSearchUnit():
             indexPos = (indexPos[0]+7, indexPos[1])
         draw.text(indexPos, str(self.index), fill=self.color, font=self.font)
         currentPos = (startPos[0] + self.marginLeft, startPos[1] + self.marginUp)
-        for txt in self.parseLine():
+        for txt in self.parse_line():
             draw.text(currentPos, txt, fill=self.color, font=self.font)
             currentPos = (currentPos[0], currentPos[1]+self.rowSpacing+self.font.getsize(txt)[1])
 
@@ -138,16 +138,16 @@ class HotSearchImage():
         self.bgColor = bgColor
         self.marginUp = 50
         self.marginDown = 50
-    def calcHeight(self,):
+    def calc_height(self, ):
         height = self.marginUp + self.marginDown
-        height += sum([u.calcHeight() for u in self.unit])
+        height += sum([u.calc_height() for u in self.unit])
         return height
     def draw(self)->Image.Image:
-        height = self.calcHeight()
+        height = self.calc_height()
         img = Image.new('RGB', (self.width, height), self.bgColor)
         draw = ImageDraw.Draw(img)
         h = self.marginUp
         for u in self.unit:
             u.draw(draw, (0, h))
-            h += u.calcHeight()
+            h += u.calc_height()
         return img

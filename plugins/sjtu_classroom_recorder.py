@@ -1,4 +1,4 @@
-from utils.sql_utils import newSqlSession
+from utils.sql_utils import new_sql_session
 from utils.standard_plugin import CronStandardPlugin, StandardPlugin
 import datetime
 import asyncio
@@ -10,12 +10,13 @@ import re, os.path
 from utils.basic_configs import ROOT_PATH, SAVE_TMP_PATH, FONTS_PATH
 from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
-from matplotlib.font_manager import FontProperties 
+from matplotlib.font_manager import FontProperties
 
 font = FontProperties(fname=os.path.join(FONTS_PATH, 'SourceHanSansCN-Normal.otf'), size=14)
 
-def createSjtuClassroomSql():
-    mydb, mycursor = newSqlSession()
+
+def create_sjtu_classroom_sql():
+    mydb, mycursor = new_sql_session()
     mycursor.execute("""
     create table if not exists `sjtuClassroomRecord` (
         `roomName` char(20) not null,
@@ -24,7 +25,8 @@ def createSjtuClassroomSql():
         primary key(`roomName`, `time`)
     )charset=utf8mb4, collate=utf8mb4_unicode_ci""")
 
-def aioGetAllBuildingCourse(targetDate:datetime.date)->List[Dict]:
+
+def aio_get_all_building_course(targetDate: datetime.date) -> List[Dict]:
     payloads = [126, 128, 127, 122, 564, 124, 125]
     payloads = [targetDate.strftime(f'buildId={p}&courseDate=%Y-%m-%d') for p in payloads]
     url = 'https://ids.sjtu.edu.cn/build/findBuildRoomType'
@@ -46,7 +48,8 @@ def aioGetAllBuildingCourse(targetDate:datetime.date)->List[Dict]:
         "sec-ch-ua-mobile": "?0",
         'sec-ch-ua-platform': '"Windows"',
     }
-    async def getCourse(payload:str)->Optional[Dict]:
+
+    async def get_course(payload: str) -> Optional[Dict]:
         async with aiohttp.request('POST', url=url, headers=headers, data=payload) as req:
             try:
                 result = await req.json()
@@ -55,8 +58,9 @@ def aioGetAllBuildingCourse(targetDate:datetime.date)->List[Dict]:
                 return result['data']
             except BaseException as e:
                 return None
+
     loop = asyncio.new_event_loop()
-    tasks = [loop.create_task(getCourse(p)) for p in payloads]
+    tasks = [loop.create_task(get_course(p)) for p in payloads]
     results = loop.run_until_complete(asyncio.wait(tasks))
     loop.close()
     results = [r.result() for r in results[0]]
@@ -65,12 +69,14 @@ def aioGetAllBuildingCourse(targetDate:datetime.date)->List[Dict]:
         warning('getCourse api failed in sjtuClassroomRecorder.aioGetAllBuildingCourse')
     return buildingInfos
 
-def processBuildingCourse(targetDate:datetime.date)->Dict[str, int]:
+
+def process_building_course(targetDate: datetime.date) -> Dict[str, int]:
     result = {}
-    buildingInfos = aioGetAllBuildingCourse(targetDate)
+    buildingInfos = aio_get_all_building_course(targetDate)
     for buildingInfo in buildingInfos:
-        roomStudents = {room['roomId']: int(room['actualStuNum']) for floor in buildingInfo['floorList'] for room in floor.get('roomStuNumbs', [])}            
-        rooms = {room['name']: room for floor in buildingInfo['floorList'] for room in floor['children'] }
+        roomStudents = {room['roomId']: int(room['actualStuNum']) for floor in buildingInfo['floorList'] for room in
+                        floor.get('roomStuNumbs', [])}
+        rooms = {room['name']: room for floor in buildingInfo['floorList'] for room in floor['children']}
         for roomName, roomInfo in rooms.items():
             roomId = roomInfo['id']
             if roomId not in roomStudents.keys():
@@ -79,26 +85,30 @@ def processBuildingCourse(targetDate:datetime.date)->Dict[str, int]:
             result[roomName] = numStudents
     return result
 
-def recordSjtuClassroom(result:Dict[str, int], now: datetime.datetime):
-    mydb, mycursor = newSqlSession()
+
+def record_sjtu_classroom(result: Dict[str, int], now: datetime.datetime):
+    mydb, mycursor = new_sql_session()
     timestamp = int(time.mktime(now.timetuple()))
     for roomName, actualStuNum in result.items():
         mycursor.execute("""
         insert into `sjtuClassroomRecord` (
             `roomName`, `actualStuNum`, `time`
         ) values (%s, %s, from_unixtime(%s))
-        """,(roomName, actualStuNum, timestamp))
-    
+        """, (roomName, actualStuNum, timestamp))
+
+
 class SjtuClassroomRecorder(CronStandardPlugin):
     def __init__(self) -> None:
-        createSjtuClassroomSql()
-        self.start(0, 10*60)
+        create_sjtu_classroom_sql()
+        self.start(0, 10 * 60)
+
     def tick(self) -> None:
         now = datetime.datetime.now()
         today = now.date()
-        recordSjtuClassroom(processBuildingCourse(today), now)
+        record_sjtu_classroom(process_building_course(today), now)
 
-def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
+
+def standarlizing_room_str(roomStr: str) -> Optional[Tuple[str, str]]:
     """
     东上103 => (东上院, 东上院103)
     东中1-105 => (东中院, 东中院1-105)
@@ -114,17 +124,21 @@ def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
     if pattern2.match(roomStr) != None:
         building = '东中院'
         _, roomCode = pattern2.findall(roomStr)[0]
-        return building, building+roomCode
+        return building, building + roomCode
     pattern3 = re.compile(r'^(陈瑞球楼?|球楼?)\s*(\d{3})$')
     if pattern3.match(roomStr) != None:
         building = '陈瑞球楼'
         _, roomCode = pattern3.findall(roomStr)[0]
         return building, building + roomCode
     return None
-def getWeekDay(targetDate:datetime.date)->str:
-    return '星期' + ['一','二','三','四','五','六','日'][targetDate.weekday()]
-def drawClassroomPeopleCountFunc(roomName:str, target:int)->Tuple[bool, str]:
-    mydb, mycursor = newSqlSession()
+
+
+def get_week_day(targetDate: datetime.date) -> str:
+    return '星期' + ['一', '二', '三', '四', '五', '六', '日'][targetDate.weekday()]
+
+
+def draw_classroom_people_count_func(roomName: str, target: int) -> Tuple[bool, str]:
+    mydb, mycursor = new_sql_session()
     now = datetime.datetime.now()
     today = now.date()
     mycursor.execute("""select time, actualStuNum from `sjtuClassroomRecord` where
@@ -136,7 +150,7 @@ def drawClassroomPeopleCountFunc(roomName:str, target:int)->Tuple[bool, str]:
     yList = [[] for _ in range(5)]
     for t, c in result:
         dt = (today - t.date()).days
-        if dt>=5:
+        if dt >= 5:
             break
         xList[dt].append(t.replace(2000, 1, 1))
         yList[dt].append(c)
@@ -144,36 +158,42 @@ def drawClassroomPeopleCountFunc(roomName:str, target:int)->Tuple[bool, str]:
     plt.figure(figsize=(10, 3))
     for i in range(5):
         tDate = today - datetime.timedelta(days=i)
-        weekday = getWeekDay(tDate)
+        weekday = get_week_day(tDate)
         plt.plot(xList[i], yList[i], label=tDate.strftime(f"%Y-%m-%d {weekday}"))
     plt.legend(loc='upper left', prop=font)
-    plt.xticks(rotation=25,size=9)
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  
-    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'classroomPeopleCount-%d.png'%target)
-    plt.savefig(savePath, dpi=400, bbox_inches='tight', pad_inches=0 )
+    plt.xticks(rotation=25, size=9)
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'classroomPeopleCount-%d.png' % target)
+    plt.savefig(savePath, dpi=400, bbox_inches='tight', pad_inches=0)
     plt.close()
     return True, savePath
+
 
 class DrawClassroomPeopleCount(StandardPlugin):
     def __init__(self):
         self.triggerPattern = re.compile(r'^(\-jsrsls|教室人数历史)\s+(\S*)$')
-    def judgeTrigger(self, msg:str, data:Any)->bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return self.triggerPattern.match(msg) != None
-    def executeEvent(self, msg:str, data:Any)->Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
         _, roomStr = self.triggerPattern.findall(msg)[0]
-        result = standarlizingRoomStr(roomStr)
+        result = standarlizing_room_str(roomStr)
         if result == None:
-            send(target, '教室参数解析错误，请重新输入查询参数，例如：\n"-jsrsls 东上105"、"教室人数历史 东下院311"、"-jsrsls 东中1-102"', data['message_type'])
+            send(target,
+                 '教室参数解析错误，请重新输入查询参数，例如：\n"-jsrsls 东上105"、"教室人数历史 东下院311"、"-jsrsls 东中1-102"',
+                 data['message_type'])
             return "OK"
         _, roomName = result
-        succ, result = drawClassroomPeopleCountFunc(roomName, target)
+        succ, result = draw_classroom_people_count_func(roomName, target)
         if succ:
-            send(target, '[CQ:image,file=file:///%s]'%result, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]' % result, data['message_type'])
         else:
             send(target, f'[CQ:reply,id={data["message_id"]}]查询结果错误，可能原因是：{result}', data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'DrawClassroomPeopleCount',
             'description': '教室人数历史',

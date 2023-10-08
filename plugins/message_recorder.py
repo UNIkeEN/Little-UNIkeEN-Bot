@@ -1,19 +1,20 @@
 from utils.standard_plugin import StandardPlugin, RecallMessageStandardPlugin, Union, Tuple, Any, List
 from utils.basic_event import get_group_list, warning, get_group_list, get_group_msg_history
-from utils.sql_utils import newSqlSession
+from utils.sql_utils import new_sql_session
 from pymysql.converters import escape_string
 import threading, time
 import mysql.connector
 
-def getLatestRecordSeq():
+
+def get_latest_record_seq():
     groupList = [group['group_id'] for group in get_group_list()]
-    mydb, mycursor = newSqlSession(autocommit=False)
+    mydb, mycursor = new_sql_session(autocommit=False)
     result = []
     for group_id in groupList:
         if not isinstance(group_id, int): continue
         mycursor.execute("""
             select max(message_seq) from `messageRecord`
-            where group_id = %d"""%group_id)
+            where group_id = %d""" % group_id)
         latestSeq = list(mycursor)
         if len(latestSeq) == 0:
             latestSeq = None
@@ -21,7 +22,9 @@ def getLatestRecordSeq():
             latestSeq = latestSeq[0][0]
         result.append((group_id, latestSeq))
     return result
-def getGroupMessageHistory(group_id: int, message_seq: Union[int, None]=None)->list:
+
+
+def get_group_message_history(group_id: int, message_seq: Union[int, None] = None) -> list:
     """获取聊天记录
     @group_id: 群号
     @message_seq: 
@@ -38,7 +41,8 @@ def getGroupMessageHistory(group_id: int, message_seq: Union[int, None]=None)->l
         time.sleep(1)
     return messages
 
-def getGroupMessageThread(latestResultSeq):
+
+def get_group_message_thread(latestResultSeq):
     def flatten(messages):
         result = []
         for data in messages:
@@ -47,9 +51,10 @@ def getGroupMessageThread(latestResultSeq):
             else:
                 result.append(data)
         return result
-    mydb, mycursor = newSqlSession()
+
+    mydb, mycursor = new_sql_session()
     for group_id, latest_seq in latestResultSeq:
-        messages = getGroupMessageHistory(group_id, latest_seq)
+        messages = get_group_message_history(group_id, latest_seq)
         print("get {} messages from group {}".format(len(messages), group_id))
         for data in flatten(messages):
             try:
@@ -61,17 +66,17 @@ def getGroupMessageThread(latestResultSeq):
                     insert ignore into `messageRecord`
                     (`message_id`, `message_seq`, `time`, `user_id`,
                     `message`, `group_id`, `nickname`, `card`) 
-                    values (%d, %d, from_unixtime(%d), %d, '%s', %d, '%s', '%s')"""%(
-                        data['message_id'],
-                        data['message_seq'],
-                        data['time'],
-                        data['user_id'],
-                        escape_string(data['message']),
-                        data['group_id'],
-                        escape_string(data['sender']['nickname']),
-                        escape_string(card)
-                    )
+                    values (%d, %d, from_unixtime(%d), %d, '%s', %d, '%s', '%s')""" % (
+                    data['message_id'],
+                    data['message_seq'],
+                    data['time'],
+                    data['user_id'],
+                    escape_string(data['message']),
+                    data['group_id'],
+                    escape_string(data['sender']['nickname']),
+                    escape_string(card)
                 )
+                                 )
             except mysql.connector.Error as e:
                 print(data)
                 warning("mysql error in getGroupMessageThread: {}".format(e))
@@ -84,10 +89,11 @@ def getGroupMessageThread(latestResultSeq):
                 # with open("getGroupMessageThreadData.json", 'w') as f:
                 #     json.dump(data, f)
 
+
 class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
     def __init__(self) -> None:
         # 首先获取群聊列表，看看数据库是否开了这些表
-        mydb, mycursor = newSqlSession()
+        mydb, mycursor = new_sql_session()
         mycursor.execute("""
         create table if not exists `messageRecord`(
             `message_id` int not null,
@@ -102,17 +108,18 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
             primary key (`group_id`, `message_seq`)
         )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
         # 多线程获取离线期间的聊天记录
-        latestResultSeq = getLatestRecordSeq()
-        self._getGroupMessageThread = threading.Thread(target=getGroupMessageThread,args=(latestResultSeq,))
+        latestResultSeq = get_latest_record_seq()
+        self._getGroupMessageThread = threading.Thread(target=get_group_message_thread, args=(latestResultSeq,))
         self._getGroupMessageThread.daemon = True
         self._getGroupMessageThread.start()
-    def recallMessage(self, data: Any):
+
+    def recall_message(self, data: Any):
         try:
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             mycursor.execute("""
                 update `messageRecord` set recall=true where 
                 group_id = %d and message_id = %d
-            """%(
+            """ % (
                 data['group_id'], data['message_id']
             ))
         except KeyError as e:
@@ -122,12 +129,13 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
         except BaseException as e:
             warning("exception in recall message: {}".format(e))
         return None
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return data['message_type']=='group'
 
-    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        return data['message_type'] == 'group'
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
         try:
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             if 'card' not in data['sender'].keys():
                 card = data['anonymous']['name']
             else:
@@ -136,17 +144,17 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
                 insert ignore into `messageRecord`
                 (`message_id`, `message_seq`, `time`, `user_id`,
                 `message`, `group_id`, `nickname`, `card`) 
-                values (%d, %d, from_unixtime(%d), %d, '%s', %d, '%s', '%s')"""%(
-                    data['message_id'],
-                    data['message_seq'],
-                    data['time'],
-                    data['user_id'],
-                    escape_string(data['message']),
-                    data['group_id'],
-                    escape_string(data['sender']['nickname']),
-                    escape_string(card)
-                )
+                values (%d, %d, from_unixtime(%d), %d, '%s', %d, '%s', '%s')""" % (
+                data['message_id'],
+                data['message_seq'],
+                data['time'],
+                data['user_id'],
+                escape_string(data['message']),
+                data['group_id'],
+                escape_string(data['sender']['nickname']),
+                escape_string(card)
             )
+                             )
         except mysql.connector.Error as e:
             warning("mysql error in MessageRecorder: {}".format(e))
         except KeyError as e:
@@ -155,13 +163,13 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
             warning("exception in MessageRecorder: {}".format(e))
         return None
 
-    def getPluginInfo(self) -> dict:
+    def get_plugin_info(self) -> dict:
         return {
             'name': 'GroupMessageRecorder',
             'description': '记录群聊消息',
             'commandDescription': '',
             'usePlace': ['group', 'group_recall'],
-            'showInHelp': False,                
+            'showInHelp': False,
             'pluginConfigTableNames': ['messageRecord', ],
             'version': '1.0.0',
             'author': 'Unicorn',

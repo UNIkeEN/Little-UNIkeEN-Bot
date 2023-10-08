@@ -7,8 +7,9 @@ import chess.engine
 import chess.svg
 from chess import Board, Move
 import cairosvg
-# from .model import GameRecord
 
+
+# from .model import GameRecord
 
 
 class Player:
@@ -64,16 +65,18 @@ class Game:
         with open('/root/code/LittleUnicorn/2.0/chess.svg', 'w') as f:
             f.write(svg)
         return cairosvg.svg2png(bytestring=svg, output_width=500, output_height=500, )
-    
-    def push(self, move:chess.Move)->bool:
+
+    def push(self, move: chess.Move) -> bool:
         try:
             self.board.push_uci(move)
             return True
         except ValueError:
             return False
-    def outcome(self)->Optional[chess.Outcome]:
+
+    def outcome(self) -> Optional[chess.Outcome]:
         return self.board.outcome()
-    def fen(self)->str:
+
+    def fen(self) -> str:
         return self.board.fen()
     # def save_record(self, session_id: str)->GameRecord:
     #     record = GameRecord(game_id=self.id, session_id=session_id)

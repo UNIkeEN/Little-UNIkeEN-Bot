@@ -1,19 +1,20 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 import enum
+
 # from utils.basicEvent import get_login_info
-HTTP_URL="http://127.0.0.1:5701" #go-cqhttp
+HTTP_URL = "http://127.0.0.1:5701"  # go-cqhttp
 
-APPLY_GROUP_ID=[]
+APPLY_GROUP_ID = []
 
-APPLY_GUILD_ID = [ # guild test
+APPLY_GUILD_ID = [  # guild test
     # ('651039383982389627', '267764859'),
     # ('651039383982389627', '267795135'),
 ]
 
-MAIN_GUILD = { # guild test
-    'guild_id': '', # '651039383982389627',
-    'channels':{
+MAIN_GUILD = {  # guild test
+    'guild_id': '',  # '651039383982389627',
+    'channels': {
         # 'chat': '267764859',
         # 'mdd': '267795135',
         # 'dekt': '267800522',
@@ -22,19 +23,19 @@ MAIN_GUILD = { # guild test
     }
 }
 
-JAC_COOKIE = '' # for dekt
+JAC_COOKIE = ''  # for dekt
 
-ROOT_ADMIN_ID=[]
+ROOT_ADMIN_ID = []
 
 WARNING_ADMIN_ID = []
 
-MAIL_USER = '' # watch dog mail to whom
+MAIL_USER = ''  # watch dog mail to whom
 MAIL_PASS = ''
 
 # BOT_SELF_QQ=get_login_info()['user_id']
-BOT_SELF_QQ=0
+BOT_SELF_QQ = 0
 
-VERSION_TXT="""version：开源1.2.0版本
+VERSION_TXT = """version：开源1.2.0版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
 sqlConfig = {
@@ -51,8 +52,8 @@ SAVE_TMP_PATH = 'data/tmp'
 os.makedirs(SAVE_TMP_PATH, exist_ok=True)
 
 # 画图颜色常量与文字
-BACK_CLR = {'r':(255, 232, 236, 255),'g':(219, 255, 228, 255),'h':(234, 234, 234, 255),'o':(254, 232, 199, 255)}
-FONT_CLR = {'r':(221, 0, 38, 255),'g':(0, 191, 48, 255),'h':(64, 64, 64, 255),'o':(244, 149 ,4, 255)}
+BACK_CLR = {'r': (255, 232, 236, 255), 'g': (219, 255, 228, 255), 'h': (234, 234, 234, 255), 'o': (254, 232, 199, 255)}
+FONT_CLR = {'r': (221, 0, 38, 255), 'g': (0, 191, 48, 255), 'h': (64, 64, 64, 255), 'o': (244, 149, 4, 255)}
 font_syht_m = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Normal.otf'), 18)
 font_syht_mm = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Normal.otf'), 24)
 font_syht_ml = ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Normal.otf'), 32)

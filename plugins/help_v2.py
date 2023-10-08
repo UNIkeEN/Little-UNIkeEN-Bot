@@ -6,19 +6,24 @@ from utils.standard_plugin import StandardPlugin, PluginGroupManager
 from utils.response_image import *
 import os.path
 import re
-class ShowHelp(StandardPlugin): 
+
+
+class ShowHelp(StandardPlugin):
     def __init__(self) -> None:
         self.pattern = re.compile(r'^\-help\s*(.*)$')
         self.subdevidePattern = re.compile(r'^(\S+)\s+(\S.*)$')
         self.pluginList = []
         self.pluginListPrivate = []
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return self.pattern.match(msg) != None
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        group_id = data['group_id'] if data['message_type']=='group' else 0
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
+        group_id = data['group_id'] if data['message_type'] == 'group' else 0
         helpWords = self.pattern.findall(msg)[0]
-        def getTargetPluginList(pluginList:List[StandardPlugin], helpWords:str)->List[StandardPlugin]:
+
+        def getTargetPluginList(pluginList: List[StandardPlugin], helpWords: str) -> List[StandardPlugin]:
             if helpWords == '':
                 return pluginList
             if self.subdevidePattern.match(helpWords) != None:
@@ -36,34 +41,37 @@ class ShowHelp(StandardPlugin):
                     if p.groupName == helpWords:
                         return p.plugins
                 return []
-        targetPluginList = self.pluginList if data['message_type']=='group' else self.pluginListPrivate
+
+        targetPluginList = self.pluginList if data['message_type'] == 'group' else self.pluginListPrivate
         targetPluginList = getTargetPluginList(targetPluginList, helpWords)
         if len(targetPluginList) == 0:
-            send(target, '[CQ:reply,id=%d]暂未创建对应名称的模块'%data['message_id'], data['message_type'])
+            send(target, '[CQ:reply,id=%d]暂未创建对应名称的模块' % data['message_id'], data['message_type'])
         else:
-            imgPath = drawHelpCard(targetPluginList, group_id)
+            imgPath = draw_help_card(targetPluginList, group_id)
             imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-            send(target, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            send(target, '[CQ:image,file=files:///%s]' % imgPath, data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'ShowHelp',
             'description': '帮助',
             'commandDescription': '-help [...]?'
-                '\n群主权限标识: 👑'
-                '\nROOT权限标识: 🔒'
-                '\n群BOT管理权限标识: 🔑'
-                '\n开启插件组[🔑]:  -grpcfg enable <组名>'
-                '\n关闭插件组[🔑]:  -grpcfg disable <组名>'
-                '\n插件组可嵌套，开启内层插件组须先打开外层'
-                ,
+                                  '\n群主权限标识: 👑'
+                                  '\nROOT权限标识: 🔒'
+                                  '\n群BOT管理权限标识: 🔑'
+                                  '\n开启插件组[🔑]:  -grpcfg enable <组名>'
+                                  '\n关闭插件组[🔑]:  -grpcfg disable <组名>'
+                                  '\n插件组可嵌套，开启内层插件组须先打开外层'
+            ,
             'usePlace': ['group', 'private', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
             'version': '1.0.4',
             'author': 'Unicorn',
         }
-    def updatePluginList(self, plugins, private_plugins):
+
+    def update_plugin_list(self, plugins, private_plugins):
         for plugin in plugins:
             if issubclass(type(plugin), StandardPlugin):
                 self.pluginList.append(plugin)
@@ -75,66 +83,74 @@ class ShowHelp(StandardPlugin):
             else:
                 warning("unexpected plugin {} type in ShowHelp plugin".format(plugin))
 
-def drawHelpCard(pluginList, group_id)->str:
+
+def draw_help_card(pluginList, group_id) -> str:
     helpCards = ResponseImage(
-        title = '群聊功能配置' if group_id!=0 else '私聊功能配置', 
-        footer = (f'当前群号:{group_id}' if group_id!=0 else ''),
-        titleColor = PALETTE_CYAN,
-        layout = 'two-column',
-        width = 1280,
-        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
-        cardSubtitleFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        title='群聊功能配置' if group_id != 0 else '私聊功能配置',
+        footer=(f'当前群号:{group_id}' if group_id != 0 else ''),
+        titleColor=PALETTE_CYAN,
+        layout='two-column',
+        width=1280,
+        cardBodyFont=ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
+        cardSubtitleFont=ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 24),
     )
     for item in pluginList:
         cardPluginList = []
         flag = False
         if isinstance(item, PluginGroupManager):
             item: PluginGroupManager
-            flag = item.queryEnabled(group_id)
+            flag = item.query_enabled(group_id)
             cardPluginList.append(('title', item.groupName))
-            cardPluginList.append(('separator', ))
+            cardPluginList.append(('separator',))
             for plugin in item.plugins:
-                infoDict:dict = plugin.getPluginInfo()
+                infoDict: dict = plugin.get_plugin_info()
                 if 'showInHelp' in infoDict.keys() and not infoDict['showInHelp']:
                     continue
                 try:
                     if isinstance(plugin, PluginGroupManager):
                         plugin: PluginGroupManager
                         cardPluginList.append((
-                            'body' if plugin.queryEnabled(group_id) else 'subtitle',
-                            "[插件组] "+ plugin.groupName + '\n' +
-                                infoDict['description']
+                            'body' if plugin.query_enabled(group_id) else 'subtitle',
+                            "[插件组] " + plugin.groupName + '\n' +
+                            infoDict['description']
                         ))
                     else:
-                        cardPluginList.append(('body',(infoDict['description']+':  '+infoDict['commandDescription'])))
+                        cardPluginList.append(
+                            ('body', (infoDict['description'] + ':  ' + infoDict['commandDescription'])))
                 except KeyError:
                     warning('meet KeyError when getting help, plugin: {}'.format(plugin))
         else:
             item: StandardPlugin
             flag = True
-            infoDict = item.getPluginInfo()
+            infoDict = item.get_plugin_info()
             if 'showInHelp' in infoDict.keys() and not infoDict['showInHelp']:
                 continue
             try:
-                cardPluginList.append(('body',(infoDict['description']+':  '+infoDict['commandDescription'])))
+                cardPluginList.append(('body', (infoDict['description'] + ':  ' + infoDict['commandDescription'])))
             except KeyError:
                 warning('meet KeyError when getting help, plugin: {}'.format(item))
-        
-        if len(cardPluginList)>0:
+
+        if len(cardPluginList) > 0:
             clr = PALETTE_GREY if not flag else PALETTE_CYAN
             clr2 = PALETTE_GREY if not flag else PALETTE_BLACK
-            helpCards.addCard(ResponseImage.RichContentCard(raw_content=cardPluginList, titleFontColor=clr ,bodyFontColor=clr2,subtitleFontColor=PALETTE_GREY))
+            helpCards.add_card(
+                ResponseImage.RichContentCard(raw_content=cardPluginList, titleFontColor=clr, bodyFontColor=clr2,
+                                              subtitleFontColor=PALETTE_GREY))
     save_path = (os.path.join(ROOT_PATH, SAVE_TMP_PATH, f'{group_id}_help.png'))
-    helpCards.generateImage(save_path)
+    helpCards.generate_image(save_path)
     return save_path
-class ShowStatus(StandardPlugin): 
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
+
+
+class ShowStatus(StandardPlugin):
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return msg in ['-test status', '-test']
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, 'status: online\n'+VERSION_TXT,data['message_type'])
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
+        send(target, 'status: online\n' + VERSION_TXT, data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'ShowStatus',
             'description': '展示状态',
@@ -146,32 +162,35 @@ class ShowStatus(StandardPlugin):
             'author': 'Unicorn',
         }
 
+
 class ServerMonitor(StandardPlugin):
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return msg == '-monitor' and data['user_id'] in ROOT_ADMIN_ID
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
         statusCards = ResponseImage(
-            title = 'Bot 服务器状态', 
-            titleColor = PALETTE_CYAN,
+            title='Bot 服务器状态',
+            titleColor=PALETTE_CYAN,
         )
-        mem:float = psutil.virtual_memory().percent
-        cpu:float = psutil.cpu_percent()
-        statusCards.addCard(
+        mem: float = psutil.virtual_memory().percent
+        cpu: float = psutil.cpu_percent()
+        statusCards.add_card(
             ResponseImage.RichContentCard(
                 raw_content=[
-                ('subtitle', '内存占用: '+str(mem)+'%'),
-                ('progressBar', mem/100, 'auto'),
-                ('subtitle', 'CPU占用: '+str(cpu)+'%'),
-                ('progressBar', cpu/100, 'auto'),
-            ])
+                    ('subtitle', '内存占用: ' + str(mem) + '%'),
+                    ('progressBar', mem / 100, 'auto'),
+                    ('subtitle', 'CPU占用: ' + str(cpu) + '%'),
+                    ('progressBar', cpu / 100, 'auto'),
+                ])
         )
         save_path = os.path.join(SAVE_TMP_PATH, 'server_monitor.png')
-        statusCards.generateImage(save_path)
+        statusCards.generate_image(save_path)
         save_path = save_path if os.path.isabs(save_path) else os.path.join(ROOT_PATH, save_path)
-        send(target, '[CQ:image,file=files:///%s]'%save_path ,data['message_type'])
+        send(target, '[CQ:image,file=files:///%s]' % save_path, data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'ServerMonitor',
             'description': '展示服务器状态',

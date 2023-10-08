@@ -4,17 +4,18 @@ from typing import Optional, List, Dict, Any, Union
 import pyjsparser.parser as jsparser
 from utils.basic_event import send, warning
 from utils.channel_api import send_guild_channel_msg, MAIN_GUILD
-from utils.configAPI import getPluginEnabledGroups
+from utils.config_api import get_plugin_enabled_groups
 from utils.standard_plugin import StandardPlugin, CronStandardPlugin
 from utils.basic_configs import sqlConfig
 import datetime
 from urllib.parse import urlparse
-from utils.sql_utils import newSqlSession
+from utils.sql_utils import new_sql_session
 from threading import Semaphore
 import time
 
-def createBwcSql():
-    mydb, mycursor = newSqlSession()
+
+def create_bwc_sql():
+    mydb, mycursor = new_sql_session()
     mycursor.execute("""
     create table if not exists `bwcRecord`(
         `msgid` bigint unsigned not null,
@@ -24,7 +25,8 @@ def createBwcSql():
         primary key(`msgid`)
     )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
 
-def simplifyWxappUrl(url:str):
+
+def simplify_wxapp_url(url: str):
     up = urlparse(url)
     query = []
     for u in up.query.split('&amp;'):
@@ -32,9 +34,11 @@ def simplifyWxappUrl(url:str):
         if u[0] not in ['chksm']:
             query.append((u[0], u[1]))
     query = '&amp;'.join('{}={}'.format(k, v) for k, v in query)
-    url = '%s://%s%s?%s'%(up.scheme, up.netloc, up.path, query)
+    url = '%s://%s%s?%s' % (up.scheme, up.netloc, up.path, query)
     return url
-def getBwcNotice()->Optional[List[Dict]]:
+
+
+def get_bwc_notice() -> Optional[List[Dict]]:
     """@return:
         if "OK": [{
             'title': str,
@@ -49,7 +53,8 @@ def getBwcNotice()->Optional[List[Dict]]:
 
     url = 'https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3MzMzMDIzNg==&action=getalbum&album_id=2034335777152614400&from_msgid=2649562310'
     headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',''
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        ''
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'cache-control': 'max-age=0',
@@ -97,23 +102,28 @@ def getBwcNotice()->Optional[List[Dict]]:
         warning('js parse error in sjtuBwc: {}'.format(e))
         return None
 
-class SjtuBwc(StandardPlugin): 
+
+class SjtuBwc(StandardPlugin):
     initGuard = Semaphore()
+
     def __init__(self):
         if self.initGuard.acquire(blocking=False):
-            createBwcSql()
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg=='-bwc'
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        bwc = sorted(getBwcNotice(), key=lambda x: x['create_time'], reverse=True)
-        bwcStr = '\n\n'.join(['【%d】%s\n%s\n%s'%(
-            idx+1, datetime.datetime.fromtimestamp(b['create_time']).strftime('%Y-%m-%d %H:%M'), 
-            b['title'], simplifyWxappUrl(b['url']))
-            for idx, b in enumerate(bwc[:5])])
+            create_bwc_sql()
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        return msg == '-bwc'
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
+        bwc = sorted(get_bwc_notice(), key=lambda x: x['create_time'], reverse=True)
+        bwcStr = '\n\n'.join(['【%d】%s\n%s\n%s' % (
+            idx + 1, datetime.datetime.fromtimestamp(b['create_time']).strftime('%Y-%m-%d %H:%M'),
+            b['title'], simplify_wxapp_url(b['url']))
+                              for idx, b in enumerate(bwc[:5])])
         send(target, bwcStr, data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'SjtuBwc',
             'description': '获取保卫处通知',
@@ -125,10 +135,12 @@ class SjtuBwc(StandardPlugin):
             'author': 'Unicorn',
         }
 
+
 class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
     guardSem = Semaphore()
+
     @staticmethod
-    def checkAndUpdate(notices:List[Dict])->List[Dict]:
+    def check_and_update(notices: List[Dict]) -> List[Dict]:
         """检测notices中的元素是否曾被记录过，记录没有被记录过的元素，并返回没有被记录过的元素列表
         @notices: [{
             'title': str,
@@ -141,12 +153,12 @@ class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
         @return: 如果某个元素没被记录，则返回值会append
         """
         result = []
-        mydb, mycursor = newSqlSession()
+        mydb, mycursor = new_sql_session()
 
         for notice in notices:
             mycursor.execute("""select count(*) from `bwcRecord`
             where msgid = %d
-            """%notice['msgid'])
+            """ % notice['msgid'])
             count = list(mycursor)[0][0]
             if count == 0:
                 result.append(notice)
@@ -162,34 +174,37 @@ class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
                     notice['url']
                 ))
         return result
+
     def __init__(self) -> None:
         if SjtuBwcMonitor.guardSem.acquire(blocking=False):
             self.start(0, 3 * 60)
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return False
-    def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
         return None
+
     def tick(self) -> None:
-        notices = getBwcNotice()
-        notices = self.checkAndUpdate(notices)
+        notices = get_bwc_notice()
+        notices = self.check_and_update(notices)
         for notice in notices:
-            send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['bwc'], 
-                '已发现保卫处通知更新:\n%s\n\n%s\n\n%s' % (
-                    datetime.datetime.fromtimestamp(notice['create_time']).strftime('%Y-%m-%d %H:%M'), 
-                    notice['title'], simplifyWxappUrl(notice['url'])
-                )
-            )
-        for group_id in getPluginEnabledGroups('bwcreport'):
+            send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['bwc'],
+                                   '已发现保卫处通知更新:\n%s\n\n%s\n\n%s' % (
+                                       datetime.datetime.fromtimestamp(notice['create_time']).strftime(
+                                           '%Y-%m-%d %H:%M'),
+                                       notice['title'], simplify_wxapp_url(notice['url'])
+                                   )
+                                   )
+        for group_id in get_plugin_enabled_groups('bwcreport'):
             for notice in notices:
-                send(group_id, '已发现保卫处通知更新:\n%s\n\n%s\n\n%s'%(
-                    datetime.datetime.fromtimestamp(notice['create_time']).strftime('%Y-%m-%d %H:%M'), 
-                    notice['title'], simplifyWxappUrl(notice['url'])
+                send(group_id, '已发现保卫处通知更新:\n%s\n\n%s\n\n%s' % (
+                    datetime.datetime.fromtimestamp(notice['create_time']).strftime('%Y-%m-%d %H:%M'),
+                    notice['title'], simplify_wxapp_url(notice['url'])
                 ))
                 time.sleep(1)
 
-
-
-    def getPluginInfo(self) -> dict:
+    def get_plugin_info(self) -> dict:
         return {
             'name': 'SjtuBwcMonitor',
             'description': '保卫处通知更新广播',
@@ -201,5 +216,6 @@ class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
             'author': 'Unicorn',
         }
 
+
 if __name__ == '__main__':
-    print(getBwcNotice())
+    print(get_bwc_notice())

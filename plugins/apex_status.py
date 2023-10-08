@@ -5,102 +5,108 @@ from utils.basic_configs import *
 from utils.response_image_beta import ResponseImage
 from resources.api.apexAPI import APEX_AUTHKEY
 
-APEX_MAIN_COLOR="#E54722"
+APEX_MAIN_COLOR = "#E54722"
 
-MAP_NAME = {"Olympus":"奥林匹斯", 
-            "Kings Canyon":"诸王峡谷", 
-            "Storm Point":"风暴点",
-            "World's Edge":"世界尽头",
-            "Broken Moon":"残月",
-            "Habitat":"栖息地",
-            "Skulltown":"骷髅镇",
-            "Hammond Labs":"哈蒙德实验室",
-            "Phase Runner":"相位穿梭器",
-            "Overflow":"熔岩流",
-            "Party Crasher":"派对破坏者",
-            "Siphon":"岩浆提取器",
-            "Caustic Treatment":"侵蚀疗法",
-            "Fragment":"碎片（原碎片东部）",
-            "Estates":"不动产"
+MAP_NAME = {"Olympus": "奥林匹斯",
+            "Kings Canyon": "诸王峡谷",
+            "Storm Point": "风暴点",
+            "World's Edge": "世界尽头",
+            "Broken Moon": "残月",
+            "Habitat": "栖息地",
+            "Skulltown": "骷髅镇",
+            "Hammond Labs": "哈蒙德实验室",
+            "Phase Runner": "相位穿梭器",
+            "Overflow": "熔岩流",
+            "Party Crasher": "派对破坏者",
+            "Siphon": "岩浆提取器",
+            "Caustic Treatment": "侵蚀疗法",
+            "Fragment": "碎片（原碎片东部）",
+            "Estates": "不动产"
             }
 
-MODE_NAME = {"TDM":"团队死斗",
-            "Gun Run":"子弹时间",
-            "Control":"控制",
-            }
+MODE_NAME = {"TDM": "团队死斗",
+             "Gun Run": "子弹时间",
+             "Control": "控制",
+             }
 
 CRAFTING_TRANSLATION = {
-            'optic_variable_sniper' : '4倍至8倍可调节式光学瞄准镜',
-            'optic_variable_aog' : '2倍至4倍可调节式高级光学瞄准镜',
-            'optic_hcog_ranger' : '3倍全息衍射式瞄准镜"游侠"',  
-            'optic_hcog_bruiser' : '2倍全息衍射式瞄准镜"格斗家"',
-            'optic_digital_threat' : '单倍数字化威胁',
-            # 弹匣
-            'extended_light_mag' : '加长式轻型弹匣 - 等级3',
-            'extended_heavy_mag' : '加长式重型弹匣 - 等级3',
-            'extended_energy_mag' : '加长式能量弹匣 - 等级3',
-            'extended_sniper_mag' : '加长式狙击弹匣 - 等级3',
-            # 其余枪械部件
-            'barrel_stabilizer' : '枪管稳定器 - 等级3',
-            'shotgun_bolt' : '霰弹枪栓 - 等级4',
-            'standard_stock' : '标准枪托 - 等级3',
-            'sniper_stock' : '狙击枪托 - 等级3',
-            # 即用配件
-            'boosted_loader' : '加速装填器',
-            'turbocharger' : '涡轮增压器',
-            "deadeye's_tempo" : '神射手速度节拍',
-            'hammerpoint_rounds' : '锤击点',
-            'kinetic_feeder' : '动能供弹器',
-            'shatter_caps' : '粉碎帽',
-            #每周
-            'mobile_respawn_beacon' : '移动重生信标',
-            'knockdown_shield' : '击倒护盾 - 等级3',
-            'backpack' : '背包 - 等级3',
-            'helmet' : '头盔 - 等级3'
-        }
+    'optic_variable_sniper': '4倍至8倍可调节式光学瞄准镜',
+    'optic_variable_aog': '2倍至4倍可调节式高级光学瞄准镜',
+    'optic_hcog_ranger': '3倍全息衍射式瞄准镜"游侠"',
+    'optic_hcog_bruiser': '2倍全息衍射式瞄准镜"格斗家"',
+    'optic_digital_threat': '单倍数字化威胁',
+    # 弹匣
+    'extended_light_mag': '加长式轻型弹匣 - 等级3',
+    'extended_heavy_mag': '加长式重型弹匣 - 等级3',
+    'extended_energy_mag': '加长式能量弹匣 - 等级3',
+    'extended_sniper_mag': '加长式狙击弹匣 - 等级3',
+    # 其余枪械部件
+    'barrel_stabilizer': '枪管稳定器 - 等级3',
+    'shotgun_bolt': '霰弹枪栓 - 等级4',
+    'standard_stock': '标准枪托 - 等级3',
+    'sniper_stock': '狙击枪托 - 等级3',
+    # 即用配件
+    'boosted_loader': '加速装填器',
+    'turbocharger': '涡轮增压器',
+    "deadeye's_tempo": '神射手速度节拍',
+    'hammerpoint_rounds': '锤击点',
+    'kinetic_feeder': '动能供弹器',
+    'shatter_caps': '粉碎帽',
+    # 每周
+    'mobile_respawn_beacon': '移动重生信标',
+    'knockdown_shield': '击倒护盾 - 等级3',
+    'backpack': '背包 - 等级3',
+    'helmet': '头盔 - 等级3'
+}
+
 
 class ApexStatusPlugin(StandardPlugin):
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return startswith_in(msg, ['-apex'])
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
         try:
-            imgPath = getApexStatusImg()
+            imgPath = get_apex_status_img()
             if imgPath == None:
                 send(data['group_id'], 'Apex API 请求失败', data['message_type'])
             else:
                 imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-                send(target, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+                send(target, '[CQ:image,file=files:///%s]' % imgPath, data['message_type'])
         except BaseException as e:
             send(data['group_id'], '内部错误：{}'.format(e), data['message_type'])
             warning("Exception in Apex: {}".format(e))
-        
+
         return "OK"
-    def getPluginInfo(self, )->dict:
+
+    def get_plugin_info(self, ) -> dict:
         return {
             'name': 'ApexStatus',
             'description': 'APEX游戏状态',
             'commandDescription': '-apex',
-            'usePlace': ['group',],
+            'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
             'version': '1.0.0',
             'author': 'Unicorn',
         }
 
-def transName(eng):
+
+def trans_name(eng):
     tmp = MAP_NAME.get(eng)
     tmp = MODE_NAME.get(eng, tmp)
     tmp = CRAFTING_TRANSLATION.get(eng, tmp)
-    return tmp if tmp!=None else eng
+    return tmp if tmp != None else eng
 
-def HexToRgb(hex):
+
+def hex_to_rgb(hex):
     hex = hex.lstrip('#')
-    rgba = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+    rgba = tuple(int(hex[i:i + 2], 16) for i in (0, 2, 4))
     rgba += (255,)
     return rgba
 
-def getApexStatusImg():
+
+def get_apex_status_img():
     # 地图轮换
     url = f"https://api.mozambiquehe.re/maprotation?version=2&auth={APEX_AUTHKEY}"
     ret = requests.get(url=url)
@@ -109,33 +115,39 @@ def getApexStatusImg():
     # mapinfo += f"\n排位赛：{transName(ret['ranked']['current']['map'])}（余{ret['ranked']['current']['remainingTimer']}）\n\t接下来：{transName(ret['ranked']['next']['map'])}"
     # mapinfo += f"\n街机模式：{transName(ret['ltm']['current']['eventName'])}-{transName(ret['ltm']['current']['map'])}（余{ret['ltm']['current']['remainingTimer']}）\n\t接下来：{transName(ret['ltm']['next']['eventName'])}-{transName(ret['ltm']['next']['map'])}"
 
-    
     card_mapinfo = [
-        ('title', '地图轮换', HexToRgb(APEX_MAIN_COLOR)),
+        ('title', '地图轮换', hex_to_rgb(APEX_MAIN_COLOR)),
         ('separator',),
     ]
     current_battle_royale_map_asset = ret['battle_royale']['current']['asset']
     if current_battle_royale_map_asset:
-        card_mapinfo.append(('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_battle_royale_map_asset.split('/')[-1])))
+        card_mapinfo.append(
+            ('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_battle_royale_map_asset.split('/')[-1])))
     card_mapinfo += [
-        ('subtitle', '匹配：{}'.format(transName(ret['battle_royale']['current']['map']))),
-        ('body', '剩余时间：{}   接下来：{}'.format(ret['battle_royale']['current']['remainingTimer'], transName(ret['battle_royale']['next']['map']))),
+        ('subtitle', '匹配：{}'.format(trans_name(ret['battle_royale']['current']['map']))),
+        ('body', '剩余时间：{}   接下来：{}'.format(ret['battle_royale']['current']['remainingTimer'],
+                                                  trans_name(ret['battle_royale']['next']['map']))),
         ('separator',),
     ]
     current_ranked_map_asset = ret['ranked']['current']['asset']
     if current_ranked_map_asset:
-        card_mapinfo.append(('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_ranked_map_asset.split('/')[-1])))
+        card_mapinfo.append(
+            ('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_ranked_map_asset.split('/')[-1])))
     card_mapinfo += [
-        ('subtitle', '排位赛：{}'.format(transName(ret['ranked']['current']['map']))),
-        ('body', '剩余时间：{}   接下来：{}'.format(ret['ranked']['current']['remainingTimer'], transName(ret['ranked']['next']['map']))),
+        ('subtitle', '排位赛：{}'.format(trans_name(ret['ranked']['current']['map']))),
+        ('body', '剩余时间：{}   接下来：{}'.format(ret['ranked']['current']['remainingTimer'],
+                                                  trans_name(ret['ranked']['next']['map']))),
         ('separator',),
     ]
     current_ltm_map_asset = ret['ltm']['current']['asset']
     if current_ltm_map_asset:
         card_mapinfo.append(('illustration', os.path.join(IMAGES_PATH, 'apex/' + current_ltm_map_asset.split('/')[-1])))
     card_mapinfo += [
-        ('subtitle', '街机模式：{} - {}'.format(transName(ret['ltm']['current']['eventName']), transName(ret['ltm']['current']['map']))),
-        ('body', '剩余时间：{}   接下来：{} - {}'.format(ret['ltm']['current']['remainingTimer'], transName(ret['ltm']['next']['eventName']), transName(ret['ltm']['next']['map']))),
+        ('subtitle', '街机模式：{} - {}'.format(trans_name(ret['ltm']['current']['eventName']),
+                                               trans_name(ret['ltm']['current']['map']))),
+        ('body', '剩余时间：{}   接下来：{} - {}'.format(ret['ltm']['current']['remainingTimer'],
+                                                       trans_name(ret['ltm']['next']['eventName']),
+                                                       trans_name(ret['ltm']['next']['map']))),
     ]
 
     # 复制器
@@ -143,35 +155,36 @@ def getApexStatusImg():
     ret = requests.get(url=url)
     ret = ret.json()
     card_craftinfo = [
-        ('title', '复制器轮换', HexToRgb(APEX_MAIN_COLOR)),
+        ('title', '复制器轮换', hex_to_rgb(APEX_MAIN_COLOR)),
         ('separator',),
-        ('subtitle', '{}'.format(transName(ret[0]['bundleContent'][0]['itemType']['name'])), HexToRgb(ret[0]['bundleContent'][0]['itemType']['rarityHex'])),
-        ('subtitle', '{}'.format(transName(ret[0]['bundleContent'][1]['itemType']['name'])), HexToRgb(ret[0]['bundleContent'][1]['itemType']['rarityHex'])),
-        ('subtitle', '{}'.format(transName(ret[1]['bundleContent'][0]['itemType']['name'])), HexToRgb(ret[1]['bundleContent'][0]['itemType']['rarityHex'])),
-        ('subtitle', '{}'.format(transName(ret[1]['bundleContent'][1]['itemType']['name'])), HexToRgb(ret[1]['bundleContent'][1]['itemType']['rarityHex'])),
+        ('subtitle', '{}'.format(trans_name(ret[0]['bundleContent'][0]['itemType']['name'])),
+         hex_to_rgb(ret[0]['bundleContent'][0]['itemType']['rarityHex'])),
+        ('subtitle', '{}'.format(trans_name(ret[0]['bundleContent'][1]['itemType']['name'])),
+         hex_to_rgb(ret[0]['bundleContent'][1]['itemType']['rarityHex'])),
+        ('subtitle', '{}'.format(trans_name(ret[1]['bundleContent'][0]['itemType']['name'])),
+         hex_to_rgb(ret[1]['bundleContent'][0]['itemType']['rarityHex'])),
+        ('subtitle', '{}'.format(trans_name(ret[1]['bundleContent'][1]['itemType']['name'])),
+         hex_to_rgb(ret[1]['bundleContent'][1]['itemType']['rarityHex'])),
     ]
 
     ApexInfoCards = ResponseImage(
-        primaryColor = HexToRgb(APEX_MAIN_COLOR),
-        title = 'Apex 状态',
-        layout = 'normal',
-        width = 800,
-        cardBodyFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 22),
-        cardSubtitleFont= ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 26),
-        footer = '数据来自第三方API，复制器轮换可能有误'
+        primaryColor=hex_to_rgb(APEX_MAIN_COLOR),
+        title='Apex 状态',
+        layout='normal',
+        width=800,
+        cardBodyFont=ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 22),
+        cardSubtitleFont=ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 26),
+        footer='数据来自第三方API，复制器轮换可能有误'
     )
 
-    ApexInfoCards.addCardList([
-            ResponseImage.RichContentCard(
-                raw_content = card_craftinfo 
-            ),
-            ResponseImage.RichContentCard(
-                raw_content = card_mapinfo
-            ),
-        ])
+    ApexInfoCards.add_card_list([
+        ResponseImage.RichContentCard(
+            raw_content=card_craftinfo
+        ),
+        ResponseImage.RichContentCard(
+            raw_content=card_mapinfo
+        ),
+    ])
     save_path = (os.path.join(SAVE_TMP_PATH, f'apex_status.png'))
-    ApexInfoCards.generateImage(save_path)
+    ApexInfoCards.generate_image(save_path)
     return save_path
-
-
-

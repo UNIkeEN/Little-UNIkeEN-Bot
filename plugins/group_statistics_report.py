@@ -7,24 +7,28 @@ from matplotlib import pyplot as plt
 from typing import List, Dict, Tuple, Optional, Any
 from io import BytesIO
 
-def drawStatisticsPic(memberList:List[Dict[str, Any]], savePath:str)->Tuple[bool, str]:
+
+def draw_statistics_pic(memberList: List[Dict[str, Any]], savePath: str) -> Tuple[bool, str]:
     return True, savePath
 
+
 class StatisticsReport(StandardPlugin):
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return msg == '-tj'
-    def executeEvent(self, msg: str, data: Any) -> Optional[str]:
+
+    def execute_event(self, msg: str, data: Any) -> Optional[str]:
         groupId = data['group_id']
-        send(groupId, '[CQ:reply,id=%d]正在生成群聊统计报告...'%(data['message_id']))
+        send(groupId, '[CQ:reply,id=%d]正在生成群聊统计报告...' % (data['message_id']))
         memberList = get_group_member_list(groupId)
-        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'statistics-%d.png'%groupId)
-        succ, reason = drawStatisticsPic(memberList, savePath)
+        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'statistics-%d.png' % groupId)
+        succ, reason = draw_statistics_pic(memberList, savePath)
         if succ:
-            send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+            send(groupId, '[CQ:image,file=files:///%s]' % savePath)
         else:
-            send(groupId, '[CQ:reply,id=%d]生成失败'%(data['message_id']))
+            send(groupId, '[CQ:reply,id=%d]生成失败' % (data['message_id']))
         return 'OK'
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'ActReport',
             'description': '群聊统计报告',

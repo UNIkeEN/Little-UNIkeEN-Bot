@@ -19,12 +19,12 @@ env = jinja2.Environment(
 
 
 async def text_to_pic(
-    text: str,
-    css_path: str = "",
-    width: int = 500,
-    type: Literal["jpeg", "png"] = "png",
-    quality: Union[int, None] = None,
-    device_scale_factor: float=2
+        text: str,
+        css_path: str = "",
+        width: int = 500,
+        type: Literal["jpeg", "png"] = "png",
+        quality: Union[int, None] = None,
+        device_scale_factor: float = 2
 ) -> bytes:
     """多行文本转图片
 
@@ -55,13 +55,13 @@ async def text_to_pic(
 
 
 async def md_to_pic(
-    md: str = "",
-    md_path: str = "",
-    css_path: str = "",
-    width: int = 500,
-    type: Literal["jpeg", "png"] = "png",
-    quality: Union[int, None] = None,
-    device_scale_factor:float = 2
+        md: str = "",
+        md_path: str = "",
+        css_path: str = "",
+        width: int = 500,
+        type: Literal["jpeg", "png"] = "png",
+        quality: Union[int, None] = None,
+        device_scale_factor: float = 2
 ) -> bytes:
     """markdown 转 图片
     
@@ -122,7 +122,7 @@ async def md_to_pic(
         viewport={"width": width, "height": 10},
         type=type,
         quality=quality,
-        device_scale_factor = device_scale_factor
+        device_scale_factor=device_scale_factor
     )
 
 
@@ -142,9 +142,9 @@ async def read_tpl(path: str) -> str:
 
 
 async def template_to_html(
-    template_path: str,
-    template_name: str,
-    **kwargs,
+        template_path: str,
+        template_name: str,
+        **kwargs,
 ) -> str:
     """使用jinja2模板引擎通过html生成图片
 
@@ -166,13 +166,13 @@ async def template_to_html(
 
 
 async def html_to_pic(
-    html: str,
-    wait: int = 0,
-    template_path: str = f"file://{getcwd()}",
-    type: Literal["jpeg", "png"] = "png",
-    quality: Union[int, None] = None,
-    device_scale_factor:float = 2,
-    **kwargs,
+        html: str,
+        wait: int = 0,
+        template_path: str = f"file://{getcwd()}",
+        type: Literal["jpeg", "png"] = "png",
+        quality: Union[int, None] = None,
+        device_scale_factor: float = 2,
+        **kwargs,
 ) -> bytes:
     """html转图片
 
@@ -191,7 +191,7 @@ async def html_to_pic(
     # logger.debug(f"html:\n{html}")
     if "file:" not in template_path:
         raise Exception("template_path 应该为 file:///path/to/template")
-    async with get_new_page(device_scale_factor,**kwargs) as page:
+    async with get_new_page(device_scale_factor, **kwargs) as page:
         await page.goto(template_path)
         await page.set_content(html, wait_until="networkidle")
         await page.wait_for_timeout(wait)
@@ -204,17 +204,17 @@ async def html_to_pic(
 
 
 async def template_to_pic(
-    template_path: str,
-    template_name: str,
-    templates: dict,
-    pages: dict = {
-        "viewport": {"width": 500, "height": 10},
-        "base_url": f"file://{getcwd()}",
-    },
-    wait: int = 0,
-    type: Literal["jpeg", "png"] = "png",
-    quality: Union[int, None] = None,
-    device_scale_factor:float = 2
+        template_path: str,
+        template_name: str,
+        templates: dict,
+        pages: dict = {
+            "viewport": {"width": 500, "height": 10},
+            "base_url": f"file://{getcwd()}",
+        },
+        wait: int = 0,
+        type: Literal["jpeg", "png"] = "png",
+        quality: Union[int, None] = None,
+        device_scale_factor: float = 2
 ) -> bytes:
     """使用jinja2模板引擎通过html生成图片
 
@@ -250,12 +250,12 @@ async def template_to_pic(
 
 
 async def capture_element(
-    url: str,
-    element: str,
-    timeout: float = 0,
-    type: Literal["jpeg", "png"] = "png",
-    quality: Union[int, None] = None,
-    **kwargs,
+        url: str,
+        element: str,
+        timeout: float = 0,
+        type: Literal["jpeg", "png"] = "png",
+        quality: Union[int, None] = None,
+        **kwargs,
 ) -> bytes:
     async with get_new_page(**kwargs) as page:
         await page.goto(url, timeout=timeout)

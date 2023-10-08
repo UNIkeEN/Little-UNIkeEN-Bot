@@ -3,6 +3,8 @@ from utils.standard_plugin import StandardPlugin
 from utils.basic_event import send, warning, startswith_in
 from utils.basic_configs import ROOT_PATH, SAVE_TMP_PATH
 import random
+
+
 class ThanksLUB(StandardPlugin):
     def __init__(self) -> None:
         self.replyList = [
@@ -22,13 +24,16 @@ class ThanksLUB(StandardPlugin):
             'https://github.com/UNIkeEN/Little-UNIkeEN-Bot 给个star谢谢喵',
             'https://github.com/UNIkeEN/Little-UNIkeEN-Bot 给个star谢谢喵',
         ]
-    def judgeTrigger(self, msg: str, data: Any) -> bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return startswith_in(msg, ['谢谢小马', '谢谢小🦄'])
-    def executeEvent(self, msg: str, data: Any) -> Optional[str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, '[CQ:reply,id=%d]%s'%(data['message_id'], random.choice(self.replyList)), data['message_type'])
+
+    def execute_event(self, msg: str, data: Any) -> Optional[str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
+        send(target, '[CQ:reply,id=%d]%s' % (data['message_id'], random.choice(self.replyList)), data['message_type'])
         return 'OK'
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'ThanksLUB',
             'description': '谢谢小马',

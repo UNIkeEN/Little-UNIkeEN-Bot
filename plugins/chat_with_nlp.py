@@ -12,30 +12,32 @@ from typing import Union, Any
 from utils.basic_event import *
 from utils.basic_configs import *
 from utils.standard_plugin import StandardPlugin, NotPublishedException
-jieba.setLogLevel(logging.INFO) #关闭jieba输出信息
+
+jieba.setLogLevel(logging.INFO)  # 关闭jieba输出信息
+
 
 class NLP_Config:
     '''
     数据集相关
     '''
-    corpus_data_path = 'resources/corpus/processed.pth' 
+    corpus_data_path = 'resources/corpus/processed.pth'
     shuffle = True
     load_checkpoint = 'resources/corpus/checkpoint_0827_0938.pth'
-    #load_checkpoint = 'NLP/model_save/checkpoint_0821_1253.pth'
-    #load_checkpoint = None
-    max_input_length = 50 #输入的最大句子长度
-    max_generate_length = 20 #生成的最大句子长度
+    # load_checkpoint = 'NLP/model_save/checkpoint_0821_1253.pth'
+    # load_checkpoint = None
+    max_input_length = 50  # 输入的最大句子长度
+    max_generate_length = 20  # 生成的最大句子长度
     '''
     训练超参数
     '''
-    dim_embedding = 256 # 词嵌入维数
-    num_layer = 2 # Encoder-Decoder中RNN的层数
-    hidden_size = 256 # 隐藏层大小
+    dim_embedding = 256  # 词嵌入维数
+    num_layer = 2  # Encoder-Decoder中RNN的层数
+    hidden_size = 256  # 隐藏层大小
     batch_size = 2048
-    encoder_lr = 1e-3 # encoder学习率
-    decoder_lr = 5e-3 # decoder学习率
-    grad_clip = 50.0 # 梯度裁剪
-    teacher_forcing_ratio = 1.0 # teacher_forcing的比例
+    encoder_lr = 1e-3  # encoder学习率
+    decoder_lr = 5e-3  # decoder学习率
+    grad_clip = 50.0  # 梯度裁剪
+    teacher_forcing_ratio = 1.0  # teacher_forcing的比例
     '''
     训练周期相关
     '''
@@ -45,9 +47,11 @@ class NLP_Config:
     设备相关
     '''
     is_cuda = torch.cuda.is_available()
-    device = "cuda:0" if is_cuda else "cpu" 
+    device = "cuda:0" if is_cuda else "cpu"
 
 # 模型定义
+
+
 class Encoder_RNN(nn.Module):
     def __init__(self, conf, len_vocab):
         super(Encoder_RNN, self).__init__()
@@ -58,13 +62,13 @@ class Encoder_RNN(nn.Module):
         self.embedding = nn.Embedding(len_vocab, conf.dim_embedding)
         # 双层GRU
         self.gru = nn.GRU(
-            input_size = conf.dim_embedding,
-            hidden_size = self.hidden_size,
-            num_layers = self.num_layer,
-            bidirectional = True # 使用双向GRU
+            input_size=conf.dim_embedding,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_layer,
+            bidirectional=True  # 使用双向GRU
         )
 
-    def forward(self, input_seq, input_lengths, hidden = None): # 初始hidden为空
+    def forward(self, input_seq, input_lengths, hidden=None):  # 初始hidden为空
         '''
         input_seq:输入序列
             size: [max_seq_len, batch_size]
@@ -90,11 +94,13 @@ class Encoder_RNN(nn.Module):
             size: [max_seq_len, batch_size, num_directions*hidden_size]
         '''
         # 对前后两个方向求和输出
-        output = output[:,:,:self.hidden_size]+output[:,:,self.hidden_size:]
+        output = output[:, :, :self.hidden_size] + output[:, :, self.hidden_size:]
         '''
         output.size->[max_seq_len, batch_size, hidden_size]
         '''
         return output, hidden
+
+
 class Decoder_RNN(nn.Module):
     def __init__(self, conf, len_vocab):
         super(Decoder_RNN, self).__init__()
@@ -105,12 +111,12 @@ class Decoder_RNN(nn.Module):
         self.embedding = nn.Embedding(len_vocab, conf.dim_embedding)
         # GRU
         self.gru = nn.GRU(
-            input_size = conf.dim_embedding,
-            hidden_size = self.hidden_size,
-            num_layers = self.num_layer,
+            input_size=conf.dim_embedding,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_layer,
         )
         # concat层与输出层
-        self.concat = nn.Linear(self.hidden_size*2, self.hidden_size)
+        self.concat = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.out = nn.Linear(self.hidden_size, len_vocab)
 
     def forward(self, input, hidden, encoder_hiddens):
@@ -141,7 +147,7 @@ class Decoder_RNN(nn.Module):
             encoder所有时间步的hidden输出
             shape: [max_seq_len, batch_size, hidden_size]
         '''
-        dot_score = torch.sum(output* encoder_hiddens, dim=2).t()
+        dot_score = torch.sum(output * encoder_hiddens, dim=2).t()
         dot_score = F.softmax(dot_score, dim=1).unsqueeze(1)
         '''
         dot_score: attention的得分
@@ -150,21 +156,22 @@ class Decoder_RNN(nn.Module):
             增加维度->[batch_size, 1, max_seq_len]
         '''
         # 批量相乘，形成context
-        context = dot_score.bmm(encoder_hiddens.transpose(0,1))
+        context = dot_score.bmm(encoder_hiddens.transpose(0, 1))
         context = context.squeeze(1)
         '''
         context:
             shape: [batch_size, hidden_size]
         '''
-        output = output.squeeze(0) # [batch_size, hidden_size]
+        output = output.squeeze(0)  # [batch_size, hidden_size]
         # 拼接output和context，通过线性层变为单层
         concat_input = torch.cat((output, context), 1)
-        concat_output = torch.tanh(self.concat(concat_input)) 
+        concat_output = torch.tanh(self.concat(concat_input))
         # 输出与softmax归一化
         final_output = self.out(concat_output)
         final_output = F.softmax(final_output, dim=1)
 
         return final_output, hidden
+
 
 class GreedySearchDecoder(nn.Module):
     def __init__(self, encoder, decoder):
@@ -187,8 +194,8 @@ class GreedySearchDecoder(nn.Module):
         # 循环，这里只使用长度限制，后面处理的时候把EOS去掉了。
         for _ in range(max_length):
             # Decoder forward一步
-            decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden, 
-								encoder_outputs)
+            decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden,
+                                                          encoder_outputs)
             # decoder_outputs是(batch=1, vob_size)
             # 使用max返回概率最大的词和得分
             decoder_scores, decoder_input = torch.max(decoder_output, dim=1)
@@ -200,15 +207,18 @@ class GreedySearchDecoder(nn.Module):
             if decoder_input.item() == eos:
                 break
             decoder_input = torch.unsqueeze(decoder_input, 0)
-            
+
         # 返回所有的词和得分。
         return all_tokens, all_scores
 
+
 # data_loader相关
-def zipAndPadding(lst, pad):
+def zip_and_padding(lst, pad):
     ret = itertools.zip_longest(*lst, fillvalue=pad)
     return list(ret)
-def maskMatrix(lst, pad):
+
+
+def mask_matrix(lst, pad):
     mask = []
     for i, seq in enumerate(lst):
         mask.append([])
@@ -218,6 +228,8 @@ def maskMatrix(lst, pad):
             else:
                 mask[i].append(1)
     return mask
+
+
 def create_collate_fn(padding, eos):
     '''
     说明dataloader如何包装一个batch,传入的参数为</PAD>的索引padding,</EOS>字符索引eos
@@ -245,22 +257,25 @@ def create_collate_fn(padding, eos):
         形如: [index1, index2, ...]
 
     '''
+
     def collate_fn(corpus_item):
-        #按照inputVar的长度进行排序,是调用pad_packed_sequence方法的要求
-        corpus_item.sort(key=lambda p: len(p[0]), reverse=True) 
+        # 按照inputVar的长度进行排序,是调用pad_packed_sequence方法的要求
+        corpus_item.sort(key=lambda p: len(p[0]), reverse=True)
         inputs, targets, indexes = zip(*corpus_item)
         input_lengths = torch.tensor([len(inputVar) for inputVar in inputs])
-        inputs = zipAndPadding(inputs, padding)
-        inputs = torch.LongTensor(inputs) #注意这里要LongTensor
+        inputs = zip_and_padding(inputs, padding)
+        inputs = torch.LongTensor(inputs)  # 注意这里要LongTensor
         max_target_length = max([len(targetVar) for targetVar in targets])
-        targets = zipAndPadding(targets, padding)
-        mask = maskMatrix(targets, padding)
+        targets = zip_and_padding(targets, padding)
+        mask = mask_matrix(targets, padding)
         mask = torch.tensor(mask, dtype=bool)
         targets = torch.LongTensor(targets)
-        
+
         return inputs, targets, mask, input_lengths, max_target_length, indexes
 
     return collate_fn
+
+
 class CorpusDataset(dataimport.Dataset):
 
     def __init__(self, conf):
@@ -274,7 +289,7 @@ class CorpusDataset(dataimport.Dataset):
         self.padding = self.word2ix.get(self._data.get('pad'))
         self.eos = self.word2ix.get(self._data.get('eos'))
         self.sos = self.word2ix.get(self._data.get('sos'))
-        
+
     def __getitem__(self, index):
         inputVar = self.corpus[index][0]
         targetVar = self.corpus[index][1]
@@ -283,14 +298,16 @@ class CorpusDataset(dataimport.Dataset):
     def __len__(self):
         return len(self.corpus)
 
+
 def get_dataloader(conf):
     dataset = CorpusDataset(conf)
     dataloader = dataimport.DataLoader(dataset,
-                                 batch_size=conf.batch_size,
-                                 shuffle=conf.shuffle, #是否打乱数据
-                                 drop_last=True, #丢掉最后一个不足一个batch的数据
-                                 collate_fn=create_collate_fn(dataset.padding, dataset.eos))
+                                       batch_size=conf.batch_size,
+                                       shuffle=conf.shuffle,  # 是否打乱数据
+                                       drop_last=True,  # 丢掉最后一个不足一个batch的数据
+                                       collate_fn=create_collate_fn(dataset.padding, dataset.eos))
     return dataloader
+
 
 # 加载模型类
 class EvalModel():
@@ -318,55 +335,58 @@ class EvalModel():
         self.decoder.load_state_dict(checkpoint['decoder'])
 
         with torch.no_grad():
-            #切换模式
+            # 切换模式
             self.encoder = self.encoder.to(self.conf.device)
             self.decoder = self.decoder.to(self.conf.device)
             self.encoder.eval()
             self.decoder.eval()
-            #定义seracher
+            # 定义seracher
             self.searcher = GreedySearchDecoder(self.encoder, self.decoder)
-    
-    def eval(self,input_sentence):
-        cop = re.compile("[^\u4e00-\u9fa5^a-z^A-Z^0-9]") #分词处理正则
-        input_seq = jieba.lcut(cop.sub("",input_sentence)) #分词序列
+
+    def eval(self, input_sentence):
+        cop = re.compile("[^\u4e00-\u9fa5^a-z^A-Z^0-9]")  # 分词处理正则
+        input_seq = jieba.lcut(cop.sub("", input_sentence))  # 分词序列
         input_seq = input_seq[:self.conf.max_input_length] + ['</EOS>']
         input_seq = [self.word2ix.get(word, self.unk) for word in input_seq]
         tokens = self.generate(input_seq, self.searcher, self.sos, self.eos, self.conf)
         output_words = ''.join([self.ix2word[token.item()] for token in tokens])
         return output_words
 
-
     def generate(self, input_seq, searcher, sos, eos, opt):
-        #input_seq: 已分词且转为索引的序列
-        #input_batch: shape: [1, seq_len] ==> [seq_len,1] (即batch_size=1)
+        # input_seq: 已分词且转为索引的序列
+        # input_batch: shape: [1, seq_len] ==> [seq_len,1] (即batch_size=1)
         input_batch = [input_seq]
         input_lengths = torch.tensor([len(seq) for seq in input_batch])
-        input_batch = torch.LongTensor([input_seq]).transpose(0,1)
+        input_batch = torch.LongTensor([input_seq]).transpose(0, 1)
         input_batch = input_batch.to(opt.device)
         input_lengths = input_lengths.to(opt.device)
         tokens, scores = searcher(sos, eos, input_batch, input_lengths, opt.max_generate_length, opt.device)
         return tokens
 
+
 NLP_model = EvalModel()
 
-class ChatWithNLP(StandardPlugin): # NLP对话插件
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['小马，','小马,'])
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+
+class ChatWithNLP(StandardPlugin):  # NLP对话插件
+    def judge_trigger(self, msg: str, data: Any) -> bool:
+        return startswith_in(msg, ['小马，', '小马,'])
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
         msg_inp = msg[3:]
         ret = NLP_model.eval(msg_inp)
-        ret = ret.replace('</EOS>','',1).replace('</UNK>',' ').strip()
-        if ret=="":
+        ret = ret.replace('</EOS>', '', 1).replace('</UNK>', ' ').strip()
+        if ret == "":
             ret = "我好像不明白捏qwq"
-        text = f'[CQ:reply,id='+str(data['message_id'])+']'+ret
+        text = f'[CQ:reply,id=' + str(data['message_id']) + ']' + ret
         send(target, text, data['message_type'])
         sleep(0.3)
         # if ret != "我好像不明白捏qwq":
         #     voice = send_genshin_voice(ret+'。')
         #     send(target, f'[CQ:record,file=files:///{ROOT_PATH}/{voice}]', data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'ChatWithNLP',
             'description': 'NLP对话',

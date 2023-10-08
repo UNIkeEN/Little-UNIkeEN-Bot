@@ -1,16 +1,18 @@
 from utils.standard_plugin import AddGroupStandardPlugin, CronStandardPlugin
 from utils.basic_event import get_group_system_msg, warning
-from utils.sql_utils import newSqlSession
+from utils.sql_utils import new_sql_session
 from typing import Any, Union, List, Dict, Tuple
 import mysql.connector
 from threading import Semaphore
 import datetime
 
+
 class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
     initOnceGuard = Semaphore()
+
     def __init__(self) -> None:
         if self.initOnceGuard.acquire(blocking=False):
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             mycursor.execute("""
             create table if not exists `addGroupRecord` (
                 `sub_type` char(20),
@@ -24,12 +26,14 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
                 primary key (`request_id`, `group_id`, `user_id`),
                 index(`user_id`)
             )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
-            self.start(0, 3*60)
-    def judgeTrigger(self, data) -> bool:
+            self.start(0, 3 * 60)
+
+    def judge_trigger(self, data) -> bool:
         return True
-    def addGroupVerication(self, data) -> Union[str, None]:
+
+    def add_group_verication(self, data) -> Union[str, None]:
         try:
-            mydb, mycursor = newSqlSession()
+            mydb, mycursor = new_sql_session()
             try:
                 data['flag'] = int(data['flag'])
             except ValueError:
@@ -55,11 +59,11 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
         except BaseException as e:
             warning("exception in AddGroupRecorder: {}".format(e))
         return None
-    
-    def tick(self,):
+
+    def tick(self, ):
         group_system = get_group_system_msg()
         if group_system == None: return
-        mydb, mycursor = newSqlSession()
+        mydb, mycursor = new_sql_session()
 
         if group_system['invited_requests'] != None:
             for invq in group_system['invited_requests']:
@@ -67,7 +71,7 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
                 update `addGroupRecord` set
                 `invitor_id` = %s,
                 `invitor_nick` = %s where 
-                `request_id` = %s""",(
+                `request_id` = %s""", (
                     invq['invitor_uin'],
                     invq['invitor_nick'],
                     invq['request_id']

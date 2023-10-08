@@ -6,7 +6,8 @@ from utils.response_image_beta import FONT_SYHT_M24
 from .move import Move
 from utils.basic_event import warning
 
-def queryChessdb(fen:str)->Optional[List[Dict[str, Any]]]:
+
+def query_chessdb(fen: str) -> Optional[List[Dict[str, Any]]]:
     url = 'https://www.chessdb.cn/chessdb.php'
     params = {
         'action': 'queryall',
@@ -15,7 +16,7 @@ def queryChessdb(fen:str)->Optional[List[Dict[str, Any]]]:
         'board': fen
     }
     try:
-        req = requests.get(url=url, params = params)
+        req = requests.get(url=url, params=params)
         if req.status_code != requests.codes.ok:
             return None
         else:
@@ -32,8 +33,10 @@ def queryChessdb(fen:str)->Optional[List[Dict[str, Any]]]:
     except BaseException as e:
         warning("error in queryChessdb: {}".format(e))
         return None
-def drawChessdb(game:Game, imgPath:str)->bool:
-    chessdb = queryChessdb(game.fen())
+
+
+def draw_chessdb(game: Game, imgPath: str) -> bool:
+    chessdb = query_chessdb(game.fen())
     if chessdb == None:
         return False
     font = FONT_SYHT_M24
@@ -46,16 +49,16 @@ def drawChessdb(game:Game, imgPath:str)->bool:
         marginLeft = 775 + 80
         marginUp = 50
         y = marginUp - dy
-        for idxX, txt in enumerate(['着法','分数','备注']):
-            x = marginLeft + dx * idxX - font.getsize(txt)[0]// 2
-            draw.text((x,y), txt, fill=(0, 0, 0),font=font)
+        for idxX, txt in enumerate(['着法', '分数', '备注']):
+            x = marginLeft + dx * idxX - font.getsize(txt)[0] // 2
+            draw.text((x, y), txt, fill=(0, 0, 0), font=font)
         for idxY, action in enumerate(chessdb[:30]):
             y = marginUp + dy * idxY
-            for idxX, txt in enumerate([Move.from_ucci(action['move']).chinese(game), 
-                                        action['score'], 
+            for idxX, txt in enumerate([Move.from_ucci(action['move']).chinese(game),
+                                        action['score'],
                                         action['note']]):
-                x = marginLeft + dx * idxX - font.getsize(txt)[0]// 2
-                draw.text((x,y), txt, fill=(0, 0, 0),font=font)
+                x = marginLeft + dx * idxX - font.getsize(txt)[0] // 2
+                draw.text((x, y), txt, fill=(0, 0, 0), font=font)
         img.save(imgPath)
         return True
     except BaseException as e:

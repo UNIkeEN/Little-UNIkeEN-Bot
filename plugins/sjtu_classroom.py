@@ -31,12 +31,13 @@ headers = {
     'sec-ch-ua-platform': '"Windows"',
 }
 
-def getSjtuBuilding(building:str)->Optional[Any]:
+
+def get_sjtu_building(building: str) -> Optional[Any]:
     """获取教室信息（温度、湿度、人数、PM2.5等）
     @building: 教学楼[上院/中院/...]
     """
     url = 'https://ids.sjtu.edu.cn/classroomUse/findSchoolCourseInfo'
-    
+
     datas = {
         '上院': 'buildId=126',
         '中院': 'buildId=128',
@@ -71,17 +72,18 @@ def getSjtuBuilding(building:str)->Optional[Any]:
         warning('base exception while getting sjtu classroom: {}'.format(e))
     return None
 
-def getRoomCourse(building:str, targetDate:datetime.date)->Optional[Any]:
+
+def get_room_course(building: str, targetDate: datetime.date) -> Optional[Any]:
     url = 'https://ids.sjtu.edu.cn/build/findBuildRoomType'
     payload = {
-        '上院': 'buildId=126',
-        '中院': 'buildId=128',
-        '下院': 'buildId=127',
-        '东上院': 'buildId=122',
-        '东中院': 'buildId=564',
-        '东下院': 'buildId=124',
-        '陈瑞球楼': 'buildId=125',
-    }[building] + targetDate.strftime('&courseDate=%Y-%m-%d')
+                  '上院': 'buildId=126',
+                  '中院': 'buildId=128',
+                  '下院': 'buildId=127',
+                  '东上院': 'buildId=122',
+                  '东中院': 'buildId=564',
+                  '东下院': 'buildId=124',
+                  '陈瑞球楼': 'buildId=125',
+              }[building] + targetDate.strftime('&courseDate=%Y-%m-%d')
     try:
         result = requests.post(url=url, headers=headers, data=payload).json()
         if result['code'] != 200:
@@ -92,7 +94,8 @@ def getRoomCourse(building:str, targetDate:datetime.date)->Optional[Any]:
         warning('base exception in getRoomCourse: {}'.format(e))
         return None
 
-def getRoomDate()->Optional[Any]:
+
+def get_room_date() -> Optional[Any]:
     url = 'https://ids.sjtu.edu.cn/course/findCurSemester'
     try:
         result = requests.post(url=url, headers=headers).json()
@@ -105,7 +108,7 @@ def getRoomDate()->Optional[Any]:
         return None
 
 
-def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
+def standarlizing_room_str(roomStr: str) -> Optional[Tuple[str, str]]:
     """
     东上103 => (东上院, 东上院103)
     东中1-105 => (东中院, 东中院1-105)
@@ -121,7 +124,7 @@ def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
     if pattern2.match(roomStr) != None:
         building = '东中院'
         _, roomCode = pattern2.findall(roomStr)[0]
-        return building, building+roomCode
+        return building, building + roomCode
     pattern3 = re.compile(r'^(陈瑞球楼?|球楼?)\s*(\d{3})$')
     if pattern3.match(roomStr) != None:
         building = '陈瑞球楼'
@@ -129,7 +132,8 @@ def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
         return building, building + roomCode
     return None
 
-def standarlizingBuildingStr(buildingStr:str)->Optional[str]:
+
+def standarlizing_building_str(buildingStr: str) -> Optional[str]:
     """
     东上 => 东上院
     东中 => 东中院
@@ -148,7 +152,7 @@ def standarlizingBuildingStr(buildingStr:str)->Optional[str]:
     return None
 
 
-def standarlizingBuildingTimeStr(Str:str)->Optional[str]:
+def standarlizing_building_time_str(Str: str) -> Optional[str]:
     """
     东上 3 5 => (东上院,3,5)
     东中 3 5 => (东中院,3,5)
@@ -156,40 +160,43 @@ def standarlizingBuildingTimeStr(Str:str)->Optional[str]:
     """
     pattern1 = re.compile(r'^(上|中|下|东上|东中|东下)院?\s*(\d+)\s+(\d+)$')
     if pattern1.match(Str) != None:
-        building,startSection,endSection = pattern1.findall(Str)[0]
-        building +='院'
-        return building,startSection,endSection
+        building, startSection, endSection = pattern1.findall(Str)[0]
+        building += '院'
+        return building, startSection, endSection
     pattern2 = re.compile(r'^(陈瑞球楼?|球楼?)\s*(\d+)\s+(\d+)$')
     if pattern2.match(Str) != None:
         building = '陈瑞球楼'
-        _,startSection,endSection = pattern2.findall(Str)[0]
-        return building,startSection,endSection
+        _, startSection, endSection = pattern2.findall(Str)[0]
+        return building, startSection, endSection
     return None
 
-def getWeekDay(targetDate:datetime.date)->str:
-    return '星期' + ['一','二','三','四','五','六','日'][targetDate.weekday()]
 
-def getRoomInfo(building:str, room_name:str, savePath:str)->Optional[str]:
+def get_week_day(targetDate: datetime.date) -> str:
+    return '星期' + ['一', '二', '三', '四', '五', '六', '日'][targetDate.weekday()]
+
+
+def get_room_info(building: str, room_name: str, savePath: str) -> Optional[str]:
     today = datetime.date.today()
     # 1. get building info
-    buildingInfo = getSjtuBuilding(building)
+    buildingInfo = get_sjtu_building(building)
     if buildingInfo == None: return None
     try:
-        buildingInfo = {room['name']: room for room in buildingInfo['roomList']} 
+        buildingInfo = {room['name']: room for room in buildingInfo['roomList']}
     except BaseException as e:
         warning('base exception in getRoomInfo-buildingInfo: {}'.format(e))
         return None
-    
+
     # 2. get building course
-    buildingCourse = getRoomCourse(building, today)
+    buildingCourse = get_room_course(building, today)
     if buildingCourse == None: return None
     try:
-        roomStudents = {room['roomId']: room['actualStuNum'] for floor in buildingCourse['floorList'] for room in floor.get('roomStuNumbs', [])}            
-        buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children'] }
+        roomStudents = {room['roomId']: room['actualStuNum'] for floor in buildingCourse['floorList'] for room in
+                        floor.get('roomStuNumbs', [])}
+        buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children']}
     except BaseException as e:
         warning('base exception in getRoomInfo-buildingCourse: {}'.format(e))
         return None
-        
+
     # print(buildingCourse)
     # 3. select room
     buildingInfo = buildingInfo.get(room_name, None)
@@ -200,9 +207,9 @@ def getRoomInfo(building:str, room_name:str, savePath:str)->Optional[str]:
 
     # 4. draw picture
     rimg = ResponseImage(
-        title='教室信息', 
-        titleColor=Colors.PALETTE_SJTU_RED, 
-        primaryColor=Colors.PALETTE_SJTU_RED, 
+        title='教室信息',
+        titleColor=Colors.PALETTE_SJTU_RED,
+        primaryColor=Colors.PALETTE_SJTU_RED,
         footer=datetime.datetime.now().strftime("update at %Y-%m-%d %H:%M"),
         layout='normal'
     )
@@ -210,18 +217,18 @@ def getRoomInfo(building:str, room_name:str, savePath:str)->Optional[str]:
         ('title', room_name),
         ('separator',),
         ('body', f"是否为自习教室：{buildingInfo.get('free_room', '--')}\n"
-                f"座位数：{buildingInfo.get('zws', '--')}\n"
-                f"温度：{buildingInfo.get('sensorTemp', '--')}℃\n"
-                f"湿度：{buildingInfo.get('sensorHum', '--')}%\n"
-                f"CO2：{buildingInfo.get('sensorCo2', '--')}\n"
-                f"PM2.5：{buildingInfo.get('sensorPm25', '--')}\n"
-                f"当前人数：{roomStudentNum if roomStudentNum != None else '--'}"
-                )
+                 f"座位数：{buildingInfo.get('zws', '--')}\n"
+                 f"温度：{buildingInfo.get('sensorTemp', '--')}℃\n"
+                 f"湿度：{buildingInfo.get('sensorHum', '--')}%\n"
+                 f"CO2：{buildingInfo.get('sensorCo2', '--')}\n"
+                 f"PM2.5：{buildingInfo.get('sensorPm25', '--')}\n"
+                 f"当前人数：{roomStudentNum if roomStudentNum != None else '--'}"
+         )
     ]
-    rimg.addCard(ResponseImage.RichContentCard(raw_content=infoCard, ))
-    courseCard = [('title', '教室课程 - %s'%getWeekDay(today))]
-    wa = True # warning only once
-    for course in buildingCourse.get('roomCourseList',[]):
+    rimg.add_card(ResponseImage.RichContentCard(raw_content=infoCard, ))
+    courseCard = [('title', '教室课程 - %s' % get_week_day(today))]
+    wa = True  # warning only once
+    for course in buildingCourse.get('roomCourseList', []):
         try:
             sjly = course['sjly']
             courseName = course['courseName']
@@ -236,35 +243,37 @@ def getRoomInfo(building:str, room_name:str, savePath:str)->Optional[str]:
                         f'{startSection}-{endSection}节  {startWeek}-{endWeek}周\n'
             if orgName != None: courseTxt += orgName
             # print(courseTxt)
-            courseCard.append(('separator', ))
+            courseCard.append(('separator',))
             courseCard.append(('body', courseTxt))
         except BaseException as e:
             if wa:
                 warning('base exception in getRoomInfo: {}'.format(e))
-                wa = False    
-    rimg.addCard(ResponseImage.RichContentCard(raw_content=courseCard, ))
-    rimg.generateImage(savePath)
+                wa = False
+    rimg.add_card(ResponseImage.RichContentCard(raw_content=courseCard, ))
+    rimg.generate_image(savePath)
     return savePath
 
-def getRoomRecommend(building:str,startSection:int,endSection:int):
+
+def get_room_recommend(building: str, startSection: int, endSection: int):
     today = datetime.date.today()
     recommendDict = {}
 
-    if(startSection>=endSection or startSection<0 or endSection>14):
+    if (startSection >= endSection or startSection < 0 or endSection > 14):
         return None
     # 1.get infomation
-    buildingInfo = getSjtuBuilding(building)
+    buildingInfo = get_sjtu_building(building)
     if buildingInfo == None: return None
     try:
-        buildingInfo = {room['name']: room for room in buildingInfo['roomList']}  
+        buildingInfo = {room['name']: room for room in buildingInfo['roomList']}
     except BaseException as e:
         warning('base exception in getRoomRecommend: {}'.format(e))
         return None
-    buildingCourse = getRoomCourse(building, today)
+    buildingCourse = get_room_course(building, today)
     if buildingCourse == None: return None
     try:
-        roomStudents = {room['roomId']: room['actualStuNum'] for floor in buildingCourse['floorList'] for room in floor.get('roomStuNumbs', [])} 
-        buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children'] } 
+        roomStudents = {room['roomId']: room['actualStuNum'] for floor in buildingCourse['floorList'] for room in
+                        floor.get('roomStuNumbs', [])}
+        buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children']}
     except BaseException as e:
         warning('base exception in getRoomRecommend-buildingCourse: {}'.format(e))
         return None
@@ -272,184 +281,189 @@ def getRoomRecommend(building:str,startSection:int,endSection:int):
     # 2.select the target
     for room_name in buildingCourse.keys():
         # print(room_name)
-        flag = True # judge if there is class
+        flag = True  # judge if there is class
         getBuildingCourse = buildingCourse.get(room_name, None)
         getBuildingInfo = buildingInfo.get(room_name, None)
         roomStudentNum = roomStudents.get(getBuildingCourse['id'], None)
         if getBuildingInfo == None or getBuildingCourse == None:
             return None
-        for course in getBuildingCourse.get('roomCourseList',[]):
+        for course in getBuildingCourse.get('roomCourseList', []):
             start_section = course['startSection']
             end_section = course['endSection']
-            if(((start_section>=startSection) and (start_section<=endSection)) or ((end_section>=startSection) and(end_section<=endSection) )):
+            if (((start_section >= startSection) and (start_section <= endSection)) or (
+                    (end_section >= startSection) and (end_section <= endSection))):
                 flag = False
                 break
         if flag:
             roomInfo = {}
-            roomInfo['People'] = roomStudentNum if roomStudentNum != None else '--'            
-            roomInfo['CO2']=getBuildingInfo.get('sensorCo2', '--')
-            roomInfo['Temp']=getBuildingInfo.get('sensorTemp', '--')
-            roomInfo['Hum']=getBuildingInfo.get('sensorHum', '--')
+            roomInfo['People'] = roomStudentNum if roomStudentNum != None else '--'
+            roomInfo['CO2'] = getBuildingInfo.get('sensorCo2', '--')
+            roomInfo['Temp'] = getBuildingInfo.get('sensorTemp', '--')
+            roomInfo['Hum'] = getBuildingInfo.get('sensorHum', '--')
             recommendDict[room_name] = roomInfo
 
     # 3.draw the picture
     rimg = ResponseImage(
-        title='教室推荐', 
-        titleColor=Colors.PALETTE_SJTU_RED, 
-        primaryColor=Colors.PALETTE_SJTU_RED, 
+        title='教室推荐',
+        titleColor=Colors.PALETTE_SJTU_RED,
+        primaryColor=Colors.PALETTE_SJTU_RED,
         footer=datetime.datetime.now().strftime("update at %Y-%m-%d %H:%M"),
         layout='normal'
     )
-    recommendCard = [('title', '教室推荐 - %s'%building)]
+    recommendCard = [('title', '教室推荐 - %s' % building)]
     # print(recommendDict)
-    if(len(recommendDict)>25):
+    if (len(recommendDict) > 25):
         count = 0
-        for room_name,roomInfo in recommendDict.items():
-            if(count>25):break
+        for room_name, roomInfo in recommendDict.items():
+            if (count > 25): break
             try:
                 recommendTxt = f"所选教学楼在第{startSection}-{endSection}节有空闲教室：{room_name}\n" \
-                            f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}，室内人数为{roomInfo['People']}\n"
-                recommendCard.append(('separator', ))
+                               f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}，室内人数为{roomInfo['People']}\n"
+                recommendCard.append(('separator',))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:
-                    warning('base exception in getRoomRecommend: {}'.format(e))
+                warning('base exception in getRoomRecommend: {}'.format(e))
             count += 1
     else:
-        for room_name,roomInfo in recommendDict.items():
+        for room_name, roomInfo in recommendDict.items():
             try:
                 recommendTxt = f"所选教学楼在第{startSection}-{endSection}节有空闲教室：{room_name}\n" \
-                            f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}，室内人数为{roomInfo['People']}\n"
-                recommendCard.append(('separator', ))
+                               f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}，室内人数为{roomInfo['People']}\n"
+                recommendCard.append(('separator',))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:
-                    warning('base exception in getRoomRecommend: {}'.format(e))
+                warning('base exception in getRoomRecommend: {}'.format(e))
 
-    rimg.addCard(ResponseImage.RichContentCard(raw_content=recommendCard, ))
+    rimg.add_card(ResponseImage.RichContentCard(raw_content=recommendCard, ))
     savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'Roomrecommend.png')
-    rimg.generateImage(savePath)
+    rimg.generate_image(savePath)
     return savePath
 
 
-def getRoomrecommend():
+def get_roomrecommend():
     # get room recommend info
 
     today = datetime.date.today()
-    date = getRoomDate()
+    date = get_room_date()
     section = date['section']
-    buildings = ['上院','中院','下院','东下院','东中院']
+    buildings = ['上院', '中院', '下院', '东下院', '东中院']
     recommendDict = {}
     for building in buildings:
         # 2.get room info pre
 
-        buildingInfo = getSjtuBuilding(building)
+        buildingInfo = get_sjtu_building(building)
         if buildingInfo == None: return None
         try:
-            buildingInfo = {room['name']: room for room in buildingInfo['roomList']} 
+            buildingInfo = {room['name']: room for room in buildingInfo['roomList']}
         except BaseException as e:
             warning('base exception in getRoomRecommend: {}'.format(e))
             return None
         # 3.get room course
 
-        buildingCourse = getRoomCourse(building, today)
+        buildingCourse = get_room_course(building, today)
         if buildingCourse == None: return None
         try:
-            buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children'] }
+            buildingCourse = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children']}
         except BaseException as e:
             warning('base exception in getRoomRecommend-buildingCourse: {}'.format(e))
             return None
         for room_name in buildingCourse.keys():
             # print(room_name)
-            flag = True # judge if there is class
+            flag = True  # judge if there is class
             EndSection = 0
             getBuildingCourse = buildingCourse.get(room_name, None)
             getBuildingInfo = buildingInfo.get(room_name, None)
             if getBuildingInfo == None or getBuildingCourse == None:
                 return None
-            for course in getBuildingCourse.get('roomCourseList',[]):
+            for course in getBuildingCourse.get('roomCourseList', []):
                 endSection = course['endSection']
-                if(EndSection < endSection):EndSection = endSection
+                if (EndSection < endSection): EndSection = endSection
                 if (endSection > section):
                     flag = False
                     break
             if flag:
                 roomInfo = {}
-                roomInfo['endSection']=EndSection
-                roomInfo['CO2']=getBuildingInfo.get('sensorCo2', '--')
-                roomInfo['Temp']=getBuildingInfo.get('sensorTemp', '--')
-                roomInfo['Hum']=getBuildingInfo.get('sensorHum', '--')
+                roomInfo['endSection'] = EndSection
+                roomInfo['CO2'] = getBuildingInfo.get('sensorCo2', '--')
+                roomInfo['Temp'] = getBuildingInfo.get('sensorTemp', '--')
+                roomInfo['Hum'] = getBuildingInfo.get('sensorHum', '--')
                 recommendDict[room_name] = roomInfo
-
 
     # 2.draw picture
     rimg = ResponseImage(
-    title='教室推荐', 
-    titleColor=Colors.PALETTE_SJTU_RED, 
-    primaryColor=Colors.PALETTE_SJTU_RED, 
-    footer=datetime.datetime.now().strftime("update at %Y-%m-%d %H:%M"),
-    layout='normal'
+        title='教室推荐',
+        titleColor=Colors.PALETTE_SJTU_RED,
+        primaryColor=Colors.PALETTE_SJTU_RED,
+        footer=datetime.datetime.now().strftime("update at %Y-%m-%d %H:%M"),
+        layout='normal'
     )
-    recommendCard = [('title', '教室推荐 - %s'%getWeekDay(today))]
+    recommendCard = [('title', '教室推荐 - %s' % get_week_day(today))]
     # print(recommendDict)
     matchPattern = re.compile(r'^(上院|中院|下院)')
-    if(len(recommendDict)>25):
+    if (len(recommendDict) > 25):
         count = 0
-        for room_name,roomInfo in recommendDict.items():
-            if(matchPattern.match(room_name)):
+        for room_name, roomInfo in recommendDict.items():
+            if (matchPattern.match(room_name)):
                 continue
-            if(count>25):break
+            if (count > 25): break
             try:
-                if(roomInfo['endSection']==0):
+                if (roomInfo['endSection'] == 0):
                     recommendTxt = f"空闲教室：{room_name}  本日该教室无课\n" \
-                                f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
+                                   f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
                 else:
                     recommendTxt = f"空闲教室：{room_name}  本日最后一节课为第{roomInfo['endSection']}节\n" \
-                                f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
-                recommendCard.append(('separator', ))
+                                   f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
+                recommendCard.append(('separator',))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:
-                    warning('base exception in getRoomRecommend: {}'.format(e))
+                warning('base exception in getRoomRecommend: {}'.format(e))
             count += 1
     else:
-        for room_name,endSection in recommendDict.items():
+        for room_name, endSection in recommendDict.items():
             try:
-                if(roomInfo['endSection']==0):
+                if (roomInfo['endSection'] == 0):
                     recommendTxt = f"空闲教室：{room_name}  本日该教室无课\n" \
-                                f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
+                                   f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
                 else:
                     recommendTxt = f"空闲教室：{room_name}  本日最后一节课为第{roomInfo['endSection']}节\n" \
-                                f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
-                recommendCard.append(('separator', ))
+                                   f"本教室当前温度为：{roomInfo['Temp']}℃ ，湿度为：{roomInfo['Hum']}% ，CO2浓度为{roomInfo['CO2']}\n"
+                recommendCard.append(('separator',))
                 recommendCard.append(('body', recommendTxt))
             except BaseException as e:
-                    warning('base exception in getRoomRecommend: {}'.format(e))
+                warning('base exception in getRoomRecommend: {}'.format(e))
 
-    rimg.addCard(ResponseImage.RichContentCard(raw_content=recommendCard, ))
+    rimg.add_card(ResponseImage.RichContentCard(raw_content=recommendCard, ))
     savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'Roomrecommend.png')
-    rimg.generateImage(savePath)
+    rimg.generate_image(savePath)
     return savePath
 
 
 class SjtuClassroom(StandardPlugin):
     def __init__(self) -> None:
         self.triggerPattern = re.compile(r'^(教室|教室查询)\s+(.*)$')
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return self.triggerPattern.match(msg) != None
-    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
         _, roomStr = self.triggerPattern.findall(msg)[0]
-        result = standarlizingRoomStr(roomStr)
+        result = standarlizing_room_str(roomStr)
         if result == None:
-            send(target, '教室参数解析错误，请重新输入查询参数，例如：\n"教室 东上105"、"教室 东下院311"、"教室 东中1-102"', data['message_type'])
+            send(target, '教室参数解析错误，请重新输入查询参数，例如：\n"教室 东上105"、"教室 东下院311"、"教室 东中1-102"',
+                 data['message_type'])
             return "OK"
         building, room_name = result
-        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'course-%d-%s.png'%(target, room_name))
-        courseImgPath = getRoomInfo(building, room_name, savePath)
+        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'course-%d-%s.png' % (target, room_name))
+        courseImgPath = get_room_info(building, room_name, savePath)
         if courseImgPath == None:
-            send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在该教室', data['message_type'])
+            send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在该教室',
+                 data['message_type'])
         else:
-            send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]' % courseImgPath, data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'SjtuClassroom',
             'description': '教室查询',
@@ -461,28 +475,34 @@ class SjtuClassroom(StandardPlugin):
             'author': 'Unicorn',
         }
 
+
 class SjtuClassroomRecommend(StandardPlugin):
     def __init__(self) -> None:
         self.triggerPattern = re.compile(r'(推荐|教室推荐)\s+(.*)$')
-    def judgeTrigger(self, msg:str, data:Any) -> bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return self.triggerPattern.match(msg) != None
-    def executeEvent(self,msg:str, data:Any) -> Union[None, str]:
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        _,Str = self.triggerPattern.findall(msg)[0]
-        result = standarlizingBuildingTimeStr(Str)
+
+    def execute_event(self, msg: str, data: Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
+        _, Str = self.triggerPattern.findall(msg)[0]
+        result = standarlizing_building_time_str(Str)
         if result == None:
-            send(target, '教室推荐参数解析错误，请重新输入查询参数，例如：\n"教室推荐 东上 3 5"、"教室推荐 东下 5 8"', data['message_type'])
+            send(target, '教室推荐参数解析错误，请重新输入查询参数，例如：\n"教室推荐 东上 3 5"、"教室推荐 东下 5 8"',
+                 data['message_type'])
             return "OK"
-        building,startSection,endSection = result
+        building, startSection, endSection = result
         startSection = int(startSection)
         endSection = int(endSection)
-        courseImgPath = getRoomRecommend(building,startSection,endSection)
+        courseImgPath = get_room_recommend(building, startSection, endSection)
         if courseImgPath == None:
-            send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室或命令格式错误', data['message_type'])
+            send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室或命令格式错误',
+                 data['message_type'])
         else:
-            send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]' % courseImgPath, data['message_type'])
         return "OK"
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'SjtuClassroomRecommend',
             'description': '教室推荐',
@@ -494,28 +514,32 @@ class SjtuClassroomRecommend(StandardPlugin):
             'author': 'jmh',
         }
 
+
 class SjtuClassroomPeopleNum(StandardPlugin):
     def __init__(self):
         self.triggerPattern = re.compile('^教室人数\s*(.*)$')
-    def judgeTrigger(self, msg:str, data:Any)->bool:
+
+    def judge_trigger(self, msg: str, data: Any) -> bool:
         return self.triggerPattern.match(msg) != None
-    def executeEvent(self, msg:str, data:Any):
-        target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        buildingStr = standarlizingBuildingStr(self.triggerPattern.findall(msg)[0])
+
+    def execute_event(self, msg: str, data: Any):
+        target = data['group_id'] if data['message_type'] == 'group' else data['user_id']
+        buildingStr = standarlizing_building_str(self.triggerPattern.findall(msg)[0])
         if buildingStr == None:
             send(target, f'[CQ:reply,id={data["message_id"]}]教学楼解析错误，请重新输入查询参数，例如：\n'
-                          '"教室人数 东上"、"教室人数 东下院"、"教室人数 球楼"',
-                          data['message_type'])
+                         '"教室人数 东上"、"教室人数 东下院"、"教室人数 球楼"',
+                 data['message_type'])
             return 'OK'
         now = datetime.datetime.now()
         # 2. get building course
-        buildingCourse = getRoomCourse(buildingStr, now.date())
+        buildingCourse = get_room_course(buildingStr, now.date())
         if buildingCourse == None:
             send(target, f'[CQ:reply,id={data["message_id"]}]网络错误，请稍后重试', data['message_type'])
             return 'OK'
         try:
-            roomStudents = {room['roomId']: int(room['actualStuNum']) for floor in buildingCourse['floorList'] for room in floor.get('roomStuNumbs', [])}            
-            rooms = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children'] }
+            roomStudents = {room['roomId']: int(room['actualStuNum']) for floor in buildingCourse['floorList'] for room
+                            in floor.get('roomStuNumbs', [])}
+            rooms = {room['name']: room for floor in buildingCourse['floorList'] for room in floor['children']}
         except BaseException as e:
             warning('base exception in SjtuClassroomPeopleNum: {}'.format(e))
             send(target, f'[CQ:reply,id={data["message_id"]}]API回传参数解析错误', data['message_type'])
@@ -531,16 +555,20 @@ class SjtuClassroomPeopleNum(StandardPlugin):
             if roomId in roomStudents.keys():
                 numStudents = roomStudents[roomId]
                 # numStudents = random.randint(1, 40)
-                if numStudents < 5: color = 'green'
-                elif numStudents < 15: color = 'blue'
-                elif numStudents < 30: color = 'orange'
-                else: color = 'red'
+                if numStudents < 5:
+                    color = 'green'
+                elif numStudents < 15:
+                    color = 'blue'
+                elif numStudents < 30:
+                    color = 'orange'
+                else:
+                    color = 'red'
                 roomList.append((roomNum, numStudents, numStudents, color))
             else:
                 roomList.append((roomNum, 0, 'null', 'grey'))
-        
+
         # draw bar fig
-        plt.figure(figsize=(3, len(roomList)/5)) 
+        plt.figure(figsize=(3, len(roomList) / 5))
         roomNum, numStudents, yLabel, color = zip(*sorted(roomList, key=lambda x: x[0], reverse=True))
         bar = plt.barh(roomNum, numStudents, color=color)
         plt.bar_label(bar, yLabel, fontsize=8)
@@ -557,17 +585,18 @@ class SjtuClassroomPeopleNum(StandardPlugin):
             layout='normal',
             width=880,
         )
-        card.addCard(ResponseImage.RichContentCard(raw_content=[
+        card.add_card(ResponseImage.RichContentCard(raw_content=[
             ('title', buildingStr + now.strftime('    %Y-%m-%d  %H:%M')),
             ('illustration', fig)
         ]))
-        
+
         # save response image
-        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'classroomPeopleNum-%d.png'%target)
-        card.generateImage(savePath)
-        send(target, '[CQ:image,file=file:///%s]'%savePath, data['message_type'])
+        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'classroomPeopleNum-%d.png' % target)
+        card.generate_image(savePath)
+        send(target, '[CQ:image,file=file:///%s]' % savePath, data['message_type'])
         return 'OK'
-    def getPluginInfo(self, )->Any:
+
+    def get_plugin_info(self, ) -> Any:
         return {
             'name': 'SjtuClassroomPeopleNum',
             'description': '教室人数',
@@ -578,4 +607,3 @@ class SjtuClassroomPeopleNum(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-    
