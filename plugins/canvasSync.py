@@ -32,6 +32,7 @@ class CanvasiCalUnbind(StandardPlugin):
 class CanvasiCalBind(StandardPlugin): 
     def __init__(self) -> None:
         # 外部服务，防止sql注入、url注入
+        self.triggerPattern = re.compile(r'^\-ics\s+bind\s*(\S+)$', re.DOTALL)
         self.urlRegex = re.compile(r'https://(canvas\.sjtu\.edu\.cn|oc\.sjtu\.edu\.cn|jicanvas\.com)/feeds/calendars/user\_[a-zA-Z0-9]{40}\.ics')
         # 检查sql是否开了canvasIcs
         try:
@@ -44,9 +45,9 @@ class CanvasiCalBind(StandardPlugin):
         except BaseException as e:
             warning('canvas ics 无法连接至数据库, error: {}'.format(e))
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['-ics bind '])
+        return self.triggerPattern.match(msg) != None
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
-        msg=msg.replace('-ics bind','',1).strip()
+        msg:str = self.triggerPattern.findall(msg)[0].strip()
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         if self.urlRegex.match(msg) == None or len(msg) > 110:
             send(target,

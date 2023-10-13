@@ -442,11 +442,40 @@ def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, Non
     url = HTTP_URL+"/get_group_file_url"
     params = {
         "group_id": group_id,
+        "file_id": file_id,
+        "busid": busid,
     }
     try:
         info = requests.get(url, params=params).json()
         if info['retcode'] != 0:
             warning("get_group_file_url requests not return ok")
+            return None
+        return info['data']['url']
+    except requests.JSONDecodeError as e:
+        warning("json decode error in get_group_file_url: {}".format(e))
+    except BaseException as e:
+        warning("base exception in get_group_file_url: {}".format(e))
+    return None
+
+def upload_group_file(group_id:int, file:str, name:str, folder:str)->None:
+    """上传群文件
+    @group_id: 群号
+    @file:     文件的本地位置（绝对路径）
+    @name:     上传后的文件名
+    @folder:   上传到的文件夹名称，根目录为空字符串
+    参考链接：   https://docs.go-cqhttp.org/api/#%E4%B8%8A%E4%BC%A0%E7%BE%A4%E6%96%87%E4%BB%B6
+    """
+    url = HTTP_URL+"/upload_group_file"
+    params = {
+        "group_id": group_id,
+        "file": file,
+        "name": name,
+        "folder": folder,
+    }
+    try:
+        info = requests.get(url, params=params).json()
+        if info['retcode'] != 0:
+            warning("upload_group_file requests not return ok")
             return None
         return info['data']
     except requests.JSONDecodeError as e:
@@ -454,6 +483,7 @@ def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, Non
     except BaseException as e:
         warning("base exception in get_group_file_url: {}".format(e))
     return None
+    
 
 def set_group_ban(group_id:int, user_id:int, duration:int)->None:
     """群组单人禁言

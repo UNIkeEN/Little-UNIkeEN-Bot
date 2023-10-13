@@ -203,10 +203,10 @@ def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
         return False, 'BaseException: ' + str(e)
 class BilibiliSubscribeHelper(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return msg in ["B站订阅帮助", "b站订阅帮助"] and data['message_type']=='group'
+        return msg in ["B站订阅帮助", "b站订阅帮助", '订阅帮助'] and data['message_type']=='group'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
-        send(group_id,'订阅帮助: B站订阅帮助\n' 
+        send(group_id,'订阅帮助: 订阅帮助 / B站订阅帮助\n' 
                     '订阅up:    订阅 <uid>\n'
                     '取消订阅: 取消订阅 <uid>\n'
                     '获取订阅列表: 订阅\n'
@@ -216,7 +216,7 @@ class BilibiliSubscribeHelper(StandardPlugin):
         return {
             'name': 'BilibiliSubscribeHelper',
             'description': 'B站订阅帮助',
-            'commandDescription': 'B站订阅帮助',
+            'commandDescription': '订阅帮助',
             'usePlace': ['group', ],
             'showInHelp': True,
             'pluginConfigTableNames': [],
