@@ -1,5 +1,5 @@
 from typing import Dict, Union, Any, List, Tuple
-from utils.basicEvent import send, warning
+from utils.basicEvent import send, warning, upload_group_file, get_group_file_url, get_group_root_files
 from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, APPLY_GROUP_ID
@@ -10,8 +10,9 @@ import mysql.connector
 from pymysql.converters import escape_string
 from fuzzywuzzy import process as fuzzy_process
 from threading import Semaphore
+import json, datetime, time
+import requests
 
-FAQ_DATA_PATH="data"
 def createFaqTable(tableName: str):
     # warning: tableName may danger
     if not isinstance(tableName, str):
@@ -186,7 +187,7 @@ def update_answer(group_id:int, question:str, answer:str, data:Any, tag:str = ''
         warning("exception in faq update_answer: {}".format(e))
         return False
     return True
-def get_questions(group_id:int):
+def get_questions(group_id:int)->List[str]:
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mycursor = mydb.cursor()
     mycursor.execute("""select `question` from `BOT_FAQ_DATA`.`%d`
@@ -194,6 +195,14 @@ def get_questions(group_id:int):
     """%group_id)
     questions = [q[0] for q in list(mycursor)]
     return questions
+def get_alldata(group_id:int)->List[Tuple[str, str, str]]:
+    """@return: [key, value, tag]"""
+    mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
+    mycursor = mydb.cursor()
+    mycursor.execute("""select `question`, `answer`, `group_tag` from `BOT_FAQ_DATA`.`%d`
+    where latest = true and deleted = false
+    """%group_id)
+    return list(mycursor)
 class AskFAQ(StandardPlugin):
     def __init__(self):
         self.pattern = re.compile(r'^(问|q)\s+(\S+)$')
@@ -250,6 +259,8 @@ class MaintainFAQ(StandardPlugin):
             'tag': MaintainFAQ.faqTag,
             'rollback': MaintainFAQ.faqRollBack,
             'history': MaintainFAQ.faqHistory,
+            'export': MaintainFAQ.faqExport,
+            'import': MaintainFAQ.faqImport,
             'help': MaintainFAQ.faqHelp,
         }
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -261,6 +272,10 @@ class MaintainFAQ(StandardPlugin):
         else:
             send(data['group_id'], '输入格式不对哦，请输入【问答帮助】获取操作指南')
         return "OK"
+    def onStateChange(self, nextState: bool, data: Any) -> None:
+        if nextState == True: 
+            groupId = data['group_id']
+            createFaqTable(str(groupId))
     def getPluginInfo(self)->Any:
         return {
             'name': 'MaintainFAQ',
@@ -452,6 +467,78 @@ class MaintainFAQ(StandardPlugin):
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 send(groupId, '[CQ:image,file=files:///%s]'%picPath)
     @staticmethod
+    def faqExport(cmd: str, data):
+        groupId = data['group_id']
+        if data['user_id'] not in getGroupAdmins(groupId):
+            send(groupId, '[CQ:reply,id=%d]您没有导出权限'%(data['message_id']))
+        else:
+            faqData = get_alldata(groupId)
+            faqData = [{'question': x[0], 'answer': x[1], 'tag': x[2]} for x in faqData]
+            filePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'faqdata-%d.json'%groupId)
+            with open(filePath, 'w') as f:
+                json.dump(faqData, f, ensure_ascii=False)
+            upload_group_file(groupId, filePath, datetime.datetime.now().strftime('LUBFAQ-%y%m%d.json'), '')
+    @staticmethod
+    def faqImport(cmd: str, data):
+        groupId = data['group_id']
+        if data['user_id'] not in getGroupAdmins(groupId):
+            send(groupId, '[CQ:reply,id=%d]您没有导入权限'%(data['message_id']))
+        else:
+            fileNamePattern = re.compile(r'^LUBFAQ.*\.json$', re.DOTALL)
+            rootFiles = get_group_root_files(groupId)['files']
+            targetFiles = [f for f in rootFiles if fileNamePattern.match(f['file_name']) != None]
+            if len(targetFiles) == 0:
+                send(groupId, '[CQ:reply,id=%d]群文件根目录下没有找到任何名为LUBFAQ**.json的文件'%(data['message_id']))
+                return 
+            targetFile = max(targetFiles, key=lambda f:f['upload_time'])
+            if targetFile['file_size'] > 10 * 1024 * 1024:
+                send(groupId, '[CQ:reply,id=%d]目标文件 %s 超过10M，暂不支持'%(data['message_id'], targetFile['file_name']))
+                return
+            fileUrl = get_group_file_url(targetFile['group_id'], targetFile['file_id'], targetFile['busid'])
+            if fileUrl == None:
+                send(groupId, '[CQ:reply,id=%d]文件URL获取失败'%(data['message_id'], ))
+                return 
+            try:
+                faqData:List[Dict[str, str]] = requests.get(fileUrl).json()
+                if not isinstance(faqData, list):
+                    send(groupId, '[CQ:reply,id=%d]faq内容解析失败'%(data['message_id']))
+                    return
+                prevKeys = get_questions(groupId)
+                conflictKeys:List[str] = []
+                validQAT:List[Tuple[str, str, str]] = []
+                for faq in faqData:
+                    if 'question' not in faq.keys() or 'answer' not in faq.keys() or 'tag' not in faq.keys():
+                        send(groupId, '[CQ:reply,id=%d]faq内容解析失败'%(data['message_id']))
+                        return
+                    elif faq['question'] in prevKeys:
+                        conflictKeys.append(faq['question'])
+                    else:
+                        validQAT.append((faq['question'], faq['answer'], faq['tag']))
+                if len(conflictKeys) != 0:
+                    send(groupId, '[CQ:reply,id=%d]检测到key冲突，冲突key为：\n%s\n\n请手动添加这些key'%(data['message_id'], '、'.join(conflictKeys)))
+                failedKeys:List[str] = []
+                for question, answer, tag in validQAT:
+                    succ = update_answer(groupId, question, answer, data, tag=tag)
+                    if not succ:
+                        failedKeys.append(question)
+                if len(failedKeys) != 0:
+                    send(groupId, '[CQ:reply,id=%d]识别到faq文件%s，由用户 %s(%d) 上传于%s。由于数据库错误，下面的问题添加失败：\n%s\n\n，其余问题添加成功（成功添加%d个问题）'%(
+                        data['message_id'], targetFile['file_name'], targetFile['uploader_name'],targetFile['uploader'],
+                        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(targetFile['upload_time'])),'、'.join(failedKeys),
+                        len(validQAT) - len(failedKeys)))
+                else:
+                    send(groupId, '[CQ:reply,id=%d]识别到faq文件%s，由用户 %s(%d) 上传于%s。成功添加%d个问题。'%(
+                        data['message_id'], targetFile['file_name'], targetFile['uploader_name'],targetFile['uploader'],
+                        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(targetFile['upload_time'])),
+                        len(validQAT)))
+            except requests.exceptions.JSONDecodeError as e:
+                send(groupId, '[CQ:reply,id=%d]json格式解析失败'%(data['message_id']))
+                return
+            except BaseException as e:
+                print(e)
+                send(groupId, '[CQ:reply,id=%d]文件下载失败'%(data['message_id']))
+                return
+    @staticmethod
     def faqHelp(cmd: str, data):
         groupId = data['group_id']
         picPath = draw_help_pic(groupId)
@@ -602,7 +689,11 @@ def draw_help_pic(group_id:int)->str:
         "标记分组： 'faq tag <key> <tag>'\n"
         "回滚[🔑]： 'faq rollback <key>'\n"
         "查看记录[🔑]： 'faq history <key>'\n"
-        "获取帮助： 'faq help' / '问答帮助'"
+        "导出库[🔑]： 'faq export'\n"
+        "导入库[🔑]： 'faq import'\n"
+        "获取帮助： 'faq help' / '问答帮助'\n\n"
+        "【注】：\n"
+        "1. 导入库会从群文件根目录下搜索名称为“LUBFAQ**.json”的文件（注意，并非子目录），找到最近一次的进行导入，文件格式见faq export的格式"
     )
     helpCards = ResponseImage(
         title = 'FAQ 帮助', 
