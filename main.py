@@ -62,6 +62,7 @@ from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 from plugins.song import ChooseSong
 from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
+from plugins.wordle import Wordle, WordleHelper
 from plugins.gocqWatchDog import GocqWatchDog
 ###### end not published plugins
 
@@ -129,6 +130,9 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ChooseSong()], 'song'),
+    PluginGroupManager([Wordle(), WordleHelper()], 'wordle'),
+    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
