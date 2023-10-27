@@ -86,6 +86,7 @@ from plugins.zsmCorups import ZsmGoldSentence
 from plugins.apexStatus import ApexStatusPlugin
 from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
+from plugins.wordle import Wordle, WordleHelper
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:
@@ -111,6 +112,14 @@ except NotPublishedException as e:
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
 
 from plugins.gocqWatchDog import GocqWatchDog
+
+from plugins.notPublished.sjtuSql import (
+    SearchSjtuSqlAllPrivate,
+    SearchSjtuSqlAll,
+    SearchSjtuSql,
+    SearchSjtuSqlPIC,
+)
+from plugins.notPublished.sjtuSqlGroupingVerication import SjtuSqlGroupingVerify
 
 ###### end not published plugins
 
@@ -190,6 +199,10 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChessPlugin(), ChessHelper()], 'chess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     PluginGroupManager([ChooseSong()], 'song'),
+    PluginGroupManager([Wordle(), WordleHelper()], 'wordle'),
+    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
+    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(), 
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -210,6 +223,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     GetMddStatus(), #SubscribeMdd(),
+    SearchSjtuSqlAllPrivate(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     ChooseSong(),
@@ -224,7 +238,8 @@ GroupPokeList:List[PokeStandardPlugin] = [
 AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     AddGroupRecorder(), # place this plugin to the first place
     SjtuPlusGroupingVerify('dytwzzb',[]),
-    SjtuPlusGroupingVerify('test',[]),
+    SjtuPlusGroupingVerify('test',[604329164,613024311]),
+    SjtuSqlGroupingVerify([604329164,613024311]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 helperForPrivateControl.setPluginList(GroupPluginList)

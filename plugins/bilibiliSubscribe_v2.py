@@ -382,6 +382,8 @@ class BilibiliMonitor(CronStandardPlugin):
             return
         else:
             self.cumulativeNetworkErrCount = 0
+            if self.baseInterval > 120:
+                self.baseInterval -= 20
 
         try:
             dynamicInfos = dynamics.get('cards', None)
