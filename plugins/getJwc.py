@@ -137,7 +137,7 @@ def getJwc()->list:
             try:
                 detail:str = content.p.contents[0]
             except:
-                detail = None
+                detail = ''
             newsList.append({
                 'year': year,
                 'month': month,
@@ -371,7 +371,7 @@ def DrawNoticePIC(notice)->str:
             txt_line=""
     if txt_line!="":
         txt_parse.append(txt_line)
-    if txt_parse[-1][-1]!='.':
+    if len(txt_parse) > 0 and len(txt_parse[-1]) > 0 and txt_parse[-1][-1]!='.':
         txt_parse[-1]+='...'
     height = 525+len(txt_parse)*27+len(title_parse)*33
     img, draw, h = init_image_template('教务通知·更新提醒', width, height, (167,32,56,255))

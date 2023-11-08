@@ -5,7 +5,7 @@ from utils.configAPI import readGlobalConfig, writeGlobalConfig, getGroupAdmins
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.job import Job
-from threading import Timer
+from threading import Timer, Semaphore
 
 class NotPublishedException(BaseException):
     """可能有些插件因为secret key或者其他原因不选择开源，请抛出此类"""
@@ -221,14 +221,15 @@ class CronStandardPlugin(BaseTimeSchedulePlugin):
 class PluginGroupManager(StandardPlugin):
     refreshPluginStatusHandles:List[Tuple[str, Callable]] = []
     def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
-        self.plugins = plugins
-        self.groupName = groupName
+        self.plugins:List[StandardPlugin] = plugins
+        self.groupName:str = groupName
         self.readyPlugin = None
         self.enabledDict = readGlobalConfig(None, groupName+'.enable')
         self.defaultEnabled = False
         self.groupInfo = {}
         self.onPattern = re.compile(r'^\-grpcfg\s+enable\s+(%s|\*)$'%self.groupName)
         self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
+        self.guard = Semaphore()
         self._checkGroupInfo()
         PluginGroupManager.refreshPluginStatusHandles.append((groupName, self._refreshPluginStatus))
     @final
@@ -264,9 +265,9 @@ class PluginGroupManager(StandardPlugin):
             return True
         if not self.queryEnabled(groupId):
             return False
-        for plugin in self.plugins:
+        for idx, plugin in enumerate(self.plugins):
             if plugin.judgeTrigger(msg, data):
-                self.readyPlugin = plugin
+                self.readyPlugin = idx
                 return True
         return False
     def executeEvent(self, msg:str, data:Any)->Union[None, str]:
@@ -284,9 +285,21 @@ class PluginGroupManager(StandardPlugin):
                 return "OK"
         else:
             try:
-                result = self.readyPlugin.executeEvent(msg, data)
-                self.readyPlugin = None
-                return result
+                result = self.plugins[self.readyPlugin].executeEvent(msg, data)
+                if result != None:
+                    self.readyPlugin = None
+                    return result
+                else:
+                    self.readyPlugin += 1
+                    while self.readyPlugin < len(self.plugins):
+                        if self.plugins[self.readyPlugin].judgeTrigger(msg, data):
+                            result = self.plugins[self.readyPlugin].executeEvent(msg, data)
+                            if result != None:
+                                self.readyPlugin = None
+                                return result
+                        self.readyPlugin += 1
+                    self.readyPlugin = None
+                            
             except Exception as e:
                 warning("logic error in PluginGroupManager [{}]: {}".format(self.groupName, e))
                 return None

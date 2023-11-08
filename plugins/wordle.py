@@ -11,15 +11,8 @@ from spellchecker import SpellChecker
 from PIL import ImageFont, Image, ImageDraw
 from dataclasses import dataclass
 import random
-WORDLD_RESOURCE_PATH = 'resources/wordle'
+WORDLE_RESOURCE_PATH = 'resources/wordle'
 DIFFICULTY_LIST = []
-@dataclass
-class WordleData:
-    length: int = 0
-    dic: str = ""
-    hint: bool = False
-    stop: bool = False
-    word: str = ""
 
 def drawHelpPic(savePath:str):
     helpWords = (
@@ -66,7 +59,7 @@ class Wordle(StandardPlugin):
         DIFFICULTY_LIST = self.difficultyList
         
     def load_words(self):
-        wordleResourcePath = os.path.join(ROOT_PATH, WORDLD_RESOURCE_PATH)
+        wordleResourcePath = os.path.join(ROOT_PATH, WORDLE_RESOURCE_PATH)
         for wordleResourceName in os.listdir(wordleResourcePath):
             difficulty, suffix = os.path.splitext(wordleResourceName)
             if suffix != '.json': continue
@@ -131,7 +124,8 @@ class Wordle(StandardPlugin):
         elif msg in self.hintWords:
             game = self.games.get(groupId)
             if game == None:
-                send(groupId, '[CQ:reply,id=%d]群内没有正在进行的猜单词游戏，请输入“猜单词”或“-wordle”开始游戏'%data['message_id'])
+                return None
+                # send(groupId, '[CQ:reply,id=%d]群内没有正在进行的猜单词游戏，请输入“猜单词”或“-wordle”开始游戏'%data['message_id'])
             else:
                 hint = game.get_hint()
                 if len(hint.replace("*", "")) == 0:
@@ -140,9 +134,10 @@ class Wordle(StandardPlugin):
                     game.draw_hint(hint, savePath)
                     send(groupId, '[CQ:image,file=files:///%s]'%savePath)
         elif msg in self.stopWords:
-            game = self.games.pop(groupId)
+            game = self.games.pop(groupId, None)
             if game == None:
-                send(groupId, '[CQ:reply,id=%d]群内没有正在进行的猜单词游戏，输入“猜单词”或“-wordle”可以开始游戏'%data['message_id'])
+                return None
+                # send(groupId, '[CQ:reply,id=%d]群内没有正在进行的猜单词游戏，输入“猜单词”或“-wordle”可以开始游戏'%data['message_id'])
             else:
                 msg = "游戏已结束"
                 if len(game.guessed_words) >= 1:
@@ -175,6 +170,8 @@ class Wordle(StandardPlugin):
                     else:
                         game.draw(savePath)
                         send(groupId, '[CQ:image,file=files:///%s]'%(savePath))
+            else:
+                return None
         elif self.difficultyPattern.match(msg) != None:
             difficulty = self.difficultyPattern.findall(msg)[0]
             if len(difficulty) == 0:
