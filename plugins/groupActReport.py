@@ -12,7 +12,7 @@ from io import BytesIO
 import re
 import random
 
-BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
+BOT_CMD = [ '-ddl','-canvas','-uag','签到','祈愿',
             '-help','-st','-lib','-hs','-mdd',
             '-jwc','-dekt','-mc','-sjmc','-fdc',
             '-xjtumc', '-mcs', '-xjmclive',
@@ -24,7 +24,7 @@ BOT_CMD = [ '-ddl','-canvas','签到','祈愿',
             '决斗','接受决斗','ttzf','izf',
             '-myact', '-wc', '-actrank','-bwc',
             '-bwrs','-bdrs','-zhrs', '-actclear',
-            '-lxq', '执黑下象棋', '问答帮助']
+            '-lxq', '执黑下象棋', '问答帮助', '猜单词', '-wordle']
 
 class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -149,7 +149,7 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
         y_avg = messageNumber / (int((et.date()-st.date()).days)+1)
         if (y_max <= 5):
             messageDescript = '你是本群的潜水员，日最多发送信息少于 5 条'
-            messageMedal.append('🎖️ 资深潜水')
+            messageMedal.append('🎖️资深潜水')
         else:
             if y_avg<15:
                 messageDescript = '你在本群低调内敛，平均每日发送信息 %.2f 条'%(y_avg)
@@ -157,12 +157,12 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
                 messageDescript = '你在本群比较活跃，平均每日发送信息 %.2f 条'%(y_avg)
             else:
                 messageDescript = '你在本群侃侃而谈，平均每日发送信息 %.2f 条'%(y_avg)
-                messageMedal.append('🎖️ 水群大师')
+                messageMedal.append('🎖️水群大师')
             messageDescript += '\n%s，你一共发送了 %d 条信息'%(x_max, y_max)
         if messageNumber >=3000:
-            messageMedal.append('🎖️ 活跃元老')
+            messageMedal.append('🎖️活跃元老')
         elif y_max >=300:
-            messageMedal.append('🎖️ 谈天说地')
+            messageMedal.append('🎖️谈天说地')
 
         plt.figure(figsize=(10, 3)) 
         plt.bar(x_list, y_list, color='#87CEEB')
@@ -190,13 +190,13 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
 
         # Bot互动-奖章
         if (messageWithBotNumber>=500):
-            messageWithBotMedal.append('🎖️ 高级测试工程师')
+            messageWithBotMedal.append('🎖️高级测试工程师')
         elif (messageWithBotNumber>=200):
-            messageWithBotMedal.append('🎖️ 中级测试工程师')
+            messageWithBotMedal.append('🎖️中级测试工程师')
         elif (messageWithBotNumber>=50):
-            messageWithBotMedal.append('🎖️ 初级测试工程师')
+            messageWithBotMedal.append('🎖️初级测试工程师')
         if (messageWithBotNumber / messageNumber > 0.4):
-            messageWithBotMedal.append('🎖️ 信息熵操纵者')
+            messageWithBotMedal.append('🎖️信息熵操纵者')
         plt.figure(figsize=(10, 3)) 
         plt.bar(x_list, y_list, color='#F8AC51')
         ax = plt.gca()
@@ -220,7 +220,7 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
         x_list = [datetime.datetime.strptime(x,'%Y-%m-%d') for x in x_list]
         messageImgEmojiNumber = sum(y_list)
         if (messageImgEmojiNumber>=500):
-            messageImgEmjMedal.append('🎖️ 表情包之神')
+            messageImgEmjMedal.append('🎖️表情包之神')
         plt.figure(figsize=(10, 3)) 
         plt.bar(x_list, y_list, color='#7DC473')
         ax = plt.gca()

@@ -26,7 +26,7 @@ from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
 from plugins.signIn import SignIn
 from plugins.thanksLUB import ThanksLUB
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.sjmcStatus_v3 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
+from plugins.sjmcStatus_v4 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
 try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
         MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
@@ -62,7 +62,6 @@ from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 from plugins.song import ChooseSong
 from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
-from plugins.wordle import Wordle, WordleHelper
 from plugins.gocqWatchDog import GocqWatchDog
 ###### end not published plugins
 
@@ -130,9 +129,6 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ChooseSong()], 'song'),
-    PluginGroupManager([Wordle(), WordleHelper()], 'wordle'),
-    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
-                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
