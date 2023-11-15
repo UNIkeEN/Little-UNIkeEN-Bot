@@ -31,6 +31,26 @@ MINECRAFT_COLOR_CODES = {
     'd': (255, 85, 255, 255),
     'e': (255, 255, 85, 255),
     'f': (255, 255, 255, 255),
+    'r': (255, 255, 255, 255),
+}
+
+HTML_COLOR_CODES = {
+    'black': (0, 0, 0, 255),
+    'dark_blue': (0, 0, 170, 255),
+    'dark_green': (0, 170, 0, 255),
+    'dark_aqua': (0, 170, 170, 255),
+    'dark_red': (170, 0, 0, 255),
+    'dark_purple': (170, 0, 170, 255),
+    'gold': (255, 170, 0, 255),
+    'gray': (170, 170, 170, 255),
+    'dark_gray': (85, 85, 85, 255),
+    'blue': (85, 85, 255, 255),
+    'green': (85, 255, 85, 255),
+    'aqua': (85, 255, 255, 255),
+    'red': (255, 85, 85, 255),
+    'light_purple': (255, 85, 255, 255),
+    'yellow': (255, 255, 85, 255),
+    'white': (255, 255, 255, 255),
 }
 
 def create_mcs_sql():
@@ -109,13 +129,13 @@ def remove_footer(group_id:int)->Tuple[bool, str]:
     """, (group_id, ))
     return True, '移除成功'
 
-class ShowMcStatusTest(StandardPlugin):
+class ShowMcStatus(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return msg == '-mcs1106' or msg == '-mcsip'
+        return msg == '-mcs' or msg == '-mcsip'
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         group_id = data['group_id']
         server_list = get_server_list(group_id)
-        if msg == '-mcs1106':
+        if msg == '-mcs':
             if len(server_list) == 0:
                 send(group_id, f"本群尚未添加Minecraft服务器", data['message_type'])
                 return 'OK'
@@ -330,9 +350,8 @@ def draw_sjmc_info(dat, group_id: int):
         f"Minecraft服务器状态", fill=(255,255,255,255), font=font_mc_xl)
     draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
     
-    # 绘制带颜色标题
+    # 绘制带颜色标题（基于MC格式化分节符解析）
     def draw_colored_title(draw, text, position, font, default_color=(255, 255, 255, 255)):
-        print(title)
         x, y = position
         current_color = default_color
         buffer_text = ''
@@ -345,27 +364,58 @@ def draw_sjmc_info(dat, group_id: int):
                     x += size[0]
                     buffer_text = ''
                 if i + 1 < len(text) and text[i+1].lower() in MINECRAFT_COLOR_CODES:
-                    current_color = MINECRAFT_COLOR_CODES[text[i+1].lower()] + (255,)
+                    current_color = MINECRAFT_COLOR_CODES.get(text[i+1].lower(), default_color)
                 i += 2  
             else:
                 buffer_text += text[i]
                 i += 1          
         if buffer_text:
             draw.text((x, y), buffer_text, fill=current_color, font=font)
-            
+
+    # 绘制带颜色标题（基于HTML解析，嵌套分节符解析）
+    def draw_colored_title_html(draw, text, position, font, default_color=(255, 255, 255, 255)):
+        x, y = position
+        parts = re.split(r'(<font color=\".*?\">)', text)
+        current_color = default_color  # 默认白色
+
+        for part in parts:
+            if part == '<font color=\"\">':
+                current_color = default_color
+            elif part.startswith('<font color=\"'):
+                color_name = re.search(r'\"(.+?)\"', part).group(1)
+                if color_name: 
+                    current_color = HTML_COLOR_CODES.get(color_name, default_color)
+                else:
+                    current_color = default_color # color=""，则重置为白色
+            else:
+                clean_text = re.sub(r'<.*?>', '', part)
+                if clean_text:
+                    # draw.text((x, y), clean_text, fill=current_color, font=font)
+                    draw_colored_title(draw, clean_text, (x, y), font, current_color)
+                    size = draw.textsize(clean_text, font=font)
+                    x += size[0]
+
+    # 处理每个description
     for i, res in enumerate(dat):
         fy = 160 + i*140 + j1*31
-        try:
-            title = res['description']
-            if not isinstance(title, str):
-                title = title['text']
-            title = re.sub(r'§[klmnor]', '', title)
-            title = title.replace('|',' | ',1)
-            title = title.replace('\n','  |  ',1)
-            title = title.replace('服务器已离线...', '')
+        try:  
+            if 'html' in res['description']:
+                title = res['description']['html']
+                title = title.replace('|', ' | ', 1)
+                title = title.replace('<br>', '  |  ', 1)
+                title = title.replace('服务器已离线...', '')
+                draw_colored_title_html(draw, title, (160, fy), font=font_mc_l)
+            else:
+                title = res['description']['text']
+                title = title.replace('|', ' | ', 1)
+                title = title.replace('\n', '  |  ', 1)
+                title = title.replace('服务器已离线...', '')
+                # 去除Minecraft颜色代码并处理剩余文本,§r视作§f
+                title = re.sub(r'§[klmno]', '', title)
+                draw_colored_title(draw, title, (160, fy), font=font_mc_l)
         except:
             title = 'Unknown Server Name'
-        draw_colored_title(draw, title, (160, fy), font=font_mc_l)
+            draw_colored_title(draw, title, (160, fy), font=font_mc_l)
 
         # 绘制图标
         try:
@@ -386,12 +436,11 @@ def draw_sjmc_info(dat, group_id: int):
         except BaseException as e:
             warning("base exception in sjmc draw icon: {}".format(e))
 
-        if res['online']:
-            res['hostname'] = res['hostname'].replace('.',' . ')
-            if 'port' in res.keys() and res['port'] != None:
-                port = str(res['port']).strip()
-                if port != '25565':
-                    res['hostname'] += ' : ' + port
+        res['hostname'] = res['hostname'].replace('.',' . ')
+        if 'port' in res.keys() and res['port'] != None:
+            port = str(res['port']).strip()
+            if port != '25565':
+                res['hostname'] += ' : ' + port
         draw.text((160, fy+45), res['hostname'], fill=grey, font=font_mc_m)
         if res['online']:
             txt_size = draw.textsize(f"{res['ping']}ms", font=font_mc_m)

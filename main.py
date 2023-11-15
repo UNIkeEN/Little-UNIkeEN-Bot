@@ -28,8 +28,7 @@ from plugins.thanksLUB import ThanksLUB
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.sjmcStatus_v3 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
-from plugins.sjmcStatus_v4 import ShowMcStatusTest
+from plugins.sjmcStatus_v4 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
 try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
         MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
@@ -115,14 +114,6 @@ except NotPublishedException as e:
 
 from plugins.gocqWatchDog import GocqWatchDog
 
-from plugins.notPublished.sjtuSql import (
-    SearchSjtuSqlAllPrivate,
-    SearchSjtuSqlAll,
-    SearchSjtuSql,
-    SearchSjtuSqlPIC,
-)
-from plugins.notPublished.sjtuSqlGroupingVerication import SjtuSqlGroupingVerify
-
 ###### end not published plugins
 
 def sqlInit():
@@ -204,7 +195,6 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper()], 'wordle'),
     PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
-    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(), ShowMcStatusTest(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -225,7 +215,6 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     GetMddStatus(), #SubscribeMdd(),
-    SearchSjtuSqlAllPrivate(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     MakeJoke(),
     ChooseSong(),
@@ -240,8 +229,7 @@ GroupPokeList:List[PokeStandardPlugin] = [
 AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     AddGroupRecorder(), # place this plugin to the first place
     SjtuPlusGroupingVerify('dytwzzb',[]),
-    SjtuPlusGroupingVerify('test',[604329164,613024311]),
-    SjtuSqlGroupingVerify([604329164,613024311]),
+    SjtuPlusGroupingVerify('test',[]),
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 helperForPrivateControl.setPluginList(GroupPluginList)

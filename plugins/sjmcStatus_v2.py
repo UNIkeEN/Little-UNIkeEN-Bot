@@ -10,6 +10,25 @@ from io import BytesIO
 
 import aiohttp, asyncio
 
+MINECRAFT_COLOR_CODES = {
+    '0': (0, 0, 0, 255),
+    '1': (0, 0, 170, 255),
+    '2': (0, 170, 0, 255),
+    '3': (0, 170, 170, 255),
+    '4': (170, 0, 0, 255),
+    '5': (170, 0, 170, 255),
+    '6': (255, 170, 0, 255),
+    '7': (170, 170, 170, 255),
+    '8': (85, 85, 85, 255),
+    '9': (85, 85, 255, 255),
+    'a': (85, 255, 85, 255),
+    'b': (85, 255, 255, 255),
+    'c': (255, 85, 85, 255),
+    'd': (255, 85, 255, 255),
+    'e': (255, 255, 85, 255),
+    'f': (255, 255, 255, 255),
+}
+
 class ShowSjmcStatus(StandardPlugin):
     def __init__(self) -> None:
         self.server_groups = {
@@ -102,6 +121,7 @@ def get_sjmc_info():
         except BaseException as e:
             warning("sjmc basic exception: {}".format(e))
     return dat
+
 def draw_sjmc_info(dat, server_group):
     if server_group == '':
         server_group = 'MC'
@@ -122,25 +142,43 @@ def draw_sjmc_info(dat, server_group):
         f"{server_group}服务器状态", fill=(255,255,255,255), font=font_mc_xl)
     draw.text((width-120,44), "LITTLE\nUNIkeEN", fill=(255,255,255,255), font=font_syht_m)
     
+    # 绘制带颜色标题
+    def draw_colored_title(draw, text, position, font, default_color=(255, 255, 255, 255)):
+        x, y = position
+        current_color = default_color
+        buffer_text = ''
+        i = 0
+        while i < len(text):
+            if text[i] == '§':
+                if buffer_text:
+                    draw.text((x, y), buffer_text, fill=current_color, font=font)
+                    size = draw.textsize(buffer_text, font=font)
+                    x += size[0]
+                    buffer_text = ''
+                if i + 1 < len(text) and text[i+1].lower() in MINECRAFT_COLOR_CODES:
+                    current_color = MINECRAFT_COLOR_CODES.get(text[i+1].lower(), default_color)
+                i += 2  
+            else:
+                buffer_text += text[i]
+                i += 1          
+        if buffer_text:
+            draw.text((x, y), buffer_text, fill=current_color, font=font)
+            
     for i, res in enumerate(dat):
-        fy = 160+i*140+j1*31
-        # 处理title非法字符
+        fy = 160 + i*140 + j1*31
         try:
             title = res['description']
             if not isinstance(title, str):
                 title = title['text']
+            title = re.sub(r'§[klmnor]', '', title)
             title = title.replace('|',' | ',1)
             title = title.replace('\n','  |  ',1)
-            title = title.replace('§l','',5)
-            title = title.replace('§e','',5)
-            title = title.replace('§n','',5)
             title = title.replace('服务器已离线...', '')
         except:
-            title = 'Unknown'
-        # cop = re.compile("[^\u4e00-\u9fa5^a-z^A-Z^0-9^|^\ ^-]") # 正则筛选
-        # title = cop.sub("", title)
+            title = 'Unknown Server Name'
+        draw_colored_title(draw, title, (160, fy), font=font_mc_l)
 
-        # draw icon
+        # 绘制图标
         try:
             icon_url = res['favicon']
             if icon_url[:4]=="data":
@@ -159,15 +197,12 @@ def draw_sjmc_info(dat, server_group):
         except BaseException as e:
             warning("base exception in sjmc draw icon: {}".format(e))
 
-        new_title = title
         if res['online']:
             res['hostname'] = res['hostname'].replace('.',' . ')
             if 'port' in res.keys() and res['port'] != None:
                 port = str(res['port']).strip()
                 if port != '25565':
                     res['hostname'] += ' : ' + port
-        draw.text((160, fy), new_title, fill=white, font=font_mc_l)
-        if res['online']:
             draw.text((160, fy+45), res['hostname'], fill=grey, font=font_mc_m)
             txt_size = draw.textsize(f"{res['ping']}ms", font=font_mc_m)
             ping = int(res['ping'])
