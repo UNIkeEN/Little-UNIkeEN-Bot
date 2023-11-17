@@ -32,3 +32,4 @@ websockets
 cairosvg # for chess plugin
 chess    # for chess plugin
 pyspellchecker # for wordle plugin
+imgkit# you need apt install wkhtmltox # for leetcode plugin

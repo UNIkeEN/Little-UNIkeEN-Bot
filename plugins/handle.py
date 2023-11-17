@@ -382,7 +382,6 @@ class Handle(StandardPlugin):
         result = random.choice(self.answers)
         return result['word'], result['explanation']
     def judgeTrigger(self, msg: str, data: Any) -> bool:
-        print('!!!!!!!!!!!!!!!!!!!')
         return (
             (msg in self.startWords) or 
             (msg in self.hintWords) or

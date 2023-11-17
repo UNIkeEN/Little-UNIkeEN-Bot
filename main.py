@@ -88,6 +88,8 @@ from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.wordle import Wordle, WordleHelper
 from plugins.handle import Handle, HandleHelper
+from plugins.emojiKitchen import EmojiKitchen
+from plugins.leetcode import ShowLeetcode, LeetcodeReport
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:
@@ -195,6 +197,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper()], 'wordle'),
     PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
+    PluginGroupManager([EmojiKitchen()], 'emoji'),
+    PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -216,7 +220,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     GetMddStatus(), #SubscribeMdd(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
-    MakeJoke(),
+    EmojiKitchen(),
     ChooseSong(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(), SjtuSchoolGate(),
 ]

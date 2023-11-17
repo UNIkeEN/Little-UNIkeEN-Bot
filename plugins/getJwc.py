@@ -175,8 +175,8 @@ class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
                 for group_id in getPluginEnabledGroups('jwc'):
                     send(group_id, broadcastWord)
                     send(group_id, '[CQ:image,file=files:///%s]'%pic)
-                send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['jwc'], broadcastWord)
-                send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['jwc'], '[CQ:image,file=files:///%s]'%pic)
+                # send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['jwc'], broadcastWord)
+                # send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['jwc'], '[CQ:image,file=files:///%s]'%pic)
                 # time.sleep(3)
                 # for user_id in SubscribeJwc.getJwcSubscribers():
                 #     send(user_id, broadcastWord, 'private')
