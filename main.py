@@ -59,9 +59,11 @@ from plugins.groupActReport import ActReportPlugin, ActRankPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
-from plugins.song import ChooseSong
+# from plugins.song import ChooseSong # API坏了
 from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
+from plugins.emojiKitchen import EmojiKitchen
+from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.gocqWatchDog import GocqWatchDog
 ###### end not published plugins
 
@@ -128,7 +130,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
-    PluginGroupManager([ChooseSong()], 'song'),
+    PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode')
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -144,7 +146,6 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     Show2cyPIC(), #ShowSePIC(),
     GetSjmcLive(), getFdmcBilibili, getXjmcBilibili,
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
-    ChooseSong(),
 ]
 GuildPluginList:List[GuildStandardPlugin] = [
 

@@ -285,6 +285,7 @@ class PluginGroupManager(StandardPlugin):
                 return "OK"
         else:
             try:
+                # TODO: fix the bug of multy process
                 result = self.plugins[self.readyPlugin].executeEvent(msg, data)
                 if result != None:
                     self.readyPlugin = None

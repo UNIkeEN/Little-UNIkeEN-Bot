@@ -27,7 +27,7 @@ class _roulette():
         self.cur_index=0
         self.timer=Timer
 
-    def get_cmd(self, id, msg):
+    def get_cmd(self, id, msg)->Optional[StopAsyncIteration]:
         # init阶段，发起决斗申请
         initPattern = re.compile(r'^(装弹|轮盘|决斗)\s+(\d+)\s+(\d+)\s+(\d+)\s*(\[CQ:at,qq=\d+\])?$')
         if initPattern.match(msg) != None:
@@ -108,6 +108,8 @@ class _roulette():
                 self.timer.cancel()
                 self.__init__(self.group_id)
                 return ret
+        elif msg == '决斗':
+            return '开启俄罗斯轮盘的命令是：\n决斗 [子弹数] [轮盘格数] [挑战金额] [可选:at决斗对象]'
         elif msg in ['取消', '取消决斗'] and self.status=='prepare':
             if id==self.player[0]:
                 self.timer.cancel()
@@ -130,7 +132,8 @@ class _roulette():
             if num_shot<=0:
                 return ERR_DESCRIBES[10][:2]+'调皮'+ERR_DESCRIBES[10][4]
             return(self.shot(num_shot))
-
+        return None
+    
     def prepare_timeout(self): # 准备阶段超时无人应答
         self.timer.cancel()
         send(self.group_id,f'⏰45s内无应答，{self.player[0]}的决斗请求已自动取消')

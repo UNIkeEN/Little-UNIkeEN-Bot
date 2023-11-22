@@ -108,8 +108,12 @@ class PrivateControl(StandardPlugin):
         enabled = mode == 'on'
         groupId = int(groupId)
         prevConf = readGlobalConfig(groupId, pluginName)
-        if prevConf == None:
-            send(target, f'[CQ:reply,id={data["message_id"]}]不存在群 {groupId} 或此群【{pluginName}】插件尚未初始化', data['message_type'])
+        if groupId not in APPLY_GROUP_ID:
+            send(target, f'[CQ:reply,id={data["message_id"]}]机器人尚未在群 {groupId} 开启', data['message_type'])
+        elif prevConf == None:
+            writeGlobalConfig(groupId, pluginName+'.enable', enabled)
+            PluginGroupManager.refreshPluginStatus(pluginName)
+            send(target, f'[CQ:reply,id={data["message_id"]}]OK', data['message_type'])
         elif prevConf['enable'] == enabled:
             send(target, f'[CQ:reply,id={data["message_id"]}]群 {groupId} 插件【{pluginName}】已{"开启" if enabled else "关闭"}', data['message_type'])
         else:

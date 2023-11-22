@@ -361,7 +361,7 @@ class ChatWithNLP(StandardPlugin): # NLP对话插件
             ret = "我好像不明白捏qwq"
         text = f'[CQ:reply,id='+str(data['message_id'])+']'+ret
         send(target, text, data['message_type'])
-        sleep(0.3)
+        # sleep(0.3)
         # if ret != "我好像不明白捏qwq":
         #     voice = send_genshin_voice(ret+'。')
         #     send(target, f'[CQ:record,file=files:///{ROOT_PATH}/{voice}]', data['message_type'])

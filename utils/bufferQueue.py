@@ -39,3 +39,5 @@ class BufferQueue():
     def start(self):
         self.feeder.start()
         self.worker.start()
+    def __len__(self):
+        return self.queue.qsize()

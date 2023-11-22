@@ -61,8 +61,6 @@ class Game:
             check=check,
             size=1000,
         )
-        with open('/root/code/LittleUnicorn/2.0/chess.svg', 'w') as f:
-            f.write(svg)
         return cairosvg.svg2png(bytestring=svg, output_width=500, output_height=500, )
     
     def push(self, move:chess.Move)->bool:
