@@ -56,7 +56,7 @@ except NotPublishedException as e:
     print('ChatWithNLP not imported: {}'.format(e))
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
 try:
-    from plugins.getDekt import SjtuDekt, SjtuDektMonitor
+    from plugins.getDekt_v2 import SjtuDekt, SjtuDektMonitor
 except NotPublishedException as e:
     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
     print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
@@ -81,7 +81,7 @@ from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
 from plugins.chess import ChessPlugin, ChessHelper
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
-from plugins.song import ChooseSong
+# from plugins.song import ChooseSong # API坏了
 from plugins.zsmCorups import ZsmGoldSentence
 from plugins.apexStatus import ApexStatusPlugin
 from plugins.clearRecord import ClearRecord, RestoreRecord
@@ -193,7 +193,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ChessPlugin(), ChessHelper()], 'chess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
-    PluginGroupManager([ChooseSong()], 'song'),
+    # PluginGroupManager([ChooseSong()], 'song'),
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper()], 'wordle'),
     PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
@@ -221,7 +221,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetMddStatus(), #SubscribeMdd(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     EmojiKitchen(),
-    ChooseSong(),
+    # ChooseSong(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(), SjtuSchoolGate(),
 ]
 GuildPluginList:List[GuildStandardPlugin] = [

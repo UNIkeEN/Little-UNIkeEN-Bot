@@ -67,7 +67,7 @@ class ShowLeetcode(StandardPlugin):
         result = generateMsg(leetcodeResponse)
         if not os.path.isfile(savePath):
             generateQuestionImg(leetcodeResponse, savePath)
-        send(target, result+'[CQ:image,file=files:///{}]'.format(savePath), data['message_type'])
+        send(target, '请查收今日leetcode：\n'+result+'[CQ:image,file=files:///{}]'.format(savePath), data['message_type'])
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {

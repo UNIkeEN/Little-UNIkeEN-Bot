@@ -4,10 +4,9 @@ from utils.basicEvent import send
 from utils.standardPlugin import StandardPlugin
 from utils.sqlUtils import newSqlSession
 from utils.responseImage_beta import ResponseImage, PALETTE_CYAN
+from utils.accountOperation import get_user_coins, update_user_coins
 import os, re, json
 from enum import Enum
-from PIL.ImageFont import FreeTypeFont
-from spellchecker import SpellChecker
 from PIL import ImageFont, Image, ImageDraw
 from dataclasses import dataclass
 from pypinyin import Style, pinyin
@@ -328,7 +327,12 @@ def drawHelpPic(savePath:str):
         "橙色 表示其出现在答案中但不在正确的位置；\n"
         "每个格子的 汉字、声母、韵母、声调 都会独立进行颜色的指示。\n"
         "当四个格子都为青色时，你便赢得了游戏！\n"
-        "发送“结束”结束游戏；发送“提示”查看提示；\n"
+        "发送“结束”结束游戏；发送“提示”查看提示；\n\n"
+        "游戏发起者在开始游戏时需缴30 coins，其中25 coins作为押金，5 coins为胜利者奖金。"
+        "游戏胜利时，猜对的用户获得系统和发起者提供的总共15 coins奖励，"
+        "同时押金退还至游戏发起者。游戏过程中每提示一次，押金和提示者各扣除5 coins，"
+        "押金等于0时仍可提示，不会使之变成负数。\n"
+        "游戏失败不退coins。"
     )
     helpCards = ResponseImage(
         title = '猜成语帮助', 
@@ -373,6 +377,8 @@ class Handle(StandardPlugin):
         self.hintWords = ['成语提示', '猜成语提示', '提示']
         self.stopWords = ['结束']
         self.games:Dict[int,Optional[HandleGame]] = {}
+        self.deposit:Dict[int, Optional[int]] = {}
+        self.initiator:Dict[int, int] = {}
         self.load_words()
         
     def load_words(self):
@@ -391,6 +397,7 @@ class Handle(StandardPlugin):
         
     def executeEvent(self, msg: str, data: Any) -> Union[str, None]:
         groupId = data['group_id']
+        userId = data['user_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'handle-%d.png'%groupId)
         if msg in self.startWords:
             game = self.games.get(groupId)
@@ -398,7 +405,12 @@ class Handle(StandardPlugin):
                 game:HandleGame
                 game.draw(savePath)
                 send(groupId, '当前有正在进行的猜成语游戏\n[CQ:image,file=files:///%s]'%savePath)
+            elif get_user_coins(userId,format=False) < 30 * 100:
+                send(groupId, 'coins不足30，无法发起游戏')
             else:
+                update_user_coins(userId, -30*100, '猜成语押金', format=False)
+                self.deposit[groupId] = 25*100
+                self.initiator[groupId] = userId
                 word, explain = self.random_word()
                 game = self.games[groupId] = HandleGame(word, explain, strict=True)
                 game.draw(savePath)
@@ -407,8 +419,13 @@ class Handle(StandardPlugin):
         elif msg in self.hintWords:
             game = self.games.get(groupId)
             if game == None: return None
-            game.draw_hint(savePath)
-            send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+            if get_user_coins(userId, format=False) < 5*100:
+                send(groupId, 'coins不足，无法提示')
+            else:
+                game.draw_hint(savePath)
+                send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+                self.deposit[groupId] -= 5*100
+                update_user_coins(userId, -5*100, '猜成语提示', format=False)
         elif msg in self.stopWords:
             game = self.games.pop(groupId, None)
             if game == None: return None
@@ -426,7 +443,14 @@ class Handle(StandardPlugin):
                 send(groupId, '恭喜你猜出了成语！\n%s[CQ:image,file=files:///%s]'%(
                     game.result, savePath
                 ))
-                self.games.pop(groupId)
+                update_user_coins(userId, 15*100, '猜成语获胜', format=False)
+                initiator = self.initiator.get(groupId, None)
+                deposit = self.deposit.get(groupId, 0)
+                if deposit > 0 and initiator != None:
+                    update_user_coins(initiator, deposit, '猜成语押金退还', format=False)
+                self.initiator.pop(groupId, None)
+                self.deposit.pop(groupId, None)
+                self.games.pop(groupId, None)
             elif result == GuessResult.LOSS:
                 game.draw(savePath)
                 send(groupId, '很遗憾，没有人猜出来呢~\n%s[CQ:image,file=files:///%s]'%(

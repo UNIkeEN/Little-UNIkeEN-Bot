@@ -126,6 +126,7 @@ if __name__ == '__main__':
     song_list = get_music_list(param['params'], param['encSecKey'])
     print('搜索结果如下：')
     if len(song_list) > 0:
+        print(song_list)
         song_list = json.loads(song_list)['result']['songs']
         for i, item in enumerate(song_list):
             item = json.dumps(item)

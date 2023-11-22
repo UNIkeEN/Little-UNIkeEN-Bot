@@ -4,6 +4,7 @@ from utils.basicEvent import send
 from utils.standardPlugin import StandardPlugin
 from utils.sqlUtils import newSqlSession
 from utils.responseImage_beta import ResponseImage, PALETTE_CYAN
+from utils.accountOperation import get_user_coins, update_user_coins
 import os, re, json
 from enum import Enum
 from PIL.ImageFont import FreeTypeFont
@@ -24,7 +25,12 @@ def drawHelpPic(savePath:str):
         "猜出单词或用光次数则游戏结束；\n"
         "发送“结束”结束游戏；发送“单词提示”查看提示；\n"
         "发送“猜单词难度 <难度>”可以改变难度设定，<难度>默认为CET4，可使用的其他难度有：\n"
-        "%s"%('、'.join(DIFFICULTY_LIST))
+        f"{'、'.join(DIFFICULTY_LIST)}\n\n"
+        "游戏发起者在开始游戏时需缴30 coins，其中25 coins作为押金，5 coins为胜利者奖金。"
+        "游戏胜利时，猜对的用户获得系统和发起者提供的总共15 coins奖励，"
+        "同时押金退还至游戏发起者。游戏过程中每提示一次，押金和提示者各扣除5 coins，"
+        "押金等于0时仍可提示，不会使之变成负数。\n"
+        "游戏失败不退coins。"
     )
     helpCards = ResponseImage(
         title = '猜单词帮助', 
@@ -53,7 +59,8 @@ class Wordle(StandardPlugin):
         self.difficultyList = []
         # words[难度][单词长度] -> [单词, 解释]
         self.words:Dict[str,Dict[int,Tuple[str,str]]] = {}
-        
+        self.deposit:Dict[int, Optional[int]] = {}
+        self.initiator:Dict[int, int] = {}
         self.load_words()
         global DIFFICULTY_LIST
         DIFFICULTY_LIST = self.difficultyList
@@ -104,6 +111,7 @@ class Wordle(StandardPlugin):
         
     def executeEvent(self, msg: str, data: Any) -> Union[str, None]:
         groupId = data['group_id']
+        userId = data['user_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wordle-%d.png'%groupId)
         if msg in self.startWords:
             game = self.games.get(groupId)
@@ -116,7 +124,12 @@ class Wordle(StandardPlugin):
                 wordResult = self.randomSelectWord(difficulty)
                 if wordResult == None:
                     send(groupId, '[CQ:reply,id=%d]内部错误，请输入“猜单词难度 CET4”重置难度信息'%data['message_id'])
+                elif get_user_coins(userId, format=False) < 30*100:
+                    send(groupId, 'coins不足30，无法发起游戏')
                 else:
+                    update_user_coins(userId, -30*100, '猜单词押金', format=False)
+                    self.deposit[groupId] = 25*100
+                    self.initiator[groupId] = userId
                     game = self.games[groupId] = WordleGame(wordResult[0], wordResult[1])
                     game.draw(savePath)
                     send(groupId, '你有%d次机会猜出单词，单词长度为%d，请发送单词[CQ:image,file=files:///%s]'%(
@@ -126,6 +139,8 @@ class Wordle(StandardPlugin):
             if game == None:
                 return None
                 # send(groupId, '[CQ:reply,id=%d]群内没有正在进行的猜单词游戏，请输入“猜单词”或“-wordle”开始游戏'%data['message_id'])
+            if get_user_coins(userId, format=False) < 5*100:
+                send(groupId, 'coins不足，无法提示')
             else:
                 hint = game.get_hint()
                 if len(hint.replace("*", "")) == 0:
@@ -133,6 +148,8 @@ class Wordle(StandardPlugin):
                 else:
                     game.draw_hint(hint, savePath)
                     send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+                    self.deposit[groupId] -= 5*100
+                    update_user_coins(userId, -5*100, '猜单词提示', format=False)
         elif msg in self.stopWords:
             game = self.games.pop(groupId, None)
             if game == None:
@@ -156,7 +173,14 @@ class Wordle(StandardPlugin):
                         send(groupId, '恭喜你猜出了单词！\n%s[CQ:image,file=files:///%s]'%(
                             game.result, savePath
                         ))
-                        self.games.pop(groupId)
+                        update_user_coins(userId, 15*100, '猜单词获胜', format=False)
+                        initiator = self.initiator.get(groupId, None)
+                        deposit = self.deposit.get(groupId, 0)
+                        if deposit > 0 and initiator != None:
+                            update_user_coins(initiator, deposit, '猜单词押金退还', format=False)
+                        self.initiator.pop(groupId, None)
+                        self.deposit.pop(groupId, None)
+                        self.games.pop(groupId, None)
                     elif result == GuessResult.LOSS:
                         game.draw(savePath)
                         send(groupId, '很遗憾，没有人猜出来呢~\n%s[CQ:image,file=files:///%s]'%(
