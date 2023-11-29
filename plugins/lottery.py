@@ -43,7 +43,7 @@ class LotteryReminder(ScheduleStandardPlugin):
 class _lottery(ScheduleStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self):
-        self.reminder = LotteryReminder()
+        # self.reminder = LotteryReminder()
         if _lottery.monitorSemaphore.acquire(blocking=False):
             self.schedule(hour=21)
 

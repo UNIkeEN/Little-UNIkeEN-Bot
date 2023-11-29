@@ -73,7 +73,7 @@ from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.deprecated.sjmcLive import GetSjmcLive
 # from plugins.advertisement import McAdManager
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin
-from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
+from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud, GenPersonWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
 from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
@@ -90,6 +90,8 @@ from plugins.wordle import Wordle, WordleHelper
 from plugins.handle import Handle, HandleHelper
 from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
+from plugins.abstract import MakeAbstract
+from plugins.eavesdrop import Eavesdrop
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:
@@ -142,7 +144,7 @@ banImpl = BanImplement()
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
-    GetPermission(), ThanksLUB(),
+    GetPermission(), ThanksLUB(), Eavesdrop(),
     PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin(),
                         UserBan(banImpl), GetBanList()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
@@ -185,8 +187,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
-    PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence()], 'izf'), # 张峰
-    PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), ClearRecord(), RestoreRecord(),
+    PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence(), MakeAbstract()], 'izf'), # 张峰
+    PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
@@ -199,6 +201,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
+    # PluginGroupManager([], 'arxiv'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
