@@ -150,10 +150,11 @@ def NewActlistPic():
             txt_size_2 = draw.textsize(flag_txt, font= font_syhtmed_18)
             img = draw_rounded_rectangle(img, x1=l+160+txt_size[0], y1=h+110, x2=l+180+txt_size[0]+txt_size_2[0] ,y2=h+txt_size_2[1]+130, fill=BACK_CLR[clr])
             draw.text((l+170+txt_size[0], h+120), flag_txt, fill=FONT_CLR[clr], font=font_syhtmed_18)
+            txt_size_record = l+170+txt_size[0]
         except:
             enroll_time = '报名时间未知（API返回空值）'
             draw.text((l+150, h+120), enroll_time , fill=(115,115,115,255), font = font_syhtmed_18)
-            pass
+            txt_size_record = l+150
         
         if activity['recruitQty']==0:
             activity['recruitQty']="不限"
@@ -162,6 +163,16 @@ def NewActlistPic():
             txt_size=draw.textsize('招募人数：'+str(activity['recruitQty'])+'  |  组织单位：',font=font_syhtmed_18)
             t = activity['sponsor'][21:42]+('...' if len(activity['sponsor'])>=42 else '')
             draw.text((l+150+txt_size[0], h+163+txt_size[1]), t, fill=(115,115,115,255), font = font_syhtmed_18)
+        activityCategorya = {'hszl':'红色之旅','ldjy':'劳动教育','zygy':'志愿公益','wthd':'文体活动','kjcx':'科技创新','jtjz':'讲坛讲座','qt':'  其他  '}.get(activity['activityCategorya'], '  未知  ')
+        draw.text((l+38, h+160), activityCategorya, fill=(115,115,115,255),font=font_syhtmed_18)
+        try:
+            activeDurationDesc = activity['activeDurationDesc']
+            activeDurationDesc = 0 if activeDurationDesc == None else float(activeDurationDesc)
+            activeDurationDesc = '学时：{:.0f}分钟'.format(activeDurationDesc)
+        except Exception as e:
+            print(e)
+            activeDurationDesc = '学时：未知'
+        draw.text((txt_size_record-10, h+80), activeDurationDesc, fill=(115,115,115,255),font=font_syhtmed_18)
         h+=240
     txt_size = draw.textsize(f'活动列表更新时间 {rettime[:10]} {rettime[11:13]}:{rettime[13:15]}:{rettime[15:]}',font=font_syhtmed_18)
     draw.text((width/2-txt_size[0]/2, height-85), f'活动列表更新时间 {rettime[:10]} {rettime[11:13]}:{rettime[13:15]}:{rettime[15:]}', fill=(115,115,115,255), font = font_syhtmed_18) 

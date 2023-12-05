@@ -1,4 +1,4 @@
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, BOT_SELF_QQ
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, BOT_SELF_QQ, ROOT_ADMIN_ID
 from utils.basicEvent import send, warning, startswith_in, get_avatar_pic, get_group_avatar_pic
 from typing import Union, Tuple, Any, List, Optional
 from utils.standardPlugin import StandardPlugin
@@ -45,6 +45,39 @@ class ActReportPlugin(StandardPlugin):
             'commandDescription': '-myact',
             'usePlace': ['group', ],
             'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+        
+class YourActReportPlugin(StandardPlugin): 
+    def __init__(self) -> None:
+        self.pattern1 = re.compile(r'^\-youract\s*\[CQ\:at\,qq\=(\d+)\]')
+        self.pattern2 = re.compile(r'^\-youract\s*(\d+)')
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return data['user_id'] in ROOT_ADMIN_ID and msg.startswith('-youract')
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        if self.pattern1.match(msg)!=None:
+            targetId = int(self.pattern1.findall(msg)[0])
+        elif self.pattern2.match(msg)!=None:
+            targetId = int(self.pattern2.findall(msg)[0])
+        else:
+            send(data['group_id'], '[CQ:reply,id=%d]指令错误，格式为:\n-youract @{某人}'%data['message_id'])
+            return 'OK'
+        imgPath = getMyActivity(targetId, data['group_id'])
+        if imgPath == None:
+            send(data['group_id'], '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
+        else:
+            imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
+            send(data['group_id'], '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+        return "OK"
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'YourActReport',
+            'description': '你的水群报告[🔒]',
+            'commandDescription': '-youract @{...}',
+            'usePlace': ['group', ],
+            'showInHelp': False,
             'pluginConfigTableNames': [],
             'version': '1.0.0',
             'author': 'Unicorn',

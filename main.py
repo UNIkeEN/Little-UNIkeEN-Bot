@@ -72,7 +72,7 @@ from plugins.fileRecorder import GroupFileRecorder
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.deprecated.sjmcLive import GetSjmcLive
 # from plugins.advertisement import McAdManager
-from plugins.groupActReport import ActReportPlugin, ActRankPlugin
+from plugins.groupActReport import ActReportPlugin, ActRankPlugin, YourActReportPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud, GenPersonWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
@@ -188,7 +188,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
     PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence(), MakeAbstract()], 'izf'), # 张峰
-    PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
+    PluginGroupManager([ActReportPlugin(), YourActReportPlugin(), ActRankPlugin(), wordCloudPlugin(),
+                        ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),

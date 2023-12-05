@@ -37,7 +37,7 @@ class Eavesdrop(StandardPlugin):
     def getPluginInfo(self) -> dict:
         return {
             'name': 'Eavesdrop',
-            'description': '偷听撤回消息',
+            'description': '偷听撤回消息[🔒]',
             'commandDescription': '^(\d+)?',
             'usePlace': ['group', ],
             'showInHelp': False,                
