@@ -16,15 +16,81 @@ from matplotlib import colors
 def wc_save_path(group_id:int, yesterday_str:str)->str:
     return os.path.join(ROOT_PATH, SAVE_TMP_PATH, f'{group_id}_{yesterday_str}_wordcloud.png')
 
+class GenPersonWordCloud(StandardPlugin):
+    def __init__(self) -> None:
+        self.triggerPattern = re.compile(r'^\-wc\s*\[CQ\:at\,qq\=(\d+)\]')
+        userdict_path = os.path.join(ROOT_PATH, 'resources/corpus/wc_userdict.txt')
+        stopwords_path = os.path.join(ROOT_PATH, 'resources/corpus/wc_stopwords.txt')
+        self.stopwords = set([line.strip() for line in open(stopwords_path, 'r', encoding='utf-8-sig').readlines()])
+        # if os.path.exists(userdict_path):
+        #     jieba.load_userdict(userdict_path)
+    def judgeTrigger(self, msg: str, data: Any) -> bool:
+        return self.triggerPattern.match(msg) != None and data['user_id'] in ROOT_ADMIN_ID
+    def executeEvent(self, msg: str, data: Any) -> Optional[str]:
+        groupId = data['group_id']
+        targetId = int(self.triggerPattern.findall(msg)[0])
+        wcPic = self.genWordCloud(groupId, targetId)
+        if wcPic == None:
+            send(groupId, '用户词云生成失败')
+        else:
+            savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'userwc_%d_%d.png'%(groupId, targetId))
+            wcPic.save(savePath)
+            send(groupId, '[CQ:image,file=files:///{}]'.format(savePath))
+        return 'OK'
+    def genWordCloud(self, group_id:int, user_id:int)->Optional[Image.Image]:
+        try:
+            mydb, mycursor = newSqlSession(autocommit=False)
+            mycursor.execute("SELECT message FROM messageRecord WHERE group_id=%d and user_id=%d"%(group_id, user_id))
+            result=list(mycursor)
+            text = []
+
+            for sentence, in result:
+                sentence:str
+                subsentence = re.split(r'\[CQ[^\]]*\]|\s|\,|\.|\!|\@|\;|。|！|？|：|；|“|”|【|】|-', sentence)
+                subsentence = [re.sub(r'[^\u4e00-\u9fa5^a-z^A-Z]', '', s) for s in subsentence]
+                for s in subsentence:
+                    text += jieba.cut(s)
+
+            # color_list = ['#ec1c24', '#ec1c42','#ec3b1c', '#e00d0d', '#fe3f3f', '#f59037', '#f57037', '#fb922a', '#fba42a', '#fbbc2a', '#ffa710', '#ffcb10']
+            # colormap = colors.ListedColormap(color_list) # 新春色调
+
+            wc = wordcloud.WordCloud(font_path="resources/fonts/汉仪文黑.ttf",
+                                width = 800,
+                                height = 540,
+                                background_color='white',
+                                min_font_size=6,
+                                max_words=110,stopwords=self.stopwords,
+                                # colormap=colormap
+                                )
+            wc.generate(' '.join(text))
+            im = wc.to_image()
+            return im
+        except mysql.connector.Error as e:
+            warning("mysql error in getGroupWordCloud: {}".format(e))
+        except BaseException as e:
+            warning("error in getGroupWordCloud: {}".format(e))
+        return None
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'GenPersonWordCloud',
+            'description': '用户词云',
+            'commandDescription': 'None',
+            'usePlace': ['group', ],
+            'showInHelp': False,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
 class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self):
         self.stopwords = set()
         self.userdict_path = os.path.join(ROOT_PATH, 'resources/corpus/wc_userdict.txt')
-
+        self.stopwords_path = os.path.join(ROOT_PATH, 'resources/corpus/wc_stopwords.txt')
         if GenWordCloud.monitorSemaphore.acquire(blocking=False):
             self.schedule(hour=0, minute=0)
-            _content = [line.strip() for line in open('resources/corpus/wc_stopwords.txt', 'r', encoding='utf-8-sig').readlines()]
+            _content = [line.strip() for line in open(self.stopwords_path, 'r', encoding='utf-8-sig').readlines()]
             self.stopwords.update(_content)
             if os.path.exists(self.userdict_path):            
                 jieba.load_userdict(self.userdict_path)

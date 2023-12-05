@@ -55,8 +55,8 @@ from plugins.addGroupRecorder import AddGroupRecorder
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.deprecated.sjmcLive import GetSjmcLive
 # from plugins.advertisement import McAdManager
-from plugins.groupActReport import ActReportPlugin, ActRankPlugin
-from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud
+from plugins.groupActReport import ActReportPlugin, ActRankPlugin, YourActReportPlugin
+from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud, GenPersonWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 # from plugins.song import ChooseSong # API坏了
@@ -64,6 +64,9 @@ from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
+from plugins.abstract import MakeAbstract
+from plugins.eavesdrop import Eavesdrop
+
 from plugins.gocqWatchDog import GocqWatchDog
 ###### end not published plugins
 
@@ -93,7 +96,7 @@ banImpl = BanImplement()
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
-    GetPermission(), ThanksLUB(),
+    GetPermission(), ThanksLUB(), Eavesdrop(),
     PluginGroupManager([AddPermission(), DelPermission(), ShowPermission(), AddGroupAdminToBotAdmin(),
                         UserBan(banImpl), GetBanList()], 'permission'), # 权限
     PluginGroupManager([AskFAQ(), MaintainFAQ(), HelpFAQ()],'faq'), # 问答库与维护
@@ -124,8 +127,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     # PluginGroupManager([GoBangPlugin()],'gobang'),
     PluginGroupManager([Show2cyPIC()], 'anime'), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
     PluginGroupManager([ChatWithAnswerbook(), ], 'chat'), # 答案之书
-    # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
-    PluginGroupManager([ActReportPlugin(), ActRankPlugin(), wordCloudPlugin(), ClearRecord(), RestoreRecord(),
+    PluginGroupManager([ActReportPlugin(), YourActReportPlugin(), ActRankPlugin(), wordCloudPlugin(),
+                        ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
