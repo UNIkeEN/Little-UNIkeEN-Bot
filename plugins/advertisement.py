@@ -119,7 +119,7 @@ class McAdManager(StandardPlugin):
         #     "点我体验交大mc生活，一起来Minecraft社建设方块交大，"
         #     "体验原汁原味的原版生存，享受多汁多彩的模组世界，"
         #     "我们欢迎热爱MC的各位玩家，加入我们的世界712514518"
-        #     f"[CQ:image,file=files:///{os.path.join(ROOT_PATH, IMAGES_PATH, 'mc.png')}]"
+        #     f"[CQ:image,file=file:///{os.path.join(ROOT_PATH, IMAGES_PATH, 'mc.png')}]"
         #     "进群看学长女装~"
         # )
         self.adword = (

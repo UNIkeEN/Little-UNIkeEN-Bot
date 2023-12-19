@@ -88,7 +88,7 @@ class GetCanvas(StandardPlugin):
             send(target ,ret[1], data['message_type'])
         else:
             canvasPicPath = ret[1] if os.path.isabs(ret[1]) else os.path.join(ROOT_PATH, ret[1])
-            send(target,f'[CQ:image,file=files:///{canvasPicPath}]', data['message_type'])
+            send(target,f'[CQ:image,file=file:///{canvasPicPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

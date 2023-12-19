@@ -1,6 +1,6 @@
 import mysql.connector
 from utils.responseImage import *
-from utils.basicEvent import send, warning, aioSend
+from utils.basicEvent import send, warning
 from typing import Union, Tuple, Any, List, Set
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
 from utils.configAPI import getPluginEnabledGroups
@@ -162,26 +162,10 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
             if currentStatus :
                 for group in getPluginEnabledGroups('mddmonitor'):
                     send(group, '📣交大闵行麦当劳 已▶️开放营业')
-                    # groupTasks.append(aioSend(group, '📣交大闵行麦当劳 已▶️开放营业'))
-                
             else:
                 for group in getPluginEnabledGroups('mddmonitor'):
                     send(group, '📣交大闵行麦当劳 已⏸️暂停营业')
-                    # groupTasks.append(aioSend(group, '📣交大闵行麦当劳 已⏸️暂停营业'))
-            return
-            asyncio.run(asyncio.wait(groupTasks))
-            time.sleep(1)
-            subscribeUsers = list(SubscribeMdd.getMddSubscribers())
-            subscribeUsersGroupped = [
-                subscribeUsers[i: i+5] for i in range(0, len(subscribeUsers), 5)
-            ]
-            for group in subscribeUsersGroupped:
-                if currentStatus:
-                    privateTasks = [aioSend(qq, '📣交大闵行麦当劳 已▶️开放营业', 'private') for qq in group]
-                else:
-                    privateTasks = [aioSend(qq, '📣交大闵行麦当劳 已⏸️暂停营业', 'private') for qq in group]
-                asyncio.run(asyncio.wait(privateTasks))
-                time.sleep(1)
+
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:

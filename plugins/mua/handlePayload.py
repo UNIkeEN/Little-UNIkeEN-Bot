@@ -180,7 +180,7 @@ def handle_payload_fn(session_id, payload):
             else:
                 succ, result = drawMuaListPic(savePath, body, getGroupFilter(data['target']))
             if succ:
-                send(data['target'], f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+                send(data['target'], f'[CQ:image,file=file:///{savePath}]', data['message_type'])
             else:
                 warning(f'mua图片绘制失败: {result}')
     elif session_id == None:
@@ -194,7 +194,7 @@ def handle_payload_fn(session_id, payload):
                 if succ:
                     if shouldSend:
                         send(groupId, '检测到MUA通知更新：')
-                        send(groupId, f'[CQ:image,file=files:///{savePath}]')   
+                        send(groupId, f'[CQ:image,file=file:///{savePath}]')   
                 elif not warninged:
                     warninged = True
                     warning(f'mua图片绘制失败: {result}')

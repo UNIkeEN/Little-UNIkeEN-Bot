@@ -35,7 +35,7 @@ class GenPersonWordCloud(StandardPlugin):
         else:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'userwc_%d_%d.png'%(groupId, targetId))
             wcPic.save(savePath)
-            send(groupId, '[CQ:image,file=files:///{}]'.format(savePath))
+            send(groupId, '[CQ:image,file=file:///{}]'.format(savePath))
         return 'OK'
     def genWordCloud(self, group_id:int, user_id:int)->Optional[Image.Image]:
         try:
@@ -122,7 +122,7 @@ class GenWordCloud(StandardPlugin, ScheduleStandardPlugin):
             img.save(picPath)
             if group_id in getPluginEnabledGroups('wcdaily'):
                 # send(group_id, '本群昨日词云已生成~','group')
-                send(group_id, f'[CQ:image,file=files:///{picPath}]','group')
+                send(group_id, f'[CQ:image,file=file:///{picPath}]','group')
         # end def genSendSaveImg
 
         for group_id in APPLY_GROUP_ID:
@@ -206,7 +206,7 @@ class wordCloudPlugin(StandardPlugin):
         if not os.path.exists(save_path):
             send(data['group_id'], "本群未生成昨日词云（可能原因：插件错误或昨日群消息过少）")
         else:
-            send(data['group_id'], f'[CQ:image,file=files:///{save_path}]','group')
+            send(data['group_id'], f'[CQ:image,file=file:///{save_path}]','group')
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

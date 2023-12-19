@@ -143,7 +143,7 @@ class ShowMcStatus(StandardPlugin):
             try:
                 imgPath = draw_sjmc_info(aio_get_sjmc_info(server_list), group_id)
                 imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-                send(group_id, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+                send(group_id, '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
             except BaseException as e:
                 send(group_id, "internal error while getting Minecraft server status", data['message_type'])
                 warning("basic exception in ShowSjmcStatus: {}".format(e))
@@ -155,7 +155,7 @@ class ShowMcStatus(StandardPlugin):
             try:
                 imgPath = draw_server_ip_list(server_list)
                 imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-                send(group_id, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+                send(group_id, '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
             except BaseException as e:
                 send(group_id, "internal error while getting Minecraft server status", data['message_type'])
                 warning("basic exception in ShowSjmcStatus: {}".format(e))

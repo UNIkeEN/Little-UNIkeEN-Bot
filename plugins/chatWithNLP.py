@@ -364,7 +364,7 @@ class ChatWithNLP(StandardPlugin): # NLP对话插件
         # sleep(0.3)
         # if ret != "我好像不明白捏qwq":
         #     voice = send_genshin_voice(ret+'。')
-        #     send(target, f'[CQ:record,file=files:///{ROOT_PATH}/{voice}]', data['message_type'])
+        #     send(target, f'[CQ:record,file=file:///{ROOT_PATH}/{voice}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

@@ -246,7 +246,7 @@ class RoulettePlugin(StandardPlugin):
         try:
             if ret[-3:]=='png':
                 picPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
-                send(group_id, f'[CQ:image,file=files:///{picPath}]')
+                send(group_id, f'[CQ:image,file=file:///{picPath}]')
             else:
                 send(group_id, ret)
         except BaseException as e:

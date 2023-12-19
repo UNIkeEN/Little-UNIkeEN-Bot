@@ -58,7 +58,7 @@ class GoBangGroupInterface():
                 send(groupId, '开始游戏，由发起挑战者执黑先行！', 'group')
                 self.timer = Timer(60, self.ongoing_timeout)
                 self.timer.start()
-                return f'[CQ:image,file=files:///{picPath}]'
+                return f'[CQ:image,file=file:///{picPath}]'
         elif self.status == GameStatus.GAMING:
             if userId != self.player[self.round_index]:
                 return None
@@ -88,7 +88,7 @@ class GoBangGroupInterface():
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 self.timer = Timer(60, self.ongoing_timeout)
                 self.timer.start()
-                return f'[CQ:image,file=files:///{picPath}]'
+                return f'[CQ:image,file=file:///{picPath}]'
         else:
             warning("unexpected gobang status")
             return None

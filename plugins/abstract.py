@@ -5,9 +5,9 @@ from utils.basicConfigs import ROOT_PATH
 import re, os, json
 import jieba, pinyin
 ABSTRACT_RESOURCE_PATH = 'resources/emoji'
-with open(os.path.join(ROOT_PATH, ABSTRACT_RESOURCE_PATH, 'character2emoji.json'), 'r') as f:
+with open(os.path.join(ROOT_PATH, ABSTRACT_RESOURCE_PATH, 'character2emoji.json'), 'r', encoding='utf-8') as f:
     emoji = json.load(f)
-with open(os.path.join(ROOT_PATH, ABSTRACT_RESOURCE_PATH, 'pinyin2emoji.json'), 'r') as f:
+with open(os.path.join(ROOT_PATH, ABSTRACT_RESOURCE_PATH, 'pinyin2emoji.json'), 'r', encoding='utf-8') as f:
     emoji_py = json.load(f)
 def text_to_emoji(text):
     try:

@@ -32,7 +32,7 @@ class GetFduMcLive(StandardPlugin):
         if roomInfo['live_status'] == 1:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'fdmcLive-%d.png'%target)
             genLivePic(roomInfo, '基岩社直播间状态', savePath)
-            send(target, f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{savePath}]', data['message_type'])
         else:
             send(target, '当前时段未开播哦', data['message_type'])
         return "OK"
@@ -83,7 +83,7 @@ class FduMcLiveMonitor(StandardPlugin, CronStandardPlugin):
                 genLivePic(roomInfo, '基岩社直播间状态', savePath, useCover=True)
                 for group in getPluginEnabledGroups('mclive'):
                     send(group, '检测到基岩社B站开播，基岩社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                    send(group, f'[CQ:image,file=files:///{savePath}]')
+                    send(group, f'[CQ:image,file=file:///{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -121,7 +121,7 @@ class GetSjmcLive(StandardPlugin):
         if roomInfo['live_status'] == 1:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'sjmcLive-%d.png'%target)
             genLivePic(roomInfo, 'sjmc直播间状态', savePath)
-            send(target, f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{savePath}]', data['message_type'])
         else:
             send(target, '当前时段未开播哦', data['message_type'])
         return "OK"
@@ -173,7 +173,7 @@ class SjmcLiveMonitor(StandardPlugin, CronStandardPlugin):
                 genLivePic(roomInfo, 'sjmc直播间状态', savePath, useCover=True)
                 for group in getPluginEnabledGroups('mclive'):
                     send(group, '检测到MC社B站开播，SJMC社直播地址： https://live.bilibili.com/%d'%self.liveId)
-                    send(group, f'[CQ:image,file=files:///{savePath}]')
+                    send(group, f'[CQ:image,file=file:///{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -226,7 +226,7 @@ class MuaLiveMonitor(StandardPlugin, CronStandardPlugin):
                 genLivePic(roomInfo, 'MC高校联盟直播间状态', savePath, useCover=True)
                 for group in getPluginEnabledGroups('mualive'):
                     send(group, '检测到MC高校联盟B站开播，MUA直播地址： https://live.bilibili.com/%d'%self.liveId)
-                    send(group, f'[CQ:image,file=files:///{savePath}]')
+                    send(group, f'[CQ:image,file=file:///{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
@@ -264,7 +264,7 @@ class GetMuaLive(StandardPlugin):
         if roomInfo['live_status'] == 1:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'muaLive-%d.png'%target)
             genLivePic(roomInfo, 'mua直播间状态', savePath)
-            send(target, f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{savePath}]', data['message_type'])
         else:
             send(target, '当前时段未开播哦', data['message_type'])
         return "OK"

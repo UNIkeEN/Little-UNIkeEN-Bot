@@ -44,7 +44,7 @@ class HelpInGroup(StandardPlugin):
             send(target, '[CQ:reply,id=%d]BUG: self.plugins==None, 请上报管理员'%data['message_id'], data['message_type'])
         else:
             imgPath = drawHelpCard(self.plugins, grpId)
-            send(target, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

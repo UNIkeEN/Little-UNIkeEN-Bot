@@ -23,7 +23,7 @@ class SignIn(StandardPlugin):
         picPath = sign_in(data['user_id'])
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        send(target, f'[CQ:image,file=files:///{picPath}]',data['message_type'])
+        send(target, f'[CQ:image,file=file:///{picPath}]',data['message_type'])
     def getPluginInfo(self,)->Any:
         return {
             'name': 'SignIn',

@@ -81,7 +81,7 @@ class TarotRandom(StandardPlugin):
         im = draw_tarot(imgs)
         picPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'tarot_%d_%d.png'%(group_id, user_id))
         im.save(picPath)
-        send(target, f'[CQ:image,file=files:///{picPath}]', data['message_type'])
+        send(target, f'[CQ:image,file=file:///{picPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self):
         return {

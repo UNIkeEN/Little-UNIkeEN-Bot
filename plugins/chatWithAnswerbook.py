@@ -20,7 +20,7 @@ class ChatWithAnswerbook(StandardPlugin): # 答案之书
         send(target, txt_cq, data['message_type'])
         # sleep(0.3)
         # voice = send_genshin_voice(txt+'。')
-        # send(target, f'[CQ:record,file=files:///{ROOT_PATH}/{voice}]', data['message_type'])
+        # send(target, f'[CQ:record,file=file:///{ROOT_PATH}/{voice}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

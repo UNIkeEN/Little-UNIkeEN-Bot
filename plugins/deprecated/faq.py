@@ -76,7 +76,7 @@ class MaintainFAQ(StandardPlugin):
             else:
                 imgPath = drawQuestionCard(questions, group_id)
                 imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-                send(group_id, '[CQ:image,file=files:///%s]'%imgPath)
+                send(group_id, '[CQ:image,file=file:///%s]'%imgPath)
         elif self.patterns['edit'].match(msg) != None:
             key, val = self.patterns['edit'].findall(msg)[0]
             succ = edit_question(group_id, key, val)
