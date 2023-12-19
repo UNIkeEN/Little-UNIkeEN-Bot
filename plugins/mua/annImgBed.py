@@ -8,7 +8,6 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from icecream import ic
 ANN_IMGBED_DIR = 'data/annImgBed'
 os.makedirs(os.path.join(ROOT_PATH, ANN_IMGBED_DIR), exist_ok=True)
 
@@ -71,19 +70,15 @@ def urlOrBase64ToImage(imgType:str, imgContent:str)->Optional[Image.Image]:
                 try:
                     return Image.open(BytesIO(req.content))
                 except Exception as e:
-                    ic(e)
                     return None
             else:
-                ic()
                 return None
     elif imgType == 'imgbase64':
         try:
             return Image.open(BytesIO(base64.decode(imgContent)))
         except Exception as e:
-            ic(e)
             return None
     else:
-        ic()
         return None
 
 def dumpMsgToBed(msg:str):

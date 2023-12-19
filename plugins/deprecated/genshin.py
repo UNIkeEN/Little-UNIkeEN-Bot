@@ -26,7 +26,7 @@ class GenshinDailyNote(StandardPlugin):
             send(target ,ret, data['message_type'])
         else:
             picPath = ret if os.path.isabs(ret) else os.path.join(ROOT_PATH, ret)
-            send(target,'[CQ:image,file=files:///%s]'%picPath, data['message_type'])
+            send(target,'[CQ:image,file=file:///%s]'%picPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

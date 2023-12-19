@@ -31,7 +31,7 @@ class ArxivHelper(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         helpPicPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'arxiv-help.png')
         drawHelpPic(helpPicPath)
-        send(target, '[CQ:image,file=files:///{}]'.format(helpPicPath), data['message_type'])
+        send(target, '[CQ:image,file=file:///{}]'.format(helpPicPath), data['message_type'])
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {

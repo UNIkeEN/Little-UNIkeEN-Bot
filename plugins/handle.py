@@ -77,7 +77,7 @@ def get_pinyin(idiom: str) -> List[Tuple[str, str, str]]:
 
 class HandleGame:
     IDIOMS = []
-    with open(os.path.join(ROOT_PATH, HANDLE_RESOURCE_PATH, 'idioms.txt'), 'r') as f:
+    with open(os.path.join(ROOT_PATH, HANDLE_RESOURCE_PATH, 'idioms.txt'), 'r', encoding='utf-8') as f:
         for idiom in f.readlines():
             IDIOMS.append(idiom.strip())
     
@@ -355,7 +355,7 @@ class HandleHelper(StandardPlugin):
         groupId = data['group_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'handlehelp.png')
         drawHelpPic(savePath)
-        send(groupId, f'[CQ:image,file=files:///{savePath}]', 'group')
+        send(groupId, f'[CQ:image,file=file:///{savePath}]', 'group')
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {
@@ -382,7 +382,7 @@ class Handle(StandardPlugin):
         self.load_words()
         
     def load_words(self):
-        with open(os.path.join(ROOT_PATH, HANDLE_RESOURCE_PATH, 'answers.json'), 'r') as f:
+        with open(os.path.join(ROOT_PATH, HANDLE_RESOURCE_PATH, 'answers.json'), 'r', encoding='utf-8') as f:
             self.answers = json.load(f)
     def random_word(self)->Tuple[str, str]:
         result = random.choice(self.answers)
@@ -404,7 +404,7 @@ class Handle(StandardPlugin):
             if game != None:
                 game:HandleGame
                 game.draw(savePath)
-                send(groupId, '当前有正在进行的猜成语游戏\n[CQ:image,file=files:///%s]'%savePath)
+                send(groupId, '当前有正在进行的猜成语游戏\n[CQ:image,file=file:///%s]'%savePath)
             elif get_user_coins(userId,format=False) < 30 * 100:
                 send(groupId, 'coins不足30，无法发起游戏')
             else:
@@ -414,7 +414,7 @@ class Handle(StandardPlugin):
                 word, explain = self.random_word()
                 game = self.games[groupId] = HandleGame(word, explain, strict=True)
                 game.draw(savePath)
-                send(groupId, '你有%d次机会猜一个四字成语，请发送成语[CQ:image,file=files:///%s]'%(
+                send(groupId, '你有%d次机会猜一个四字成语，请发送成语[CQ:image,file=file:///%s]'%(
                         game.times, savePath))
         elif msg in self.hintWords:
             game = self.games.get(groupId)
@@ -423,7 +423,7 @@ class Handle(StandardPlugin):
                 send(groupId, 'coins不足，无法提示')
             else:
                 game.draw_hint(savePath)
-                send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+                send(groupId, '[CQ:image,file=file:///%s]'%savePath)
                 self.deposit[groupId] -= 5*100
                 update_user_coins(userId, -5*100, '猜成语提示', format=False)
         elif msg in self.stopWords:
@@ -440,7 +440,7 @@ class Handle(StandardPlugin):
             result = game.guess(word)
             if result == GuessResult.WIN:
                 game.draw(savePath)
-                send(groupId, '恭喜你猜出了成语！\n%s[CQ:image,file=files:///%s]'%(
+                send(groupId, '恭喜你猜出了成语！\n%s[CQ:image,file=file:///%s]'%(
                     game.result, savePath
                 ))
                 update_user_coins(userId, 15*100, '猜成语获胜', format=False)
@@ -453,7 +453,7 @@ class Handle(StandardPlugin):
                 self.games.pop(groupId, None)
             elif result == GuessResult.LOSS:
                 game.draw(savePath)
-                send(groupId, '很遗憾，没有人猜出来呢~\n%s[CQ:image,file=files:///%s]'%(
+                send(groupId, '很遗憾，没有人猜出来呢~\n%s[CQ:image,file=file:///%s]'%(
                     game.result, savePath
                 ))
                 self.games.pop(groupId)
@@ -463,7 +463,7 @@ class Handle(StandardPlugin):
                 send(groupId, '[CQ:reply,id=%d]你确定“%s”是一个正确的成语吗？'%(data['message_id'], word))
             else:
                 game.draw(savePath)
-                send(groupId, '[CQ:image,file=files:///%s]'%(savePath))
+                send(groupId, '[CQ:image,file=file:///%s]'%(savePath))
             
         return 'OK'
     

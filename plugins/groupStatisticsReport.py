@@ -20,7 +20,7 @@ class StatisticsReport(StandardPlugin):
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'statistics-%d.png'%groupId)
         succ, reason = drawStatisticsPic(memberList, savePath)
         if succ:
-            send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+            send(groupId, '[CQ:image,file=file:///%s]'%savePath)
         else:
             send(groupId, '[CQ:reply,id=%d]生成失败'%(data['message_id']))
         return 'OK'

@@ -71,7 +71,7 @@ class Wordle(StandardPlugin):
             difficulty, suffix = os.path.splitext(wordleResourceName)
             if suffix != '.json': continue
             self.difficultyList.append(difficulty)
-            with open(os.path.join(wordleResourcePath, wordleResourceName)) as f:
+            with open(os.path.join(wordleResourcePath, wordleResourceName),'r', encoding='utf-8') as f:
                 lenDict = {l:[] for l in range(3, 9)}
                 for word, interpretation in json.load(f).items():
                     l = len(word)
@@ -118,7 +118,7 @@ class Wordle(StandardPlugin):
             if game != None:
                 game:WordleGame
                 game.draw(savePath)
-                send(groupId, '当前有正在进行的猜单词游戏\n[CQ:image,file=files:///%s]'%savePath)
+                send(groupId, '当前有正在进行的猜单词游戏\n[CQ:image,file=file:///%s]'%savePath)
             else:
                 difficulty = self.difficulties.get(groupId, 'CET4')
                 wordResult = self.randomSelectWord(difficulty)
@@ -132,7 +132,7 @@ class Wordle(StandardPlugin):
                     self.initiator[groupId] = userId
                     game = self.games[groupId] = WordleGame(wordResult[0], wordResult[1])
                     game.draw(savePath)
-                    send(groupId, '你有%d次机会猜出单词，单词长度为%d，请发送单词[CQ:image,file=files:///%s]'%(
+                    send(groupId, '你有%d次机会猜出单词，单词长度为%d，请发送单词[CQ:image,file=file:///%s]'%(
                         game.rows, game.length, savePath))
         elif msg in self.hintWords:
             game = self.games.get(groupId)
@@ -147,7 +147,7 @@ class Wordle(StandardPlugin):
                     send(groupId, "你还没有猜对过一个字母哦，再猜猜吧~")
                 else:
                     game.draw_hint(hint, savePath)
-                    send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+                    send(groupId, '[CQ:image,file=file:///%s]'%savePath)
                     self.deposit[groupId] -= 5*100
                     update_user_coins(userId, -5*100, '猜单词提示', format=False)
         elif msg in self.stopWords:
@@ -170,7 +170,7 @@ class Wordle(StandardPlugin):
                     result = game.guess(word)
                     if result == GuessResult.WIN:
                         game.draw(savePath)
-                        send(groupId, '恭喜你猜出了单词！\n%s[CQ:image,file=files:///%s]'%(
+                        send(groupId, '恭喜你猜出了单词！\n%s[CQ:image,file=file:///%s]'%(
                             game.result, savePath
                         ))
                         update_user_coins(userId, 15*100, '猜单词获胜', format=False)
@@ -183,7 +183,7 @@ class Wordle(StandardPlugin):
                         self.games.pop(groupId, None)
                     elif result == GuessResult.LOSS:
                         game.draw(savePath)
-                        send(groupId, '很遗憾，没有人猜出来呢~\n%s[CQ:image,file=files:///%s]'%(
+                        send(groupId, '很遗憾，没有人猜出来呢~\n%s[CQ:image,file=file:///%s]'%(
                             game.result, savePath
                         ))
                         self.games.pop(groupId)
@@ -193,7 +193,7 @@ class Wordle(StandardPlugin):
                         send(groupId, '[CQ:reply,id=%d]你确定“%s”是一个合法的单词吗？'%(data['message_id'], word))
                     else:
                         game.draw(savePath)
-                        send(groupId, '[CQ:image,file=files:///%s]'%(savePath))
+                        send(groupId, '[CQ:image,file=file:///%s]'%(savePath))
             else:
                 return None
         elif self.difficultyPattern.match(msg) != None:
@@ -226,7 +226,7 @@ class WordleHelper(StandardPlugin):
         groupId = data['group_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wordlehelp.png')
         drawHelpPic(savePath)
-        send(groupId, f'[CQ:image,file=files:///{savePath}]', 'group')
+        send(groupId, f'[CQ:image,file=file:///{savePath}]', 'group')
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {

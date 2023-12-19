@@ -48,7 +48,7 @@ class ShowEE0502Comments(StandardPlugin):
         t = random.choice(self.resource)
         picPath = drawCommentEE0502(t)
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(target, f'[CQ:image,file=files:///{picPath}]', data['message_type'])
+        send(target, f'[CQ:image,file=file:///{picPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

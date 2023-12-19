@@ -188,7 +188,7 @@ class MuaAnnHelper(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'muahelp_%d.png'%target)
         if drawHelpPic(savePath):
-            send(target, '[CQ:image,file=files:///%s]'%savePath, data['message_type'])
+            send(target, '[CQ:image,file=file:///%s]'%savePath, data['message_type'])
         else:
             send(target, '[CQ:reply,id=%d]帮助生成失败'%data['message_id'], data['message_type'])
         return "OK"
@@ -279,7 +279,7 @@ class MuaAnnEditor(StandardPlugin):
         elif msg == '-annhelp':
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'muahelp_%d.png'%target)
             if drawHelpPic(savePath):
-                send(target, '[CQ:image,file=files:///%s]'%savePath, data['message_type'])
+                send(target, '[CQ:image,file=file:///%s]'%savePath, data['message_type'])
             else:
                 send(target, '[CQ:reply,id=%d]帮助生成失败'%data['message_id'], data['message_type'])
         elif msg == '-anndmp':

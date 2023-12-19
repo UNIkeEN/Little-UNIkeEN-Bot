@@ -208,7 +208,7 @@ class GetBanList(StandardPlugin):
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'banList-%d.png'%groupId)
         succ, reason = drawGroupBanInfo(groupId, loadGroupBanInfo(groupId), savePath)
         if succ:
-            send(groupId, '[CQ:image,file=files:///%s]'%savePath)
+            send(groupId, '[CQ:image,file=file:///%s]'%savePath)
         else:
             send(groupId, '[CQ:reply,id=%d]%s'%(data['message_id'], reason))
         return 'OK'

@@ -33,7 +33,7 @@ class GetUniAgenda(StandardPlugin):
             send(target,'[CQ:reply,id=%d]%s'%(data["message_id"], info), data['message_type'])
         else:
             picPath = info if os.path.isabs(info) else os.path.join(ROOT_PATH, info)
-        send(target,f'[CQ:image,file=files:///{picPath}]', data['message_type'])
+        send(target,f'[CQ:image,file=file:///{picPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

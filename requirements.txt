@@ -1,3 +1,5 @@
+websocket-client # for Lagrange backend
+websocket-server # for Lagrange backend
 aiohttp
 beautifulsoup4
 bilibili-api-python==15.5.1

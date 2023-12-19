@@ -14,7 +14,7 @@ class EmojiKitchen(StandardPlugin):
     def emojiToCode(self, emoji:str)->Optional[str]:
         return self.emojiDict.get(emoji, None)
     def load_source(self)->None:
-        with open(os.path.join(ROOT_PATH,EMOJIKITCHEN_SOURCE_PATH), 'r') as f:
+        with open(os.path.join(ROOT_PATH,EMOJIKITCHEN_SOURCE_PATH), 'r', encoding='utf-8') as f:
             metadata = json.load(f)
             self.knownSupportedEmoji = metadata['knownSupportedEmoji']
             self.metadata = metadata['data']

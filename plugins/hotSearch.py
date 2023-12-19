@@ -88,7 +88,7 @@ class WeiboHotSearch(StandardPlugin):
             meta = [{'text':hs['word']} for hs in wbhs]
             imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wbrs_%s_%d.png'%(data['message_type'], target))
             img = plotHotSearch(meta, 550, imgPath)
-            send(target, f'[CQ:image,file=files:///{imgPath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{imgPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -128,7 +128,7 @@ class BaiduHotSearch(StandardPlugin):
             meta = [{'text':hs['word']} for hs in bdhs]
             imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'bdrs_%s_%d.png'%(data['message_type'], target))
             img = plotHotSearch(meta, 550, imgPath)
-            send(target, f'[CQ:image,file=files:///{imgPath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{imgPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -186,7 +186,7 @@ class ZhihuHotSearch(StandardPlugin):
                 })
             imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'zhrs_%s_%d.png'%(data['message_type'], target))
             a.generateImage(imgPath)
-            send(target, f'[CQ:image,file=files:///{imgPath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{imgPath}]', data['message_type'])
 
             # hsWord = '\n'.join(['【%d】%s'%(rank, hs['target']['excerpt']) for rank, hs in enumerate(zhrs[:5])])
             # send(target, hsWord, data['message_type'])

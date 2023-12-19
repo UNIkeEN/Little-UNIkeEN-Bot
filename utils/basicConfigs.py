@@ -1,17 +1,28 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
-import enum
-# from utils.basicEvent import get_login_info
-HTTP_URL="http://127.0.0.1:5701" #go-cqhttp
+from enum import IntEnum
+
+class BACKEND_TYPE(IntEnum):
+    GOCQHTTP = 1
+    LAGRANGE = 2
+    
+BACKEND = BACKEND_TYPE.LAGRANGE
+
+if BACKEND == BACKEND_TYPE.GOCQHTTP:
+    HTTP_URL = "http://127.0.0.1:5701"
+elif BACKEND == BACKEND_TYPE.LAGRANGE:
+    HTTP_URL="ws://127.0.0.1:5705" # Lagrange
+else:
+    assert False
 
 APPLY_GROUP_ID=[]
 
-APPLY_GUILD_ID = [ # guild test
+APPLY_GUILD_ID = [ # deprecated
     # ('651039383982389627', '267764859'),
     # ('651039383982389627', '267795135'),
 ]
 
-MAIN_GUILD = { # guild test
+MAIN_GUILD = { # deprecated
     'guild_id': '', # '651039383982389627',
     'channels':{
         # 'chat': '267764859',
@@ -22,17 +33,21 @@ MAIN_GUILD = { # guild test
     }
 }
 
-JAC_COOKIE = '' # for dekt
+JAC_COOKIE = '' # deprecated
 
-ROOT_ADMIN_ID=[]
+ROOT_ADMIN_ID=[# 请填QQ号，表示哪些人是机器人的root管理
+]
+assert len(ROOT_ADMIN_ID) > 0, '请至少指定一个用户为机器人ROOT'
 
-WARNING_ADMIN_ID = []
+WARNING_ADMIN_ID = [# 请填QQ号，表示该向哪些人报warning
+]
 
-MAIL_USER = '' # watch dog mail to whom
+MAIL_USER = '' # watch dog mail to whom, not required
 MAIL_PASS = ''
 
 # BOT_SELF_QQ=get_login_info()['user_id']
-BOT_SELF_QQ=0
+BOT_SELF_QQ=None # bot自己qq号是多少
+assert BOT_SELF_QQ != None, 'BOT的QQ号是多少'
 
 VERSION_TXT="""version：开源1.2.1版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
@@ -40,8 +55,9 @@ VERSION_TXT="""version：开源1.2.1版本
 sqlConfig = {
     'host': '127.0.0.1',
     'user': 'root',
-    'passwd': ''
+    'passwd': '' # bot的sql密码是多少
 }
+assert sqlConfig.get('passwd', None) != None, '请填入bot sql的密码'
 
 # 根路径与资源路径
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))[:-6]

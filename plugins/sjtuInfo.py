@@ -14,7 +14,7 @@ class SjtuCanteenInfo(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         picPath = get_canteen_info()
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(target, f'[CQ:image,file=files:///{picPath}]',data['message_type'])
+        send(target, f'[CQ:image,file=file:///{picPath}]',data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -34,7 +34,7 @@ class SjtuLibInfo(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         picPath = get_lib_info()
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(target, f'[CQ:image,file=files:///{picPath}]', data['message_type'])
+        send(target, f'[CQ:image,file=file:///{picPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

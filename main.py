@@ -1,9 +1,9 @@
 import os
-from flask import Flask, request
+import asyncio, json
 from enum import IntEnum
 from typing import List, Tuple, Any, Dict
 from utils.standardPlugin import NotPublishedException
-from utils.basicConfigs import APPLY_GROUP_ID, APPLY_GUILD_ID
+from utils.basicConfigs import APPLY_GROUP_ID, APPLY_GUILD_ID, BACKEND, BACKEND_TYPE
 from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
 from utils.accountOperation import create_account_sql
 from utils.standardPlugin import (
@@ -14,6 +14,7 @@ from utils.standardPlugin import (
 from utils.sqlUtils import createBotDataDb
 from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
 from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
+from utils.messageChain import MessageChain
 
 from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ
@@ -83,7 +84,6 @@ from plugins.chess import ChessPlugin, ChessHelper
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 # from plugins.song import ChooseSong # API坏了
 from plugins.zsmCorups import ZsmGoldSentence
-from plugins.apexStatus import ApexStatusPlugin
 from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.wordle import Wordle, WordleHelper
@@ -92,6 +92,14 @@ from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
+try:
+    from plugins.apexStatus import ApexStatusPlugin
+except NotPublishedException as e:
+    ApexStatusPlugin = EmptyPlugin
+try:
+    from plugins.niuChaoYue import GetNiuChaoYue, NiuChaoYueMonitor
+except NotPublishedException as e:
+    GetNiuChaoYue, NiuChaoYueMonitor = EmptyPlugin, EmptyPlugin
 try:
     from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 except NotPublishedException as e:
@@ -198,7 +206,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     # PluginGroupManager([ChooseSong()], 'song'),
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper()], 'wordle'),
-    PluginGroupManager([GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
+    PluginGroupManager([GetNiuChaoYue(), NiuChaoYueMonitor(),
+                        GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
@@ -241,7 +250,6 @@ AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 helperForPrivateControl.setPluginList(GroupPluginList)
-app = Flask(__name__)
 
 class NoticeType(IntEnum):
     NoProcessRequired = 0
@@ -297,15 +305,21 @@ def eventClassify(json_data: dict)->NoticeType:
     else:
         return NoticeType.NoProcessRequired
 
-@app.route('/', methods=["POST"])
-def post_data():
-    # 获取事件上报
-    data = request.get_json()
+def onMessageReceive(message:str)->str:
+    data:Dict[str,Any] = json.loads(message)
     # 筛选并处理指定事件
     flag=eventClassify(data)
-    # 群消息处理
-    if flag==NoticeType.GroupMessage: 
-        msg=data['message'].strip()
+    
+    # 消息格式转换
+    if BACKEND == BACKEND_TYPE.LAGRANGE and 'message' in data.keys():
+        msgChain = MessageChain(data['message'])
+        msgOrigin = msgChain.toCqcode()
+        msg = msgOrigin.strip()
+        data['message_chain'] = data['message']
+        data['message'] = msgOrigin
+    
+    if flag==NoticeType.GroupMessage: # 群消息处理
+        msg = data['message'].strip()
         for event in GroupPluginList:
             event: StandardPlugin
             try:
@@ -389,4 +403,22 @@ def initCheck():
 
 if __name__ == '__main__':
     initCheck()
-    app.run(host="127.0.0.1", port=5986)
+    if BACKEND == BACKEND_TYPE.GOCQHTTP:
+        from flask import Flask, request
+        app = Flask(__name__)
+        @app.route('/', methods=["POST"])
+        def onMsgRecvGocq():
+            msg = request.get_data(as_text=True)
+            return onMessageReceive(msg)
+        app.run(host="127.0.0.1", port=5986)
+
+    elif BACKEND == BACKEND_TYPE.LAGRANGE:
+        from websocket_server import WebsocketServer
+        server = WebsocketServer("127.0.0.1", port=5706)
+        def onMsgRecvLag(_0, _1, msg):
+            onMessageReceive(msg)
+        server.set_fn_message_received(onMsgRecvLag)
+        print('-------------You can start Lagrange Now----------------')
+        server.run_forever()
+    else:
+        print('invalid backend type')

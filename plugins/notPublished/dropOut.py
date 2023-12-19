@@ -23,7 +23,7 @@ class DropOut(StandardPlugin):
         dropoutDate = date.today() + timedelta(days=7)
         picPath = drawDropout(name, data['user_id'], dropoutDate)
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(target, f'[CQ:image,file=files:///{picPath}]', data['message_type'])
+        send(target, f'[CQ:image,file=file:///{picPath}]', data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

@@ -97,14 +97,14 @@ class ChessPlugin(StandardPlugin):
                     else:
                         game.player_white = player
                         imgPath = self.draw_board(game, data)
-                        send(target, f'[CQ:image,file=files:///{imgPath}]对局开始，请执白者 [CQ:at,qq={game.player_white.id}] 先行', data['message_type'])
+                        send(target, f'[CQ:image,file=file:///{imgPath}]对局开始，请执白者 [CQ:at,qq={game.player_white.id}] 先行', data['message_type'])
                 else:
                     if game.player_white.id == player.id:
                         send(target, '[CQ:reply,id={}]自己不能和自己下棋'.format(data['message_id']), data['message_type'])
                     else:
                         game.player_black = player
                         imgPath = self.draw_board(game, data)
-                        send(target, f'[CQ:image,file=files:///{imgPath}]对局开始，请执白者 [CQ:at,qq={game.player_white.id}] 先行', data['message_type'])
+                        send(target, f'[CQ:image,file=file:///{imgPath}]对局开始，请执白者 [CQ:at,qq={game.player_white.id}] 先行', data['message_type'])
             else: 
                 send(target, '[CQ:reply,id={}]内部错误 game.player_white == None and game.player_black == None'.format(data['message_id']), data['message_type'])
                 warning("国际象棋 game.player_white == None and game.player_black == None in group %d"%(target))
@@ -153,23 +153,23 @@ class ChessPlugin(StandardPlugin):
                     result = game.outcome()
                     if result == None:
                         imgPath = self.draw_board(game, data)
-                        send(target, f'[CQ:image,file=files:///{imgPath}]下一手轮到 {game.player_next} 行棋', data['message_type'])
+                        send(target, f'[CQ:image,file=file:///{imgPath}]下一手轮到 {game.player_next} 行棋', data['message_type'])
                     # elif result == MoveResult.CHECKED:
                     #     send(target, "不能送将，请改变招法".format(data['message_id']), data['message_type'])
                     elif result.winner == chess.WHITE:
                         imgPath = self.draw_board(game, data)
-                        send(target, f'[CQ:image,file=files:///{imgPath}]黑方被将死，恭喜 {game.player_white} 获胜！', data['message_type'])
+                        send(target, f'[CQ:image,file=file:///{imgPath}]黑方被将死，恭喜 {game.player_white} 获胜！', data['message_type'])
                         self.stop_game(data)
                     elif result.winner == chess.BLACK:
                         imgPath = self.draw_board(game, data)
-                        send(target, f'[CQ:image,file=files:///{imgPath}]白方被将死，恭喜 {game.player_black} 获胜！', data['message_type'])
+                        send(target, f'[CQ:image,file=file:///{imgPath}]白方被将死，恭喜 {game.player_black} 获胜！', data['message_type'])
                         self.stop_game(data)
                     elif result.winner == None:
                         send(target, "根据规则，局面判和", data['message_type'])
                         self.stop_game(data)
                     else:
                         imgPath = self.draw_board(game, data)
-                        send(target, f'[CQ:image,file=files:///{imgPath}]下一手轮到 {game.player_next} 行棋', data['message_type'])
+                        send(target, f'[CQ:image,file=file:///{imgPath}]下一手轮到 {game.player_next} 行棋', data['message_type'])
         elif msg in self.chessdbCommands:
             game = self.games.get(group_id, None)
             if game == None:
@@ -179,7 +179,7 @@ class ChessPlugin(StandardPlugin):
             else:
                 imgPath = self.draw_chessdb(game, data)
                 if imgPath != None:
-                    send(target, f'[CQ:image,file=files:///{imgPath}]', data['message_type'])
+                    send(target, f'[CQ:image,file=file:///{imgPath}]', data['message_type'])
                 else:
                     send(target, f"[CQ:reply,id={data['message_id']}]查询失败", data['message_type'])
         return 'OK'

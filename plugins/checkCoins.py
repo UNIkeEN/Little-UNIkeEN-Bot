@@ -66,7 +66,7 @@ class CheckTransactions(StandardPlugin): # 查询近期交易记录
         #print(data['user_id'])
         picPath = draw_trans_cards(data['user_id'])
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
-        send(target, '[CQ:reply,id=%d][CQ:image,file=files:///%s]'%(data['message_id'], picPath),data['message_type'])
+        send(target, '[CQ:reply,id=%d][CQ:image,file=file:///%s]'%(data['message_id'], picPath),data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

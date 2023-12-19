@@ -67,7 +67,7 @@ class ShowLeetcode(StandardPlugin):
         result = generateMsg(leetcodeResponse)
         if not os.path.isfile(savePath):
             generateQuestionImg(leetcodeResponse, savePath)
-        send(target, '请查收今日leetcode：\n'+result+'[CQ:image,file=files:///{}]'.format(savePath), data['message_type'])
+        send(target, '请查收今日leetcode：\n'+result+'[CQ:image,file=file:///{}]'.format(savePath), data['message_type'])
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {
@@ -99,7 +99,7 @@ class LeetcodeReport(StandardPlugin, ScheduleStandardPlugin):
         if not os.path.isfile(savePath):
             generateQuestionImg(leetcodeResponse, savePath)
         for groupId in enabledGroups:
-            send(groupId, '早上好，请查收今天的leetcode:\n\n'+result+'[CQ:image,file=files:///{}]'.format(savePath))
+            send(groupId, '早上好，请查收今天的leetcode:\n\n'+result+'[CQ:image,file=file:///{}]'.format(savePath))
         return 'OK'
     def getPluginInfo(self) -> dict:
         return {

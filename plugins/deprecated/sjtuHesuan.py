@@ -77,7 +77,7 @@ class SjtuHesuan(StandardPlugin):
                 draw.text((x-titlesize[0]/2, y-25-titlesize[1]), showText, wordFill , FONT_SYHT_M18)
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'hesuan-%d.png'%target)
         hesuanMap.save(savePath)
-        send(target, f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+        send(target, f'[CQ:image,file=file:///{savePath}]', data['message_type'])
 
     def getPluginInfo(self, )->Any:
         return {

@@ -93,7 +93,7 @@ class ChooseSong(StandardPlugin):
             else:
                 savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'song_%d.png'%target)
                 if drawSongInfo(songInfos, savePath)[0]:
-                    send(target, '[CQ:image,file=files:///%s]'%savePath, data['message_type'])
+                    send(target, '[CQ:image,file=file:///%s]'%savePath, data['message_type'])
                     dumpOK, songText = dumpSongInfo(songInfos)
                     if dumpOK:
                         send(target, songText, data['message_type'])

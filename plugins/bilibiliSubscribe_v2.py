@@ -52,7 +52,7 @@ def makeThumbnails(pictures:List[Dict[str, Any]]):
         else: resize, img = img[:, from:to,:]
     third step: paste to Image
     """
-def dimensionToStr(dimension:Dict[str, int])->int:
+def dimensionToStr(dimension:Dict[str, int])->str:
     return '%s x %s'%(dimension['width'], dimension['height'])
 
 def drawDynamicCard(dynamicInfo:Dict[str, Any], savePath:str)->Tuple[bool, str]:
@@ -414,12 +414,12 @@ class BilibiliMonitor(CronStandardPlugin):
                 for group in self.groupList:
                     send(group, f'本群订阅UP主 【{author}】 更新视频啦！\n\n链接：{bvToUrl(bvid)}')
                     if succ:
-                        send(group, f'[CQ:image,file=files:///{imgPath}]')
+                        send(group, f'[CQ:image,file=file:///{imgPath}]')
             else:
                 for group in self.groupList:
                     send(group, f'本群订阅UP主 【{author}】 更新动态啦！\n\n链接：{dynamicIdToUrl(dynamicId)}')
                     if succ:
-                        send(group, f'[CQ:image,file=files:///{imgPath}]')
+                        send(group, f'[CQ:image,file=file:///{imgPath}]')
         except KeyError as e:
             warning('bilibili api error, uid = %d: %s'%(self.uid, str(e)))
         except BaseException as e:

@@ -36,7 +36,7 @@ class ActReportPlugin(StandardPlugin):
             send(data['group_id'], '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
         else:
             imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-            send(data['group_id'], '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            send(data['group_id'], '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -69,7 +69,7 @@ class YourActReportPlugin(StandardPlugin):
             send(data['group_id'], '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
         else:
             imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-            send(data['group_id'], '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            send(data['group_id'], '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {
@@ -92,7 +92,7 @@ class ActRankPlugin(StandardPlugin):
             send(data['group_id'], '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
         else:
             imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-            send(data['group_id'], '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+            send(data['group_id'], '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
         return "OK"
     def getPluginInfo(self, )->Any:
         return {

@@ -1,9 +1,12 @@
-from utils.standardPlugin import StandardPlugin, Any, Union
+from utils.standardPlugin import StandardPlugin, Any, Union, NotPublishedException
 import requests
 from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.responseImage_beta import ResponseImage
-from resources.api.apexAPI import APEX_AUTHKEY
+try:
+    from resources.api.apexAPI import APEX_AUTHKEY
+except:
+    raise NotPublishedException('APEX key not published')
 
 APEX_MAIN_COLOR="#E54722"
 
@@ -70,7 +73,7 @@ class ApexStatusPlugin(StandardPlugin):
                 send(data['group_id'], 'Apex API 请求失败', data['message_type'])
             else:
                 imgPath = imgPath if os.path.isabs(imgPath) else os.path.join(ROOT_PATH, imgPath)
-                send(target, '[CQ:image,file=files:///%s]'%imgPath, data['message_type'])
+                send(target, '[CQ:image,file=file:///%s]'%imgPath, data['message_type'])
         except BaseException as e:
             send(data['group_id'], '内部错误：{}'.format(e), data['message_type'])
             warning("Exception in Apex: {}".format(e))

@@ -44,7 +44,7 @@ class GetBilibiliLive(StandardPlugin):
         if roomInfo['live_status'] == 1:
             savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'biliLive-%s-%d.png'%(self.liveDescription, target))
             genLivePic(roomInfo, '%s直播间状态'%self.liveDescription, savePath)
-            send(target, f'[CQ:image,file=files:///{savePath}]', data['message_type'])
+            send(target, f'[CQ:image,file=file:///{savePath}]', data['message_type'])
         else:
             send(target, '当前时段未开播哦', data['message_type'])
         return "OK"
@@ -110,7 +110,7 @@ class BilibiliLiveMonitor(StandardPlugin, CronStandardPlugin):
                 genLivePic(roomInfo, '%s直播间状态'%self.description, savePath, useCover=True)
                 for group in getPluginEnabledGroups(self.targetGroup):
                     send(group, '检测到%s开播，B站直播地址： https://live.bilibili.com/%d'%(self.description, self.liveId))
-                    send(group, f'[CQ:image,file=files:///{savePath}]')
+                    send(group, f'[CQ:image,file=file:///{savePath}]')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
