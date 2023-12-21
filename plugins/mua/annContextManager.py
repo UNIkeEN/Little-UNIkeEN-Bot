@@ -8,7 +8,7 @@ import requests
 from utils.sqlUtils import newSqlSession
 from .annImgBed import createAnnImgBedSql, dumpMsgToBed, imgUrlToImgBase64
 from .muaTokenBind import getAllMuaToken
-from .clientInstance import sendAnnouncement, deleteAnnouncement
+from .clientInstance import sendAnnouncement, deleteAnnouncement, createMuaSessionIdSql
 from threading import Semaphore
 import datetime, json, time
 from dateutil import parser as timeparser
@@ -226,6 +226,7 @@ class MuaAnnEditor(StandardPlugin):
         if self.initGuard.acquire(blocking=False):
             createAnnCtxSql()
             createAnnImgBedSql()
+            createMuaSessionIdSql()
             self.loadContext()
         self.annnewPattern = re.compile(r'^\-annnew\s+(\S+)')
         self.annrmPattern  = re.compile(r'^\-annrm\s+(\S+)')
