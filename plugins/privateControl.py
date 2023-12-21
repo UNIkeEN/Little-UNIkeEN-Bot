@@ -15,7 +15,10 @@ class LsGroup(StandardPlugin):
         result = []
         for idx, (groupId, description) in enumerate(getApplyGroups()):
             result.append(str(idx+1)+'. '+str(groupId) + ': ' + description)
-        send(target, '\n'.join(result), data['message_type'])
+        if len(result) > 0:
+            send(target, '\n'.join(result), data['message_type'])
+        else:
+            send(target, '机器人暂未在任何群聊开启', data['message_type'])
         return 'OK'
     def getPluginInfo(self, )->Any:
         return {

@@ -10,6 +10,7 @@ try:
     from resources.api.sjtuCourseAPI import getCourses
 except:
     raise NotPublishedException('sjtu course api not published')
+    
 def parseJxbmc(jxbmc:str)->Optional[Tuple[int,int,int,str,int]]:
     """parse jxbmc like '(2023-2024-2)-EE0503-11'"""
     jxbmcPattern = re.compile(r'^\((\d+)\-(\d+)\-(\d+)\)\-(\S+)\-(\d+)')

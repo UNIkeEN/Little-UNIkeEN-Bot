@@ -14,13 +14,20 @@ import traceback
 import aiohttp, asyncio
 from utils.bufferQueue import BufferQueue
 from io import BytesIO
+from threading import Lock
 
 lagrangeClient = websocket.WebSocket()
+lagrangeClientGuard = Lock()
 
-def sendPacketToLagrange(packet:Dict[str,Any])->None:
+def sendPacketToLagrange(packet:Dict[str,Any])->Dict[str, Any]:
+    global lagrangeClient, lagrangeClientGuard
     if not lagrangeClient.connected:
         lagrangeClient.connect(HTTP_URL)
-    lagrangeClient.send(json.dumps(packet, ensure_ascii=False))
+    packetEncoded = json.dumps(packet, ensure_ascii=False)
+    with lagrangeClientGuard:
+        lagrangeClient.send(packetEncoded)
+        ret = lagrangeClient.recv()
+    return json.loads(ret)
 
 def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
     """从cq img url中下载图片
@@ -144,7 +151,12 @@ async def aioSend(id: int, message: str, type:str='group')->None:
     raise Exception("No longer Support")
 
 def get_group_list()->list:
-    raise Exception("no longer support")
+    packet = {
+        'action': 'get_group_list',
+        'params': {}
+    }
+    result = sendPacketToLagrange(packet)
+    print(result)
 
 def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->list:
     raise Exception("no longer support")

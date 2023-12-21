@@ -30,7 +30,6 @@ def createMuaSessionIdSql():
         `abstract` bool default false comment '是否查询mua通知摘要',
         primary key(`session_id`)
     );""")
-createMuaSessionIdSql()
 
 def dumpMuaSession(sessionId:str, data:Any, annKey:str, abstract:bool=False):
     """将Mua会话保存到sql，以便收到返回payload包时恢复会话

@@ -57,7 +57,10 @@ class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
         return None
     
     def tick(self,):
-        group_system = get_group_system_msg()
+        try:
+            group_system = get_group_system_msg()
+        except:
+            group_system = None
         if group_system == None: return
         mydb, mycursor = newSqlSession()
 
