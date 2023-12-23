@@ -1,4 +1,4 @@
-# TODO:ImageDraw.textsize，ImageFont.getsize 最新 Pillow 已弃用，需适配
+# 2023/12/24:ImageDraw.textsize，ImageFont.getsize 最新 Pillow 已弃用，已适配
 
 import os
 import requests
@@ -225,9 +225,9 @@ class ResponseImage():
     def calcHeight(self):
         width, height = self.width, 0
         cardList = self.cardList
-        txt_size = FONT_HYWH_36.getsize(self.title)
+        txt_size = get_font_size(self.title, FONT_HYWH_36)
         height += txt_size[1]+115 # 加标题距离
-        txt_size_18 = FONT_SYHT_M18.getsize('测试')
+        txt_size_18 = get_font_size('测试', FONT_SYHT_M18)
         height += (2*txt_size_18[1]+SPACE_NORMAL+SPACE_ROW if self.footer!='' else txt_size_18[1]+SPACE_NORMAL) + 15 # 加页脚距离
         if self.layout=='two-column' and len(self.cardList)>1:
             w_card = (width - 2*SPACE_DOUBLE - SPACE_NORMAL) / 2
@@ -350,7 +350,7 @@ class ResponseImage():
                 txt_parse[-1]+=word
                 continue
             txt_line+=word
-            if font.getsize(txt_line)[0]>widthLimit:
+            if get_font_size(txt_line, font)[0]>widthLimit:
                 txt_parse.append(txt_line)
                 txt_line=""
             if word=='\n':
@@ -364,7 +364,7 @@ class ResponseImage():
             txt_parse.append(txt_line)
         if len(txt_parse)==0:
             txt_parse=[' ']
-        height = sum([SPACE_ROW +font.getsize(txt)[1] for txt in txt_parse])
+        height = sum([SPACE_ROW + get_font_size(txt, font)[1] for txt in txt_parse]) 
         # height=len(txt_parse)*(font.getsize('测试')[1]+SPACE_ROW)
         # print(txt_parse)
         return txt_parse, height
@@ -414,16 +414,16 @@ class ResponseImage():
         self.draw = ImageDraw.Draw(self.img)
         draw = self.draw
         # 绘制标题
-        txt_size = FONT_HYWH_36.getsize(self.title)
+        txt_size = get_font_size(self.title, FONT_HYWH_36) 
         self.drawRoundedRectangle(x1=width/2-txt_size[0]/2-15, y1=40, x2=width/2+txt_size[0]/2+15,y2=txt_size[1]+70, fill=self.titleColor)
         draw.text((width/2-txt_size[0]/2,55), self.title, fill=PALETTE_WHITE, font=FONT_HYWH_36)
         top = txt_size[1]+115
         top_0 = top
         # 绘制页脚
-        txt_size = FONT_SYHT_M18.getsize('Powered By Little-UNIkeEN-Bot')
+        txt_size = get_font_size('Powered By Little-UNIkeEN-Bot', FONT_SYHT_M18)
         draw.text((width/2-txt_size[0]/2, height-SPACE_NORMAL-txt_size[1]), 'Powered By Little-UNIkeEN-Bot', fill=PALETTE_GREY_CONTENT, font = FONT_SYHT_M18)
         if self.footer!='':
-            txt_size = FONT_SYHT_M18.getsize(self.footer)
+            txt_size = get_font_size(self.footer, FONT_SYHT_M18)
             draw.text((width/2-txt_size[0]/2, height-SPACE_NORMAL-SPACE_ROW-2*txt_size[1]), self.footer, fill=PALETTE_GREY_CONTENT, font = FONT_SYHT_M18)
         # 绘制卡片
         i=0
@@ -499,7 +499,7 @@ class ResponseImage():
                         font = self.cardSubtitleFont
                     elif line[0]=='body':
                         font = self.cardBodyFont
-                    txt_size=font.getsize(line[1])
+                    txt_size=get_font_size(line[1], font)
                     x_l = cardLeft+(card['width']-txt_size[0])/2 if card['style']=='notice' else x_left
                     draw.text((x_l, y_top), line[1], fill=line[2], font = font)
                     y_top += (txt_size[1]+SPACE_ROW) 
@@ -535,6 +535,12 @@ class CardDrawError(Exception):
 
 # -----------------
 # 基于 Pillow 的辅助工具函数
+    
+def get_font_size(text, font):
+    text_bbox = font.getbbox(text)
+    text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1] + 0.1 * font.size  # bbox不一定完全包含文字
+    return (int(text_width), int(text_height))
+
 
 def draw_gradient_rectangle(img, position, fill):
     """
@@ -602,12 +608,10 @@ def draw_gradient_text(img, position, text, fill, font):
     if len(fill) != 2 and len(fill) != 4:
         raise ValueError("Fill parameter must contain either 2 or 4 color tuples.")
 
-    draw = ImageDraw.Draw(img)
     # 为反锯齿创建更大的字体，缩放系数大于2较影响性能
     scale_factor = 2
     font_scaled = ImageFont.truetype(font.path, font.size * scale_factor)
-    text_bbox = draw.textbbox(position, text, font=font_scaled)
-    text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1] + 6 * scale_factor  # bbox不一定完全包含文字
+    text_width, text_height = get_font_size(text, font_scaled)
 
     gradient_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
     draw_gradient_rectangle(gradient_img, (0, 0, text_width, text_height), fill)
