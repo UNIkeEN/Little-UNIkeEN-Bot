@@ -1,3 +1,5 @@
+# TODO:ImageDraw.textsize，ImageFont.getsize 最新 Pillow 已弃用，需适配
+
 import os
 import requests
 import base64
@@ -529,3 +531,99 @@ class CardDrawError(Exception):
         self.errorInfo = errorInfo
     def __str__(self):
         return self.errorInfo
+
+
+# -----------------
+# 基于 Pillow 的辅助工具函数
+
+def draw_gradient_rectangle(img, position, fill):
+    """
+    在图像上绘制渐变色矩形。
+
+    参数:
+    img: PIL Image对象，要绘制渐变矩形的图像。
+    position: 矩形的位置，格式为(x1, y1, x2, y2)的坐标元组。
+    fill: 渐变色填充，是RGBA颜色元组的列表。如果列表包含两个元组，则创建从左至右的线性渐变；
+          如果包含四个元组，则分别代表左上、右上、左下、右下角的颜色，用于创建双线性渐变。
+
+    当渐变参数不等于2或4时，抛出异常。
+    """
+    if len(fill) != 2 and len(fill) != 4:
+        raise ValueError("Fill parameter must contain either 2 or 4 color tuples.")
+
+    x1, y1, x2, y2 = position
+    width, height = x2 - x1, y2 - y1
+    canvas = Image.new('RGBA', (width, height), "white")
+
+    if len(fill) == 2:
+        # 线性渐变
+        color_start, color_end = fill
+        for x in range(width):
+            gradient_color = tuple(
+                int(color_start[i] + (float(x) / width) * (color_end[i] - color_start[i])) for i in range(4)
+            )
+            for y in range(height):
+                canvas.putpixel((x, y), gradient_color)
+
+    elif len(fill) == 4:
+        # 双线性渐变
+        top_left, top_right, bottom_left, bottom_right = fill
+        for x in range(width):
+            for y in range(height):
+                horizontal_ratio = float(x) / width
+                vertical_ratio = float(y) / height
+
+                tmp1 = tuple(
+                    int(top_left[i] + horizontal_ratio * (top_right[i] - top_left[i])) for i in range(4)
+                )
+                tmp2 = tuple(
+                    int(bottom_left[i] + horizontal_ratio * (bottom_right[i] - bottom_left[i])) for i in range(4)
+                )
+                gradient_color = tuple(
+                    int(tmp1[i] + vertical_ratio * (tmp2[i] - tmp1[i])) for i in range(4)
+                )
+                canvas.putpixel((x, y), gradient_color)
+
+    img.paste(canvas, position)
+
+def draw_gradient_text(img, position, text, fill, font):
+    """
+    在图像上绘制渐变色填充的文本。
+
+    参数:
+    img: PIL Image对象，要绘制文本的图像。
+    position: 文本的位置，格式为(x, y)的坐标元组。
+    text: 要绘制的文本。
+    fill: 渐变色填充，同draw_gradient_rectangle函数。
+    font: PIL ImageFont对象，定义文本的字体。
+
+    当渐变参数不等于2或4时，抛出异常。
+    """
+    if len(fill) != 2 and len(fill) != 4:
+        raise ValueError("Fill parameter must contain either 2 or 4 color tuples.")
+
+    draw = ImageDraw.Draw(img)
+    # 为反锯齿创建更大的字体，缩放系数大于2较影响性能
+    scale_factor = 2
+    font_scaled = ImageFont.truetype(font.path, font.size * scale_factor)
+    text_bbox = draw.textbbox(position, text, font=font_scaled)
+    text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1] + 6 * scale_factor  # bbox不一定完全包含文字
+
+    gradient_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+    draw_gradient_rectangle(gradient_img, (0, 0, text_width, text_height), fill)
+
+    text_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+    text_draw = ImageDraw.Draw(text_img)
+    text_draw.text((0, 0), text, fill=(255, 255, 255, 255), font=font_scaled)
+
+    gradient_text_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+    gradient_pixels = gradient_img.load()
+    text_pixels = text_img.load()
+    for y in range(text_height):
+        for x in range(text_width):
+            if text_pixels[x, y][3] > 0:
+                gradient_text_img.putpixel((x, y), gradient_pixels[x, y])
+
+    gradient_text_img = gradient_text_img.resize((text_width // scale_factor, text_height // scale_factor), Image.Resampling.LANCZOS)
+
+    img.paste(gradient_text_img, position, gradient_text_img)
