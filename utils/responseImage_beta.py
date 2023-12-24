@@ -546,7 +546,7 @@ def get_font_size(text:str,
 
 def draw_gradient_rectangle(img:Image.Image, 
                             position:Tuple[int,int,int,int], 
-                            fill:Union[Tuple[Any,Any],Tuple[Any,Any]]):
+                            fill:Union[Tuple[Any,Any],Tuple[Any,Any,Any,Any]]):
     """
     在图像上绘制渐变色矩形。
 
@@ -599,7 +599,7 @@ def draw_gradient_rectangle(img:Image.Image,
 def draw_gradient_text(img:Image.Image,
                        position:Tuple[int,int],
                        text:str,
-                       fill:Union[Tuple[Any,Any],Tuple[Any,Any]],
+                       fill:Union[Tuple[Any,Any],Tuple[Any,Any,Any,Any]],
                        font:ImageFont.FreeTypeFont):
     """
     在图像上绘制渐变色填充的文本。
