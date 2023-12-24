@@ -7,6 +7,7 @@ import re
 import uuid
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
+from typing import Tuple, Union, Any
 
 # 资源/临时路径
 FONTS_PATH = 'resources/fonts'
@@ -536,13 +537,16 @@ class CardDrawError(Exception):
 # -----------------
 # 基于 Pillow 的辅助工具函数
     
-def get_font_size(text, font):
+def get_font_size(text:str, 
+                  font:ImageFont.FreeTypeFont)->Tuple[int,int]:
     text_bbox = font.getbbox(text)
     text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1] + 0.1 * font.size  # bbox不一定完全包含文字
     return (int(text_width), int(text_height))
 
 
-def draw_gradient_rectangle(img, position, fill):
+def draw_gradient_rectangle(img:Image.Image, 
+                            position:Tuple[int,int,int,int], 
+                            fill:Union[Tuple[Any,Any],Tuple[Any,Any]]):
     """
     在图像上绘制渐变色矩形。
 
@@ -592,7 +596,11 @@ def draw_gradient_rectangle(img, position, fill):
 
     img.paste(canvas, position)
 
-def draw_gradient_text(img, position, text, fill, font):
+def draw_gradient_text(img:Image.Image,
+                       position:Tuple[int,int],
+                       text:str,
+                       fill:Union[Tuple[Any,Any],Tuple[Any,Any]],
+                       font:ImageFont.FreeTypeFont):
     """
     在图像上绘制渐变色填充的文本。
 
