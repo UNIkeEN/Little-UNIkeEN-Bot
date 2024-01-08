@@ -29,6 +29,8 @@ def sendPacketToLagrange(packet:Dict[str,Any])->Dict[str, Any]:
         ret = lagrangeClient.recv()
     return json.loads(ret)
 
+
+
 def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
     """从cq img url中下载图片
     @cqImgUrl: 从gocqhttp获取的图片url
@@ -123,6 +125,7 @@ def send(id: int, message: str, type:str='group')->None:
     """
     msgChain = MessageChain.fromCqcode(message)
     msgChain.removeUnsupportPiece()
+    msgChain.fixLagrangeImgUrl()
     if True:
         msgChain.convertImgPathToBase64()
     if type=='group':

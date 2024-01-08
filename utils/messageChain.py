@@ -2,7 +2,7 @@ from typing import List, Dict, Optional,Any
 import re, base64
 from PIL import Image
 from io import BytesIO
-
+import requests
 def messagePieceQuote(text:str)->str:
     return text.replace('&','&amp;').replace('[','&#91;').replace(']','&#93;').replace(',','&#44;')
 
@@ -42,6 +42,25 @@ def imgToBase64(imgPath:str)->str:
     b64img = base64.b64encode(imgData.getvalue()).decode('utf-8')
     return b64img
 
+def urlImgToBase64(imgUrl:str)->Optional[str]:
+    req = requests.get(imgUrl)
+    if not req.ok:
+        return None
+    img = Image.open(BytesIO(req.content))
+    imgData = BytesIO()
+    img.save(imgData, format=img.format)
+    b64img = base64.b64encode(imgData.getvalue()).decode('utf-8')
+    return b64img
+
+lagrangeImgUrlPattern = re.compile(r'^https?\:\/\/multimedia\.nt\.qq\.com\.cn\/offpic\_new\/(\d+)\/+(\S+)$')
+def fixLagrangeImgUrl(url:str)->str:
+    result = lagrangeImgUrlPattern.findall(url)
+    if len(result) == 0:
+        return url
+    group_id, res_url = result[0]
+    url = 'https://gchat.qpic.cn/gchatpic_new/%s/%s'%(group_id, res_url)
+    return url
+
 class MessageChain():
     supportedCqcodes = [
         'text', 'image', 'face', 
@@ -50,7 +69,7 @@ class MessageChain():
     cqPattern = re.compile(r'(\[CQ\:[^\[]*\])')
     def __init__(self, chain:List[Dict[str,Any]]) -> None:
         self.chain:List[Dict[str,Any]] = chain
-    
+
     @classmethod
     def fromCqcode(cls, cqcode:str):
         pieces = cls.cqPattern.split(cqcode)
@@ -70,6 +89,25 @@ class MessageChain():
             result.append(piece)
         return cls(result)
     
+    def fixLagrangeImgUrl(self):
+        new_chain = []
+        for piece in self.chain:
+            if piece['type'].lower() == 'image':
+                if 'file' in piece['data'].keys():
+                    path:str = piece['data'].pop('file')
+                elif 'url' in piece['data'].keys():
+                    path:str = piece['data'].pop('url')
+                else:
+                    new_chain.append(piece)
+                    continue
+                path = fixLagrangeImgUrl(path)
+                if path.startswith('http'):
+                    piece['data']['url'] = path
+                else:
+                    piece['data']['file'] = path
+            new_chain.append(piece)
+        self.chain = new_chain
+        
     def toCqcode(self)->str:
         result = []
         for piece in self.chain:
@@ -99,11 +137,23 @@ class MessageChain():
         result = []
         for piece in self.chain:
             if piece['type'].lower() == 'image':
-                path:str = piece['data'].get('file', '')
-                if path.startswith('file:///'):
-                    path = path[len('file:///'):]
-                    b64 = imgToBase64(path)
-                    piece['data']['file'] = 'base64://'+b64
+                if 'url' in piece['data'].keys():
+                    url:str = piece['data'].pop('url')
+                    b64 = urlImgToBase64(url)
+                    if b64!=None:
+                        piece['data']['file'] = 'base64://'+b64
+                    else:
+                        piece['data']['url'] = url
+                elif 'file' in piece['data'].keys():
+                    path:str = piece['data']['file']
+                    if path.startswith('file:///'):
+                        path = path[len('file:///'):]
+                        b64 = imgToBase64(path)
+                        piece['data']['file'] = 'base64://'+b64
+                    elif path.startswith('http'):
+                        b64 = urlImgToBase64(path)
+                        if b64 != None:
+                            piece['data']['file'] = 'base64://'+b64
             result.append(piece)
         self.chain = result
         
