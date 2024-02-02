@@ -92,6 +92,7 @@ from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
+from plugins.moyu import GetMoyuCalendar, UpdateMoyuCalendar
 try:
     from plugins.apexStatus import ApexStatusPlugin
 except NotPublishedException as e:
@@ -160,8 +161,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
     PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace(), MakeJoke()], 'superemoji'), # 超级表情
-    PluginGroupManager([ShowNews(), YesterdayNews(), 
-                        PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
+    PluginGroupManager([ShowNews(), YesterdayNews(), GetMoyuCalendar(),
+                        PluginGroupManager([UpdateNewsAndReport(), UpdateMoyuCalendar()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(),
