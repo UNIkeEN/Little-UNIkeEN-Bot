@@ -7,18 +7,34 @@ import requests
 from io import BytesIO
 from PIL import Image
 import datetime
-import os, time
-
+import os, time, re
+from urllib import parse as urlparse
 
 def getTodaysMoyuCalendar()->Optional[Image.Image]:
-    url = 'https://api.vvhan.com/api/moyu'
+    url = 'https://api.j4u.ink/proxy/remote/moyu.json'
     req = requests.get(url)
     if not req.ok:
         return None
+    reqJson = req.json()
+    if reqJson['code'] != 200:
+        return None
+    picUrl = reqJson.get('data', {}).get('moyu_url', None)
+    if picUrl == None: return None
+    dateStr = os.path.splitext(os.path.basename(urlparse.urlparse(picUrl).path))[0]
+    datePattern = re.compile(r'^(\d{4})(\d{2})(\d{2})$')
+    if datePattern.match(dateStr) == None: 
+        warning('moyu API failed')
+        return None
+    year, month, day = datePattern.findall(dateStr)[0]
+    today = datetime.date.today()
+    if int(year) != today.year or int(month) != today.month or int(day) != today.day:
+        return None
+    picReq = requests.get(picUrl)
+    if not picReq.ok: return None
     try:
-        img = Image.open(BytesIO(req.content))
+        img = Image.open(BytesIO(picReq.content))
         return img
-    except:
+    except Exception as e:
         return None
 
 def getMoyuSavePath()->str:
