@@ -3,10 +3,8 @@ from bs4 import BeautifulSoup as BS
 from typing import Optional, List, Dict, Any, Union
 import pyjsparser.parser as jsparser
 from utils.basicEvent import send, warning
-from utils.channelAPI import send_guild_channel_msg, MAIN_GUILD
 from utils.configAPI import getPluginEnabledGroups
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin
-from utils.basicConfigs import sqlConfig
 import datetime
 from urllib.parse import urlparse
 from utils.sqlUtils import newSqlSession
@@ -172,13 +170,6 @@ class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
     def tick(self) -> None:
         notices = getBwcNotice()
         notices = self.checkAndUpdate(notices)
-        # for notice in notices:
-        #     send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['bwc'], 
-        #         '已发现保卫处通知更新:\n%s\n\n%s\n\n%s' % (
-        #             datetime.datetime.fromtimestamp(notice['create_time']).strftime('%Y-%m-%d %H:%M'), 
-        #             notice['title'], simplifyWxappUrl(notice['url'])
-        #         )
-        #     )
         for group_id in getPluginEnabledGroups('bwcreport'):
             for notice in notices:
                 send(group_id, '已发现保卫处通知更新:\n%s\n\n%s\n\n%s'%(

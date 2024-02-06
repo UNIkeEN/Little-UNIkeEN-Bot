@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 from enum import IntEnum
+from typing import Dict, Any
 
 class BACKEND_TYPE(IntEnum):
     GOCQHTTP = 1
@@ -17,27 +18,9 @@ else:
 
 APPLY_GROUP_ID=[]
 
-APPLY_GUILD_ID = [ # deprecated
-    # ('651039383982389627', '267764859'),
-    # ('651039383982389627', '267795135'),
-]
-
-MAIN_GUILD = { # deprecated
-    'guild_id': '', # '651039383982389627',
-    'channels':{
-        # 'chat': '267764859',
-        # 'mdd': '267795135',
-        # 'dekt': '267800522',
-        # 'bwc': '267836446',
-        # 'jwc': '267805890',
-    }
-}
-
-JAC_COOKIE = '' # deprecated
-
 ROOT_ADMIN_ID=[# 请填QQ号，表示哪些人是机器人的root管理
 ]
-assert len(ROOT_ADMIN_ID) > 0, '请至少指定一个用户为机器人ROOT'
+# assert len(ROOT_ADMIN_ID) > 0, '请至少指定一个用户为机器人ROOT'
 
 WARNING_ADMIN_ID = [# 请填QQ号，表示该向哪些人报warning
 ]
@@ -47,7 +30,7 @@ MAIL_PASS = ''
 
 # BOT_SELF_QQ=get_login_info()['user_id']
 BOT_SELF_QQ=None # bot自己qq号是多少
-assert BOT_SELF_QQ != None, 'BOT的QQ号是多少'
+# assert BOT_SELF_QQ != None, 'BOT的QQ号是多少'
 
 VERSION_TXT="""version：muaLTS版本，见Little-UNIkeEN-Bot的muaLTS分支
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
@@ -57,8 +40,42 @@ sqlConfig = {
     'user': 'root',
     'passwd': '' # bot的sql密码是多少
 }
-assert sqlConfig.get('passwd', None) != None, '请填入bot sql的密码'
+# assert sqlConfig.get('passwd', None) != None, '请填入bot sql的密码'
 
+def setConfigs(config:Dict[str, Any])->None:
+    global BOT_SELF_QQ, sqlConfig, HTTP_URL, BACKEND
+    HTTP_URL = config.get('backend-url', None)
+    assert isinstance(HTTP_URL, str)
+    while HTTP_URL.endswith('/'):
+        HTTP_URL = HTTP_URL[:-1]
+    backend = config.get('backend-type', None).lower()
+    if backend == 'lagrange':
+        BACKEND = BACKEND_TYPE.LAGRANGE
+    elif backend == 'gocqhttp':
+        BACKEND = BACKEND_TYPE.GOCQHTTP
+    else:
+        assert False, 'backend type error'
+    BOT_SELF_QQ = config.get('qq', None)
+    assert isinstance(BOT_SELF_QQ, int)
+    sqlConfig['host'] = config.get('sql', {}).get('host', None)
+    sqlConfig['user'] = config.get('sql', {}).get('user', None)
+    sqlConfig['passwd'] = config.get('sql', {}).get('passwd', None)
+    assert isinstance(sqlConfig['host'], str) 
+    assert isinstance(sqlConfig['passwd'], str)
+    assert isinstance(sqlConfig['user'], str)
+    
+    global ROOT_ADMIN_ID, WARNING_ADMIN_ID
+    ROOT_ADMIN_ID, WARNING_ADMIN_ID = [], []
+    admins = config.get('admins', None)
+    warningUsers = config.get('warning-users', None)
+    assert isinstance(admins, list) and isinstance(warningUsers, list)
+    for admin in admins:
+        assert isinstance(admin, int)
+        ROOT_ADMIN_ID.append(admin)
+    for warningUser in warningUsers:
+        assert isinstance(warningUser, int)
+        WARNING_ADMIN_ID.append(warningUser)
+        
 # 根路径与资源路径
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))[:-6]
 FONTS_PATH = 'resources/fonts'

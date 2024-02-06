@@ -1,9 +1,23 @@
 import os
+import argparse
+import json
+from utils.basicConfigs import setConfigs
+config = None
+if __name__ == '__main__':
+    # 为了兼容之前的代码这么写的，太丑了，下次一定重构
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, required=False, default=None)
+    args = parser.parse_args()
+    if args.config != None:
+        with open(args.config, 'r') as f:
+            config = json.load(f)
+        setConfigs(config)
+        
 import asyncio, json
 from enum import IntEnum
 from typing import List, Tuple, Any, Dict
 from utils.standardPlugin import NotPublishedException
-from utils.basicConfigs import APPLY_GROUP_ID, APPLY_GUILD_ID, BACKEND, BACKEND_TYPE
+from utils.basicConfigs import APPLY_GROUP_ID, BACKEND, BACKEND_TYPE
 from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
 from utils.accountOperation import create_account_sql
 from utils.standardPlugin import (
@@ -67,6 +81,7 @@ from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
+from plugins.moyu import GetMoyuCalendar, UpdateMoyuCalendar
 
 from plugins.gocqWatchDog import GocqWatchDog
 ###### end not published plugins
@@ -104,9 +119,9 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([GroupCalendarHelper(), GroupCalendarManager()], 'calendar'),
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
-    PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace(), ], 'superemoji'), # 超级表情
-    PluginGroupManager([ShowNews(), YesterdayNews(), 
-                        PluginGroupManager([UpdateNewsAndReport()], 'newsreport')],'news'),  # 新闻
+    PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace()], 'superemoji'), # 超级表情
+    PluginGroupManager([ShowNews(), YesterdayNews(), GetMoyuCalendar(),
+                        PluginGroupManager([UpdateNewsAndReport(), UpdateMoyuCalendar()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SignIn()], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), getFdmcBilibili, getXjmcBilibili, 
@@ -151,9 +166,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjmcLive(), getFdmcBilibili, getXjmcBilibili,
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
 ]
-GuildPluginList:List[GuildStandardPlugin] = [
-
-]
+GuildPluginList:List[GuildStandardPlugin] = []
 GroupPokeList:List[PokeStandardPlugin] = [
     AutoRepoke(), # 自动回复拍一拍
 ]
@@ -193,7 +206,7 @@ def eventClassify(json_data: dict)->NoticeType:
         elif json_data['message_type'] == 'private':
             return NoticeType.PrivateMessage
         elif json_data['message_type'] == 'guild':
-            if (json_data['guild_id'], json_data['channel_id']) in APPLY_GUILD_ID:
+            if (json_data['guild_id'], json_data['channel_id']) in []:
                 return NoticeType.GuildMessage
             else:
                 return NoticeType.GuildMessageNoProcessRequired
@@ -221,14 +234,16 @@ def onMessageReceive(message:str)->str:
     data:Dict[str,Any] = json.loads(message)
     # 筛选并处理指定事件
     flag=eventClassify(data)
-    
+    print(data)
     # 消息格式转换
     if BACKEND == BACKEND_TYPE.LAGRANGE and 'message' in data.keys():
         msgChain = MessageChain(data['message'])
+        msgChain.fixLagrangeImgUrl()
         msgOrigin = msgChain.toCqcode()
         msg = msgOrigin.strip()
         data['message_chain'] = data['message']
         data['message'] = msgOrigin
+        # print(msg)
     
     if flag==NoticeType.GroupMessage: # 群消息处理
         msg = data['message'].strip()
@@ -299,15 +314,17 @@ def initCheck():
     # do some check
     for p in GroupPluginList:
         infoDict = p.getPluginInfo()
-        assert 'name' in infoDict.keys() and 'description' in infoDict.keys() \
-            and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
+        if not p.initCheck():
+            print(f'{infoDict} init check failed!')
+            exit(1)
         if 'group' not in infoDict['usePlace']:
             print("plugin [{}] can not be used in group talk!".format(infoDict['name']))
             exit(1)
     for p in PrivatePluginList:
         infoDict = p.getPluginInfo()
-        assert 'name' in infoDict.keys() and 'description' in infoDict.keys() \
-            and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
+        if not p.initCheck():
+            print(f'{infoDict} init check failed!')
+            exit(1)
         if 'private' not in infoDict['usePlace']:
             print("plugin [{}] can not be used in private talk!".format(infoDict['name']))
             exit(1)
@@ -322,11 +339,16 @@ if __name__ == '__main__':
         def onMsgRecvGocq():
             msg = request.get_data(as_text=True)
             return onMessageReceive(msg)
-        app.run(host="127.0.0.1", port=5986)
-
+        if config == None:
+            app.run(host="127.0.0.1", port=5986)
+        else:
+            app.run(host=config['frontend-ip'], port=config['frontend-port'])
     elif BACKEND == BACKEND_TYPE.LAGRANGE:
         from websocket_server import WebsocketServer
-        server = WebsocketServer("127.0.0.1", port=5706)
+        if config == None:
+            server = WebsocketServer("127.0.0.1", port=5706)
+        else:
+            server = WebsocketServer(config['frontend-ip'], port=config['frontend-port'])
         def onMsgRecvLag(_0, _1, msg):
             onMessageReceive(msg)
         server.set_fn_message_received(onMsgRecvLag)

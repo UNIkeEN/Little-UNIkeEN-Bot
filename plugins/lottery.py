@@ -47,7 +47,7 @@ class _lottery(ScheduleStandardPlugin):
         if _lottery.monitorSemaphore.acquire(blocking=False):
             self.schedule(hour=21)
 
-    def buyLottery(self,qq, msg):
+    def buyLottery(self, qq:int, msg:str)->str:
         if get_user_coins(qq)<PRICE_NUM:
             return "金币不足"
         msg_split=msg.split()
@@ -55,15 +55,14 @@ class _lottery(ScheduleStandardPlugin):
         if len(msg_split)!=4:
             return 
         for i in range(1,4):
-            try:
-                tmp=int(msg_split[i])
-                if tmp<=0 or tmp>10:
-                    return "号码需要为1-10之间的数字！"
-                if tmp in num_list:
-                    return "号码不能有重复喔"
-                num_list.append(tmp)
-            except:
-                return 
+            if not msg_split[i].isdigit():
+                return '号码需要为1-10之间的数字！'
+            tmp=int(msg_split[i])
+            if tmp<=0 or tmp>10:
+                return "号码需要为1-10之间的数字！"
+            if tmp in num_list:
+                return "号码不能有重复喔"
+            num_list.append(tmp)
         num_list.sort()
         new_lot=json.dumps({'qq':qq, 'num_list':num_list, 'prize':0})
         new_lot=escape_string(new_lot)

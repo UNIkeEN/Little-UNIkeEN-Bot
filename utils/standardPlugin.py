@@ -54,7 +54,7 @@ class StandardPlugin(ABC):
             }
         """
         raise NotImplementedError
-
+    
     def onStateChange(self, nextState:bool, data:Any)->None:
         """插件的状态（开启或关闭）改变时会调用此接口
         @nextState: 
@@ -62,6 +62,11 @@ class StandardPlugin(ABC):
             if False, plugin will close next
         @data: all the message data, including group_id or user_id
         """
+        
+    def initCheck(self)->bool:
+        infoDict = self.getPluginInfo()
+        return 'name' in infoDict.keys() and 'description' in infoDict.keys() \
+            and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
 
 class EmptyPlugin(StandardPlugin):
     """空插件"""
@@ -230,10 +235,10 @@ class PluginGroupManager(StandardPlugin):
         self.onPattern = re.compile(r'^\-grpcfg\s+enable\s+(%s|\*)$'%self.groupName)
         self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
         self.guard = Semaphore()
-        self._checkGroupInfo()
+        self.__makeGroupInfo()
         PluginGroupManager.refreshPluginStatusHandles.append((groupName, self._refreshPluginStatus))
     @final
-    def _checkGroupInfo(self):
+    def __makeGroupInfo(self):
         # check group name
         if 'name' not in self.groupInfo.keys():
             self.groupInfo['name'] = self.groupName
@@ -249,10 +254,18 @@ class PluginGroupManager(StandardPlugin):
                 p.getPluginInfo()['commandDescription'] for p in self.plugins
             ])
             self.groupInfo['commandDescription'] = commandDescription
-        # check use place
-        if not all(['group' in p.getPluginInfo()['usePlace'] for p in self.plugins]):
-            warning('all plugins should be able to use in group, error in {}'.format(self.groupName))
         self.groupInfo['usePlace'] = ['group']
+        
+    def initCheck(self) -> bool:
+        if not super().initCheck():
+            return False
+        for p in self.plugins:
+            if 'group' not in p.getPluginInfo()['usePlace']:
+                print('all plugins should be able to use in group, error in {}'.format(self.groupName))
+                return False
+            if not p.initCheck():
+                return False
+        return True
 
     def judgeTrigger(self, msg:str, data:Any)->bool:
         userId = data['user_id']

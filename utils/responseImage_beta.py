@@ -1,3 +1,5 @@
+# 2023/12/24:ImageDraw.textsize，ImageFont.getsize 最新 Pillow 已弃用，已适配
+
 import os
 import requests
 import base64
@@ -5,6 +7,7 @@ import re
 import uuid
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
+from typing import Tuple, Union, Any
 
 # 资源/临时路径
 FONTS_PATH = 'resources/fonts'
@@ -223,9 +226,9 @@ class ResponseImage():
     def calcHeight(self):
         width, height = self.width, 0
         cardList = self.cardList
-        txt_size = FONT_HYWH_36.getsize(self.title)
+        txt_size = get_font_size(self.title, FONT_HYWH_36)
         height += txt_size[1]+115 # 加标题距离
-        txt_size_18 = FONT_SYHT_M18.getsize('测试')
+        txt_size_18 = get_font_size('测试', FONT_SYHT_M18)
         height += (2*txt_size_18[1]+SPACE_NORMAL+SPACE_ROW if self.footer!='' else txt_size_18[1]+SPACE_NORMAL) + 15 # 加页脚距离
         if self.layout=='two-column' and len(self.cardList)>1:
             w_card = (width - 2*SPACE_DOUBLE - SPACE_NORMAL) / 2
@@ -348,7 +351,7 @@ class ResponseImage():
                 txt_parse[-1]+=word
                 continue
             txt_line+=word
-            if font.getsize(txt_line)[0]>widthLimit:
+            if get_font_size(txt_line, font)[0]>widthLimit:
                 txt_parse.append(txt_line)
                 txt_line=""
             if word=='\n':
@@ -362,7 +365,7 @@ class ResponseImage():
             txt_parse.append(txt_line)
         if len(txt_parse)==0:
             txt_parse=[' ']
-        height = sum([SPACE_ROW +font.getsize(txt)[1] for txt in txt_parse])
+        height = sum([SPACE_ROW + get_font_size(txt, font)[1] for txt in txt_parse]) 
         # height=len(txt_parse)*(font.getsize('测试')[1]+SPACE_ROW)
         # print(txt_parse)
         return txt_parse, height
@@ -412,16 +415,16 @@ class ResponseImage():
         self.draw = ImageDraw.Draw(self.img)
         draw = self.draw
         # 绘制标题
-        txt_size = FONT_HYWH_36.getsize(self.title)
+        txt_size = get_font_size(self.title, FONT_HYWH_36) 
         self.drawRoundedRectangle(x1=width/2-txt_size[0]/2-15, y1=40, x2=width/2+txt_size[0]/2+15,y2=txt_size[1]+70, fill=self.titleColor)
         draw.text((width/2-txt_size[0]/2,55), self.title, fill=PALETTE_WHITE, font=FONT_HYWH_36)
         top = txt_size[1]+115
         top_0 = top
         # 绘制页脚
-        txt_size = FONT_SYHT_M18.getsize('Powered By Little-UNIkeEN-Bot')
+        txt_size = get_font_size('Powered By Little-UNIkeEN-Bot', FONT_SYHT_M18)
         draw.text((width/2-txt_size[0]/2, height-SPACE_NORMAL-txt_size[1]), 'Powered By Little-UNIkeEN-Bot', fill=PALETTE_GREY_CONTENT, font = FONT_SYHT_M18)
         if self.footer!='':
-            txt_size = FONT_SYHT_M18.getsize(self.footer)
+            txt_size = get_font_size(self.footer, FONT_SYHT_M18)
             draw.text((width/2-txt_size[0]/2, height-SPACE_NORMAL-SPACE_ROW-2*txt_size[1]), self.footer, fill=PALETTE_GREY_CONTENT, font = FONT_SYHT_M18)
         # 绘制卡片
         i=0
@@ -497,7 +500,7 @@ class ResponseImage():
                         font = self.cardSubtitleFont
                     elif line[0]=='body':
                         font = self.cardBodyFont
-                    txt_size=font.getsize(line[1])
+                    txt_size=get_font_size(line[1], font)
                     x_l = cardLeft+(card['width']-txt_size[0])/2 if card['style']=='notice' else x_left
                     draw.text((x_l, y_top), line[1], fill=line[2], font = font)
                     y_top += (txt_size[1]+SPACE_ROW) 
@@ -529,3 +532,110 @@ class CardDrawError(Exception):
         self.errorInfo = errorInfo
     def __str__(self):
         return self.errorInfo
+
+
+# -----------------
+# 基于 Pillow 的辅助工具函数
+    
+def get_font_size(text:str, 
+                  font:ImageFont.FreeTypeFont)->Tuple[int,int]:
+    text_bbox = font.getbbox(text)
+    text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1] + 0.1 * font.size  # bbox不一定完全包含文字
+    return (int(text_width), int(text_height))
+
+
+def draw_gradient_rectangle(img:Image.Image, 
+                            position:Tuple[int,int,int,int], 
+                            fill:Union[Tuple[Any,Any],Tuple[Any,Any,Any,Any]]):
+    """
+    在图像上绘制渐变色矩形。
+
+    参数:
+    img: PIL Image对象，要绘制渐变矩形的图像。
+    position: 矩形的位置，格式为(x1, y1, x2, y2)的坐标元组。
+    fill: 渐变色填充，是RGBA颜色元组的列表。如果列表包含两个元组，则创建从左至右的线性渐变；
+          如果包含四个元组，则分别代表左上、右上、左下、右下角的颜色，用于创建双线性渐变。
+
+    当渐变参数不等于2或4时，抛出异常。
+    """
+    if len(fill) != 2 and len(fill) != 4:
+        raise ValueError("Fill parameter must contain either 2 or 4 color tuples.")
+
+    x1, y1, x2, y2 = position
+    width, height = x2 - x1, y2 - y1
+    canvas = Image.new('RGBA', (width, height), "white")
+
+    if len(fill) == 2:
+        # 线性渐变
+        color_start, color_end = fill
+        for x in range(width):
+            gradient_color = tuple(
+                int(color_start[i] + (float(x) / width) * (color_end[i] - color_start[i])) for i in range(4)
+            )
+            for y in range(height):
+                canvas.putpixel((x, y), gradient_color)
+
+    elif len(fill) == 4:
+        # 双线性渐变
+        top_left, top_right, bottom_left, bottom_right = fill
+        for x in range(width):
+            for y in range(height):
+                horizontal_ratio = float(x) / width
+                vertical_ratio = float(y) / height
+
+                tmp1 = tuple(
+                    int(top_left[i] + horizontal_ratio * (top_right[i] - top_left[i])) for i in range(4)
+                )
+                tmp2 = tuple(
+                    int(bottom_left[i] + horizontal_ratio * (bottom_right[i] - bottom_left[i])) for i in range(4)
+                )
+                gradient_color = tuple(
+                    int(tmp1[i] + vertical_ratio * (tmp2[i] - tmp1[i])) for i in range(4)
+                )
+                canvas.putpixel((x, y), gradient_color)
+
+    img.paste(canvas, position)
+
+def draw_gradient_text(img:Image.Image,
+                       position:Tuple[int,int],
+                       text:str,
+                       fill:Union[Tuple[Any,Any],Tuple[Any,Any,Any,Any]],
+                       font:ImageFont.FreeTypeFont):
+    """
+    在图像上绘制渐变色填充的文本。
+
+    参数:
+    img: PIL Image对象，要绘制文本的图像。
+    position: 文本的位置，格式为(x, y)的坐标元组。
+    text: 要绘制的文本。
+    fill: 渐变色填充，同draw_gradient_rectangle函数。
+    font: PIL ImageFont对象，定义文本的字体。
+
+    当渐变参数不等于2或4时，抛出异常。
+    """
+    if len(fill) != 2 and len(fill) != 4:
+        raise ValueError("Fill parameter must contain either 2 or 4 color tuples.")
+
+    # 为反锯齿创建更大的字体，缩放系数大于2较影响性能
+    scale_factor = 2
+    font_scaled = ImageFont.truetype(font.path, font.size * scale_factor)
+    text_width, text_height = get_font_size(text, font_scaled)
+
+    gradient_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+    draw_gradient_rectangle(gradient_img, (0, 0, text_width, text_height), fill)
+
+    text_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+    text_draw = ImageDraw.Draw(text_img)
+    text_draw.text((0, 0), text, fill=(255, 255, 255, 255), font=font_scaled)
+
+    gradient_text_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+    gradient_pixels = gradient_img.load()
+    text_pixels = text_img.load()
+    for y in range(text_height):
+        for x in range(text_width):
+            if text_pixels[x, y][3] > 0:
+                gradient_text_img.putpixel((x, y), gradient_pixels[x, y])
+
+    gradient_text_img = gradient_text_img.resize((text_width // scale_factor, text_height // scale_factor), Image.Resampling.LANCZOS)
+
+    img.paste(gradient_text_img, position, gradient_text_img)

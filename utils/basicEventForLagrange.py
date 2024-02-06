@@ -1,33 +1,50 @@
 import re
 import websocket
-import mysql.connector
 import requests, requests.exceptions, json
 from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
 from utils.messageChain import MessageChain
 from PIL import Image, ImageDraw, ImageFont
 from utils.basicConfigs import *
-import time
-import random
 from typing import Dict, List, Union, Tuple, Any, Optional
-from pymysql.converters import escape_string
 import traceback
-import aiohttp, asyncio
 from utils.bufferQueue import BufferQueue
 from io import BytesIO
-from threading import Lock
+from threading import Thread, Semaphore
+import uuid
 
 lagrangeClient = websocket.WebSocket()
-lagrangeClientGuard = Lock()
+lagrangeClientReturns:Dict[str, Dict[str, Any]] = {}
+lagrangeClientReturnSignals:Dict[str, Semaphore] = {}
 
-def sendPacketToLagrange(packet:Dict[str,Any])->Dict[str, Any]:
-    global lagrangeClient, lagrangeClientGuard
+def maintainLagrangeClientReturns():
+    global lagrangeClient, lagrangeClientReturns, lagrangeClientReturnSignals
+    while True:
+        try:
+            ret = json.loads(lagrangeClient.recv())
+            if not isinstance(ret, dict): continue
+            echo = ret.get('echo', None)
+            if echo == None: continue
+            semaphore = lagrangeClientReturnSignals.get(echo, None)
+            if semaphore == None: continue
+            lagrangeClientReturns[echo] = ret
+            semaphore.release()
+        except json.JSONDecodeError as e:
+            continue
+        except Exception as e: 
+            warning('error in maintainLagrangeClientReturns: {}'.format(e))
+            break
+
+lagrangeReturnsMaintainer = Thread(target=maintainLagrangeClientReturns)
+lagrangeReturnsMaintainer.daemon = True
+
+def sendPacketToLagrange(packet:Dict[str,Any]):
+    global lagrangeClient, lagrangeClientReturns, lagrangeReturnsMaintainer
     if not lagrangeClient.connected:
         lagrangeClient.connect(HTTP_URL)
+        if not lagrangeReturnsMaintainer.is_alive():
+            lagrangeReturnsMaintainer.start()
     packetEncoded = json.dumps(packet, ensure_ascii=False)
-    with lagrangeClientGuard:
-        lagrangeClient.send(packetEncoded)
-        ret = lagrangeClient.recv()
-    return json.loads(ret)
+    lagrangeClient.send(packetEncoded)
 
 def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
     """从cq img url中下载图片
@@ -123,6 +140,7 @@ def send(id: int, message: str, type:str='group')->None:
     """
     msgChain = MessageChain.fromCqcode(message)
     msgChain.removeUnsupportPiece()
+    msgChain.fixLagrangeImgUrl()
     if True:
         msgChain.convertImgPathToBase64()
     if type=='group':
@@ -150,13 +168,22 @@ def send(id: int, message: str, type:str='group')->None:
 async def aioSend(id: int, message: str, type:str='group')->None:
     raise Exception("No longer Support")
 
-def get_group_list()->list:
+def get_group_list()->Optional[List[int]]:
+    echo = str(uuid.uuid4())
+    s = lagrangeClientReturnSignals[echo] = Semaphore(0)
     packet = {
         'action': 'get_group_list',
-        'params': {}
+        'params': {},
+        'echo': echo
     }
-    result = sendPacketToLagrange(packet)
-    print(result)
+    sendPacketToLagrange(packet)
+    if s.acquire(blocking=True, timeout=10):
+        lagrangeClientReturnSignals.pop(echo)
+        result = lagrangeClientReturns.pop(echo)
+        return result['data']
+    else:
+        lagrangeClientReturnSignals.pop(echo)
+        return None
 
 def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->list:
     raise Exception("no longer support")
@@ -177,13 +204,56 @@ def get_group_files_by_folder(group_id: int, folder_id: str)->dict:
     raise Exception("no longer support")
 
 def get_group_member_info(group_id: int, user_id: int, no_cache: bool=False)->Union[dict, None]:
-    raise Exception("no longer support")
+    echo = str(uuid.uuid4())
+    s = lagrangeClientReturnSignals[echo] = Semaphore(0)
+    packet = {
+        'action': 'get_group_member_info',
+        'params': {
+            "group_id": group_id,
+            "user_id": user_id,
+            "no_cache": no_cache,
+        },
+        'echo': echo,
+    }
+    sendPacketToLagrange(packet)
+    if s.acquire(blocking=True, timeout=10):
+        lagrangeClientReturnSignals.pop(echo)
+        result = lagrangeClientReturns.pop(echo)
+        return result['data']
+    else:
+        lagrangeClientReturnSignals.pop(echo)
+        return None
 
 def isGroupOwner(group_id:int, user_id:int)->bool:
-    raise Exception("no longer support")
+    """判断该成员是否为群主
+    @group_id: 群号
+    @user_id:  待判断的成员QQ
+
+    @return:   是否为群主
+    """
+    memberInfo = get_group_member_info(group_id, user_id)
+    return memberInfo != None and memberInfo.get('role', '') == 'owner'
+
 
 def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
-    raise Exception("no longer support")
+    echo = str(uuid.uuid4())
+    s = lagrangeClientReturnSignals[echo] = Semaphore(0)
+    packet = {
+        'action': 'get_group_member_list',
+        'params': {
+            "group_id": group_id,
+            "no_cache": no_cache,
+        },
+        'echo': echo,
+    }
+    sendPacketToLagrange(packet)
+    if s.acquire(blocking=True, timeout=10):
+        lagrangeClientReturnSignals.pop(echo)
+        result = lagrangeClientReturns.pop(echo)
+        return result['data']
+    else:
+        lagrangeClientReturnSignals.pop(echo)
+        return None
 
 def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, None]:
     raise Exception("no longer support")
