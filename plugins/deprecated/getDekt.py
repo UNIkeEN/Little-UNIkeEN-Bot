@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 from typing import Union, Any
 from utils.basicEvent import send, warning, init_image_template, draw_rounded_rectangle
-from utils.channelAPI import send_guild_channel_msg
 from utils.basicConfigs import *
 import requests
 from utils.configAPI import getPluginEnabledGroups
@@ -96,7 +95,6 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
                 picPath = NewActlistPic()
                 picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
                 txt = f'已发现第二课堂活动更新:[CQ:image,file=file:///{picPath}]'
-                # send_guild_channel_msg(MAIN_GUILD['guild_id'], MAIN_GUILD['channels']['dekt'], txt)
                 for group_id in getPluginEnabledGroups('dekt'):
                     send(group_id, txt, 'group')
                     time.sleep(1)
