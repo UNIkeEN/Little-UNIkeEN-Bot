@@ -9,6 +9,8 @@ from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
 from utils.accountOperation import get_user_coins, update_user_coins
+import mysql.connector
+from pymysql.converters import escape_string
 
 FORTUNE_TXT = [['r',"大吉"],['r',"中吉"],['r',"小吉"],['g',"中平"],['h',"小赢"],['h',"中赢"],['h',"大赢"],['r',"奆🐔"],['h','奆🐻']]
 
