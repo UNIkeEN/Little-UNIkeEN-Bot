@@ -6,6 +6,7 @@ import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.job import Job
 from threading import Timer, Semaphore
+import httpx
 
 class NotPublishedException(BaseException):
     """可能有些插件因为secret key或者其他原因不选择开源，请抛出此类"""
@@ -195,6 +196,8 @@ class BaseTimeSchedulePlugin(ABC):
     def _tick(self,)->None:
         try:
             self.tick()
+        except httpx.ConnectError as e:
+            print('httpx.ConnectError in ScheduleStandardPlugin: {}'.format(e))
         except BaseException as e:
             warning('exception in ScheduleStandardPlugin: {}'.format(e))
 

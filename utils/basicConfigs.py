@@ -32,7 +32,7 @@ MAIL_PASS = ''
 BOT_SELF_QQ=None # bot自己qq号是多少
 # assert BOT_SELF_QQ != None, 'BOT的QQ号是多少'
 
-VERSION_TXT="""version：开源1.2.1版本
+VERSION_TXT="""version：开源1.3,0版本
 本版本更新内容见文档： https://unikeen.github.io/Little-UNIkeEN-Bot/"""
 
 sqlConfig = {
