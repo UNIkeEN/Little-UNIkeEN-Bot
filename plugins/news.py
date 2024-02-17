@@ -10,6 +10,8 @@ from utils.standardPlugin import StandardPlugin, CronStandardPlugin
 from threading import Semaphore
 from utils.configAPI import getPluginEnabledGroups
 from dateutil import parser as timeparser
+import numpy as np
+# TODO: same with yesterday
 
 class ShowNews(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -74,10 +76,12 @@ class UpdateNewsAndReport(StandardPlugin, CronStandardPlugin):
         today_pic = get_todays_news()
         if today_pic is None:
             return
+        elif checkSameWithYesterday(today_pic):
+            today_pic.save(today_pic_str)
         else:
             today_pic.save(today_pic_str)
-        for group_id in getPluginEnabledGroups('newsreport'):
-            send(group_id, f'[CQ:image,file=file:///{today_pic_str}]')
+            for group_id in getPluginEnabledGroups('newsreport'):
+                send(group_id, f'[CQ:image,file=file:///{today_pic_str}]')
                 
     def getPluginInfo(self) -> dict:
         return {
@@ -123,3 +127,18 @@ def get_todays_news()->Optional[Image.Image]:
         return img
     except:
         return None
+
+def checkSameWithYesterday(img:Image.Image)->bool:
+    yesterday = datetime.date.today() + datetime.timedelta(days=-1)
+    yesterdayExist, yesterdayImgPath = get_news_pic_path(yesterday)
+    if not yesterdayExist:
+        return False
+    try:
+        yesterdayImg = Image.open(yesterdayImgPath)
+        img:np.ndarray = np.asarray(img)
+        yesterdayImg:np.ndarray = np.asarray(yesterdayImg)
+        if img.shape != yesterdayImg.shape:
+            return False
+        return np.all(img == yesterdayImg)
+    except:
+        return False

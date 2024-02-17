@@ -17,7 +17,7 @@ import asyncio, json
 from enum import IntEnum
 from typing import List, Tuple, Any, Dict
 from utils.standardPlugin import NotPublishedException
-from utils.basicConfigs import APPLY_GROUP_ID, BACKEND, BACKEND_TYPE
+from utils.basicConfigs import APPLY_GROUP_ID, BACKEND, BACKEND_TYPE, BOT_SELF_QQ
 from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
 from utils.accountOperation import create_account_sql
 from utils.standardPlugin import (
@@ -180,6 +180,7 @@ class NoticeType(IntEnum):
     NoProcessRequired = 0
     GroupMessageNoProcessRequired = 1
     GuildMessageNoProcessRequired = 2
+    PrivateMessageNoProcessRequired = 3
     GocqHeartBeat = 5
     GroupMessage = 11
     GroupPoke = 12
@@ -199,12 +200,17 @@ def eventClassify(json_data: dict)->NoticeType:
         return NoticeType.GocqHeartBeat
     elif json_data['post_type'] == 'message':
         if json_data['message_type'] == 'group':
-            if json_data['group_id'] in APPLY_GROUP_ID:
+            if json_data['user_id'] == BOT_SELF_QQ:
+                return NoticeType.GroupMessageNoProcessRequired
+            elif json_data['group_id'] in APPLY_GROUP_ID:
                 return NoticeType.GroupMessage
             else:
                 return NoticeType.GroupMessageNoProcessRequired
         elif json_data['message_type'] == 'private':
-            return NoticeType.PrivateMessage
+            if json_data['user_id'] == BOT_SELF_QQ:
+                return NoticeType.PrivateMessageNoProcessRequired
+            else:
+                return NoticeType.PrivateMessage
         elif json_data['message_type'] == 'guild':
             if (json_data['guild_id'], json_data['channel_id']) in []:
                 return NoticeType.GuildMessage
@@ -234,7 +240,7 @@ def onMessageReceive(message:str)->str:
     data:Dict[str,Any] = json.loads(message)
     # 筛选并处理指定事件
     flag=eventClassify(data)
-    print(data)
+    # print(data)
     # 消息格式转换
     if BACKEND == BACKEND_TYPE.LAGRANGE and 'message' in data.keys():
         msgChain = MessageChain(data['message'])

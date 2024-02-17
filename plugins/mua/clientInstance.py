@@ -25,7 +25,7 @@ def createMuaSessionIdSql():
         `target` bigint unsigned comment 'QQ会话对象(群组或用户)',
         `message_type` char(20) comment 'QQ会话对象类型',
         `time` char(20) comment 'QQ会话时间',
-        `message_id` int comment 'QQ消息id',
+        `message_id` bigint comment 'QQ消息id',
         `ann_key` char(64) comment 'announce标识主键',
         `abstract` bool default false comment '是否查询mua通知摘要',
         primary key(`session_id`)

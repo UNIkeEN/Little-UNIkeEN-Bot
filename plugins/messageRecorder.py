@@ -90,7 +90,7 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
         mydb, mycursor = newSqlSession()
         mycursor.execute("""
         create table if not exists `messageRecord`(
-            `message_id` int not null,
+            `message_id` bigint not null,
             `message_seq` bigint not null,
             `time` timestamp not null,
             `user_id` bigint not null,
