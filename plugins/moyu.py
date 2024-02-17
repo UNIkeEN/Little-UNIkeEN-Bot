@@ -107,16 +107,20 @@ class UpdateMoyuCalendar(StandardPlugin, ScheduleStandardPlugin):
         return None
     def tick(self) -> None:
         moyuSavePath = getMoyuSavePath()
-        if os.path.exists(moyuSavePath): return
         while True:
-            img = getTodaysMoyuCalendar()
-            if img is not None: 
-                img.save(moyuSavePath)
-                if checkSameWithYesterday(img):
-                    return
-                else:
-                    break
-            time.sleep(180)
+            if os.path.exists(moyuSavePath): 
+                img = Image.open(moyuSavePath)
+            else:
+                img = getTodaysMoyuCalendar()
+                if img is not None: 
+                    img.save(moyuSavePath)
+            if img is None:
+                time.sleep(180)
+                continue
+            elif checkSameWithYesterday(img):
+                return
+            else:
+                break
         for group_id in getPluginEnabledGroups('newsreport'):
             send(group_id, f'[CQ:image,file=file:///{moyuSavePath}]')
     def getPluginInfo(self) -> dict:
