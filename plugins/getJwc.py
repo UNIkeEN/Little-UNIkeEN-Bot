@@ -1,11 +1,13 @@
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, GuildStandardPlugin
 from typing import Set, Union, Any, List
+import mysql.connector
 from utils.responseImage import *
 import requests
 from bs4 import BeautifulSoup as BS
 from utils.sqlUtils import newSqlSession
-from utils.basicEvent import *
+from utils.basicEvent import send, warning, draw_rounded_rectangle, init_image_template
 from utils.basicConfigs import *
+from utils.sqlUtils import newSqlSession
 from utils.configAPI import getPluginEnabledGroups
 from threading import Semaphore
 import json
@@ -13,6 +15,23 @@ from datetime import datetime
 from urllib.parse import urljoin
 import qrcode
 import os, os.path
+
+def createJwcSql():
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""
+    create table if not exists `sjtuJwc` (
+        `jwc_seq` bigint unsigned not null auto_increment,
+        `url` varchar(100) not null,
+        `update_time` timestamp default null,
+        primary key (`jwc_seq`)
+    )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
+
+def appendJwcUrl(url:str):
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""
+    insert into `sjtuJwc` (`url`, `update_time`) values (%s, %s)
+    """, (url, datetime.now()))
+
 def getSjtuGk():
     """交大信息公开网"""
     pageUrl = 'https://gk.sjtu.edu.cn'
@@ -38,6 +57,17 @@ def getSjtuGk():
         except BaseException as e:
             print("exception in getSjtuGk: {}".format(e))
     return result
+
+def loadPrevUrls()->Set[str]:
+    mydb, mycursor = newSqlSession(autocommit=False)
+    mycursor.execute("""
+    select `url` from `sjtuJwc`
+    """)
+    result = set()
+    for url, in list(mycursor):
+        result.add(url)
+    return result
+
 def getSjtuNews():
     """交大新闻网"""
     pageUrl = 'https://news.sjtu.edu.cn/jdyw/index.html'
@@ -87,6 +117,7 @@ def getSjtuNews():
             'source': source
         })
     return result
+
 def drawSjtuNews()->str:
     a = ResponseImage(
         title='交大新闻', 
@@ -148,39 +179,42 @@ def getJwc()->list:
         except BaseException as e:
             print("exception in getJwc: {}".format(e))
     return newsList
+
 class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:
         if SjtuJwcMonitor.monitorSemaphore.acquire(blocking=False):
             self.start(20, 180)
+            createJwcSql()
+        self.url_list = []
+        if False:
+            if not os.path.isfile(exact_path):
+                with open(exact_path, 'w') as f:
+                    f.write('[]')
+            self.url_list:list = json.load(open(exact_path, 'r'))
+        else:
+            self.url_list = list(loadPrevUrls())
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return False
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         return "OK"
     def tick(self, ):
-        exact_path='data/jwc.json'
-        if not os.path.isfile(exact_path):
-            with open(exact_path, 'w') as f:
-                f.write('[]')
-        url_list:list = json.load(open(exact_path, 'r'))
-        updateFlag = len(url_list) > 0
+        exact_path= os.path.join(ROOT_PATH, 'data/jwc.json')
+        updateFlag = len(self.url_list) > 0
         for j in getJwc():
-            if j['link'] not in url_list:
-                url_list.append(j['link'])
-                if not updateFlag: continue
-                pic = DrawNoticePIC(j)
-                pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
-                broadcastWord = '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link']
-                for group_id in getPluginEnabledGroups('jwc'):
-                    send(group_id, broadcastWord)
-                    send(group_id, '[CQ:image,file=file:///%s]'%pic)
-                # time.sleep(3)
-                # for user_id in SubscribeJwc.getJwcSubscribers():
-                #     send(user_id, broadcastWord, 'private')
-                #     time.sleep(0.5)
-            
-        with open(exact_path, 'w') as f:
-            json.dump(url_list, f, indent=4)
+            if j['link'] in self.url_list: continue
+            self.url_list.append(j['link'])
+            appendJwcUrl(j['link'])
+            if not updateFlag: continue
+            pic = DrawNoticePIC(j)
+            pic = pic if os.path.isabs(pic) else os.path.join(ROOT_PATH, pic)
+            broadcastWord = '已发现教务通知更新:\n【'+j['title']+'】\n'+j['link']
+            for group_id in getPluginEnabledGroups('jwc'):
+                send(group_id, broadcastWord)
+                send(group_id, '[CQ:image,file=file:///%s]'%pic)
+            if False:
+                with open(exact_path, 'w') as f:
+                    json.dump(self.url_list, f, indent=4)
     def getPluginInfo(self, )->Any:
         return {
             'name': 'SjtuJwcMonitor',
@@ -286,6 +320,7 @@ class SubscribeJwc(StandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
+        
 class GetSjtuNews(StandardPlugin, CronStandardPlugin): 
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:
@@ -378,3 +413,11 @@ def DrawNoticePIC(notice)->str:
     save_path=os.path.join(SAVE_TMP_PATH, 'jwc_notice.png')
     img.save(save_path)
     return save_path
+
+if __name__ == '__main__':
+    createJwcSql()
+    exact_path= os.path.join(ROOT_PATH, 'data/jwc.json')
+    with open(exact_path, 'r') as f:
+        jwcUrls = json.load(f)
+    for url in jwcUrls:
+        appendJwcUrl(url)
