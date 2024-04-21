@@ -140,7 +140,8 @@ except NotPublishedException as e:
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
 
 from plugins.gocqWatchDog import GocqWatchDog
-
+from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
+from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
 ###### end not published plugins
 
 def sqlInit():
