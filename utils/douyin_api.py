@@ -86,7 +86,7 @@ class UserFixed:
         url = 'https://www.douyin.com/aweme/v1/web/aweme/post/' + '?' + splice_url(params)
 
         query = urllib.parse.urlparse(url).query
-        xbogus = execjs.compile(open('./static/X-Bogus.js').read()).call('sign', query, HEADERS['user-agent'])
+        xbogus = execjs.compile(open('./resources/X-Bogus.js').read()).call('sign', query, HEADERS['user-agent'])
         new_url = url + "&X-Bogus=" + xbogus
 
 
