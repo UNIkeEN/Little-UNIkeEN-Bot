@@ -8,6 +8,7 @@ import datetime
 import re
 from utils.sqlUtils import newSqlSession
 from typing import Optional, Dict, List
+import time
 
 # 开始时间占位符（当日程不提供开始时间时占位）
 TIME_BEGIN_PLSHOLDER=datetime.datetime(1980, 1, 1, 0, 0, 0)
@@ -125,23 +126,32 @@ def syncCanvas(qq_id:int)->Optional[List]:
         for component in gcal.walk():
             if component.name == "VEVENT":
                 now = time.localtime()
-                ddl_time = component.get('dtend').dt
-                if not isinstance(ddl_time,datetime.datetime):
-                    tmp=datetime.datetime.strftime(ddl_time,"%Y-%m-%d")+" 23:59:59"
-                    ddl_time = datetime.datetime.strptime(tmp,"%Y-%m-%d %H:%M:%S")
+                ddl_time1 = component.get('dtend')
+                ddl_time2 = component.get('dtstart')
+                if ddl_time1 is None and ddl_time2 is None:
+                    ddl_time = None
                 else:
-                    ddl_time+=datetime.timedelta(hours=8)
-                    tmp = datetime.datetime.strftime(ddl_time, "%Y-%m-%d %H:%M:%S")
-                if time.mktime(time.strptime(tmp, "%Y-%m-%d %H:%M:%S")) < time.mktime(now):
-                    continue
+                    if ddl_time1 is not None:
+                        ddl_time = ddl_time1.dt
+                    else:
+                        ddl_time = ddl_time2.dt
+                    if not isinstance(ddl_time,datetime.datetime):
+                        tmp=datetime.datetime.strftime(ddl_time,"%Y-%m-%d")+" 23:59:59"
+                        ddl_time = datetime.datetime.strptime(tmp,"%Y-%m-%d %H:%M:%S")
+                    else:
+                        ddl_time+=datetime.timedelta(hours=8)
+                        tmp = datetime.datetime.strftime(ddl_time, "%Y-%m-%d %H:%M:%S")
+                    if time.mktime(time.strptime(tmp, "%Y-%m-%d %H:%M:%S")) < time.mktime(now):
+                        continue
+                    ddl_time = ddl_time.replace(tzinfo=None)
                 summary = parseSummary(component.get('summary'))
                 title = component.get('summary') if summary == None else summary['title']
                 subtitle = '' if summary == None else '%s  %s'%(summary['courseNo'], summary['courseName'])
                 # print(summary)
                 events.append([title, subtitle,
-                               TIME_BEGIN_PLSHOLDER, ddl_time.replace(tzinfo=None), 
-                               (0, 142, 226, 255), (232, 242, 248, 255),
-                               os.path.join(IMAGES_PATH,'canvas_icon.png')])
+                            TIME_BEGIN_PLSHOLDER, ddl_time, 
+                            (0, 142, 226, 255), (232, 242, 248, 255),
+                            os.path.join(IMAGES_PATH,'canvas_icon.png')])
         return events
     except Exception as e:
         warning('exception in uniAgenda.syncCanvas: {}'.format(e))
@@ -192,11 +202,13 @@ def drawAgenda(events:List[Tuple], qq_id:int)->str:
         # 画日程块
         for title,subtitle, tbegin, tend, clrborder, clrback, icon in events:
             _tbegin, _tend= tbegin, tend
+            if tend is None:
+                _tend = datetime.datetime(year=2099, month=12, day=31, hour=23, minute=59)
             tleftbound = datetime.datetime.combine(cur_time-datetime.timedelta(days=3), datetime.time(0,0,0))
             trightbound = datetime.datetime.combine(cur_time+datetime.timedelta(days=3), datetime.time(23,59,59))
-            if tbegin < tleftbound:
+            if _tbegin < tleftbound:
                 _tbegin = tleftbound
-            if tend > trightbound:
+            if _tend > trightbound:
                 _tend = trightbound
             x1=30+1050*(_tbegin-tleftbound).total_seconds()/604800
             x2=30+1050*(_tend-tleftbound).total_seconds()/604800
@@ -212,7 +224,10 @@ def drawAgenda(events:List[Tuple], qq_id:int)->str:
 
             draw.text((x1+20, h_top+22), cutLine(title, FONT_SYHT_M28, x2-x1-40-icon_width), clrborder, FONT_SYHT_M28)
             draw.text((x1+20, h_top+60), cutLine(subtitle, FONT_SYHT_M18, x2-x1-40-icon_width), PALETTE_GREY_SUBTITLE, FONT_SYHT_M18)
-            tip_time = (datetime.datetime.strftime(tbegin,"%m-%d %H:%M") if tbegin!=TIME_BEGIN_PLSHOLDER else '')+'至'+datetime.datetime.strftime(tend,"%m-%d %H:%M")
+            if tend is not None:
+                tip_time = (datetime.datetime.strftime(tbegin,"%m-%d %H:%M") if tbegin!=TIME_BEGIN_PLSHOLDER else '')+'至'+datetime.datetime.strftime(tend,"%m-%d %H:%M")
+            else:
+                tip_time = (datetime.datetime.strftime(tbegin,"%m-%d %H:%M") if tbegin!=TIME_BEGIN_PLSHOLDER else '')+'至 未知时间'
             draw.text((x1+20, h_top+82), cutLine(tip_time, FONT_SYHT_M18, x2-x1-40-icon_width), PALETTE_GREY_CONTENT, FONT_SYHT_M18)
             h_top+=140
 

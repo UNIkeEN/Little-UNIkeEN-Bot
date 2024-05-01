@@ -2,9 +2,13 @@
 
 ## MUA简介
 
-中国Minecraft高校联盟（Minecraft University Alliance，简称MUA）建立于2020年11月，致力于推动高校MC事业发展与正规化，打造独一无二的高校MC社区生态。现已有逾70所高校的MC爱好者组织加入我们，期待与众多高校MC爱好者共创高校MC的美好未来。（最高负责人及MUA理事会理事长@HakureiC0 ）
-官网: [https://www.mualliance.ltd](https://www.mualliance.ltd)
-百科: [https://wiki.mualliance.ltd](https://wiki.mualliance.ltd)
+Minecraft 高校联盟（Minecraft University Alliance，简称 MUA）是一个旨在联合全国高校 MC 爱好者，共同推动高校 MC 生态发展的公益性组织。我们在这里为大家提供一个游戏经验、社群运营与发展经验、技术研发经验的交流平台，同时也是各种高校活动、重大项目以及优质资源的共享平台。发展至今，Minecraft 高校联盟实际上已经围绕着 Minecraft 但又不局限于 Minecraft，
+
+
+官网: [https://www.mualliance.cn/](https://www.mualliance.cn/)
+百科: [https://www.mualliance.cn/wiki](https://www.mualliance.cn/wiki)
 皮肤站: [https//skin.mualliance.ltd](https//skin.mualliance.ltd) (通过union验证系统与所有高校成员皮肤站联结，仅支持教育邮箱注册)
 
 ## MUA QQ聊天对接
+
+请查看文档：https://docs.mualliance.cn/zh/dev/union/sync

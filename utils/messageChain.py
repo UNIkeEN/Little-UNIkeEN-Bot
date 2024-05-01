@@ -88,7 +88,6 @@ class MessageChain():
                 }
             result.append(piece)
         return cls(result)
-    
     def fixLagrangeImgUrl(self):
         new_chain = []
         for piece in self.chain:

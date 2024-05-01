@@ -11,7 +11,7 @@ from utils.standardPlugin import StandardPlugin, NotPublishedException
 from utils.accountOperation import get_user_coins, update_user_coins
 from utils.responseImage_beta import *
 try:
-    from resources.api.getMddCola import getTea
+    from resources.api.getMddTea24 import getTea
 except ImportError:
     raise NotPublishedException("Mdd Tea api not published")
 FORTUNE_TXT = [['r',"大吉"],['r',"中吉"],['r',"小吉"],['g',"中平"],['h',"小赢"],['h',"中赢"],['h',"大赢"]]
@@ -83,12 +83,12 @@ def draw_signinbanner(qq_id:int, add_coins, now_coins, fortune):
         )
     )
     
-    # 第三段：雪碧
+    # 第三段：柠檬红茶
     status, description = getTea(qq_id)
     if status == False and description == '查询失败':
         SignInCards.addCard(
             ResponseImage.RichContentCard(
-                raw_content = [('subtitle', '* 绑定授权码以同步领取麦当劳每日免费雪碧\n发送命令【-icola】查看详情')],
+                raw_content = [('subtitle', '* 绑定授权码以同步领取麦当劳每日免费柠檬红茶\n发送命令【-icoke】查看详情')],
                 backColor = PALETTE_GREY_BACK
             )
         )
@@ -96,20 +96,20 @@ def draw_signinbanner(qq_id:int, add_coins, now_coins, fortune):
         SignInCards.addCard(
             ResponseImage.RichContentCard(
                 raw_content = [
-                    ('title', f'已成功同步领取今日麦当劳【免费雪碧】！', (35,210,137,255)),
+                    ('title', f'已成功同步领取今日麦当劳【免费柠檬红茶】！', PALETTE_ORANGE),
                     ('title','打开麦当劳APP或小程序, 即可看到优惠券~',PALETTE_GREY_SUBTITLE),
                     ('separator',),
                     ('subtitle','技术支持: Teruteru')
                 ],
-                backColor = (214,255,238,255),
-                icon = os.path.join(IMAGES_PATH,'Sprite.png')
+                backColor = (253,243,214,255),
+                icon = os.path.join(IMAGES_PATH,'mddTea.png')
             )
         )
     else:
         SignInCards.addCard(
             ResponseImage.RichContentCard(
                 raw_content = [
-                    ('subtitle', f'* 同步领取麦当劳每日免费雪碧失败\n原因: {description}'),
+                    ('subtitle', f'* 同步领取麦当劳每日免费柠檬红茶失败\n原因: {description}'),
                     ],
                 backColor = PALETTE_GREY_BACK
             )
@@ -139,7 +139,7 @@ def sign_in(qq_id:int):
         update_user_coins(id, add_coins, '签到奖励')
         try:
             mycursor.execute("UPDATE accounts SET lastSign='%s', fortune=%d WHERE id=%d;"
-                %(escape_string(today_str), fortune, id))
+                %(today_str, fortune, id))
         except mysql.connector.errors.DatabaseError as e:
             warning("sql error in signin: {}".format(e))
         return draw_signinbanner(id, add_coins, get_user_coins(id), fortune)

@@ -4,30 +4,65 @@ from utils.standardPlugin import StandardPlugin, ScheduleStandardPlugin
 from utils.sqlUtils import newSqlSession
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
 from utils.configAPI import getPluginEnabledGroups
-import requests, os, imgkit, time
+import requests, os, imgkit, time, datetime
 
-def get_leetcode_question_everyday()->Optional[Dict[str, Any]]:
-    LEETCODE_URL="https://leetcode-cn.com/problemset/all/"
-    base_url = 'https://leetcode-cn.com'
+def queryTopicTags(titleSlug:str)->Optional[List[str]]:
+    json_data = {
+        'query': '\n    query singleQuestionTopicTags($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    topicTags {\n      name\n      slug\n      translatedName\n    }\n  }\n}\n    ',
+        'variables': {
+            'titleSlug': titleSlug,
+        },
+        'operationName': 'singleQuestionTopicTags',
+    }
     try:
-        resp = requests.get(url=LEETCODE_URL)
-        response = requests.post(base_url + "/graphql", json={
-            "operationName": "questionOfToday",
-            "variables": {},
-            "query": "query questionOfToday { todayRecord {   question {     questionFrontendId     questionTitleSlug     __typename   }   lastSubmission {     id     __typename   }   date   userStatus   __typename }}"
-        })
-
-        leetcodeTitle = response.json().get('data').get('todayRecord')[0].get("question").get(
-            'questionTitleSlug')
-
-        # 获取今日每日一题的所有信息
-        url = base_url + "/problems/" + leetcodeTitle
-        response = requests.post(base_url + "/graphql",
-                                 json={"operationName": "questionData", "variables": {"titleSlug": leetcodeTitle},
-                                       "query": "query questionData($titleSlug: String!) {  question(titleSlug: $titleSlug) {    questionId    questionFrontendId    boundTopicId    title    titleSlug    content    translatedTitle    translatedContent    isPaidOnly    difficulty    likes    dislikes    isLiked    similarQuestions    contributors {      username      profileUrl      avatarUrl      __typename    }    langToValidPlayground    topicTags {      name      slug      translatedName      __typename    }    companyTagStats    codeSnippets {      lang      langSlug      code      __typename    }    stats    hints    solution {      id      canSeeDetail      __typename    }    status    sampleTestCase    metaData    judgerAvailable    judgeType    mysqlSchemas    enableRunCode    envInfo    book {      id      bookName      pressName      source      shortDescription      fullDescription      bookImgUrl      pressImgUrl      productUrl      __typename    }    isSubscribed    isDailyQuestion    dailyRecordStatus    editorType    ugcQuestionId    style    __typename  }}"})
-        return response.json().get('data').get("question")
+        response = requests.post('https://leetcode.cn/graphql/', json=json_data)
+        if not response.ok: return None
+        return response.json()['data']['question']
     except Exception as e:
-        return None
+        print('!!!!!!!!!!!!', e)
+    return None
+def queryQuestion(titleSlug:str)->Optional[Dict[str, str]]:
+    json_data = {
+        'query': '\n    query questionTranslations($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    translatedTitle\n  translatedContent\n difficulty\n  }\n}\n    ',
+        'variables': {
+            'titleSlug': titleSlug,
+        },
+        'operationName': 'questionTranslations',
+    }
+    try:
+        response = requests.post('https://leetcode.cn/graphql/', json=json_data)
+        if not response.ok: return None
+        return response.json()['data']['question']
+    except Exception as e:
+        print('!!!!!!!!!!!!', e)
+    return None
+def getLeetcodeDailyQuestion()->Optional[Dict[str, str]]:
+    today = datetime.date.today()
+    todayStr = today.strftime('%Y-%m-%d')
+    json_data = {
+        'query': '\n    query dailyQuestionRecords($year: Int!, $month: Int!) {\n  dailyQuestionRecords(year: $year, month: $month) {\n    date\n    question {\n      questionFrontendId\n      title\n      titleSlug\n      translatedTitle\n    }\n  }\n}\n    ',
+        'variables': {
+            'year': today.year,
+            'month': today.month,
+        },
+        'operationName': 'dailyQuestionRecords',
+    }
+    try:
+        response = requests.post('https://leetcode.cn/graphql/', json=json_data)
+        if not response.ok: return None
+        questions = response.json()['data']['dailyQuestionRecords']
+        for q in questions:
+            if q.get('date', None) == todayStr:
+                question = q['question']
+                questionDetail = queryQuestion(question['titleSlug'])
+                if questionDetail == None: return None
+                topicTags = queryTopicTags(question['titleSlug'])
+                questionDetail.update(question)
+                questionDetail.update(topicTags)
+                return questionDetail
+    except Exception as e:
+        print('!!!!!!!!!!!!', e)
+    return None
     
 def getLeetcodeTags(leetcodeResponse:Dict[str, Any])->List[str]:
     topicTags = leetcodeResponse['topicTags']
@@ -59,7 +94,7 @@ class ShowLeetcode(StandardPlugin):
         return msg in ['-leetcode', '力扣']
     def executeEvent(self, msg: str, data: Any) -> Union[Any, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        leetcodeResponse = get_leetcode_question_everyday()
+        leetcodeResponse = getLeetcodeDailyQuestion()
         if leetcodeResponse == None:
             send(target, '请求失败，请稍后重试', data['message_type'])
             return 'OK'
@@ -90,10 +125,10 @@ class LeetcodeReport(StandardPlugin, ScheduleStandardPlugin):
         return None
     def tick(self) -> None:
         enabledGroups = getPluginEnabledGroups('leetcode')
-        leetcodeResponse = get_leetcode_question_everyday()
+        leetcodeResponse = getLeetcodeDailyQuestion()
         while leetcodeResponse == None:
             time.sleep(180)
-            leetcodeResponse = get_leetcode_question_everyday()
+            leetcodeResponse = getLeetcodeDailyQuestion()
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'leetcode-{}.png'.format(leetcodeResponse.get('questionFrontendId')))
         result = generateMsg(leetcodeResponse)
         if not os.path.isfile(savePath):

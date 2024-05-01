@@ -82,8 +82,9 @@ from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
 from plugins.moyu import GetMoyuCalendar, UpdateMoyuCalendar
-
 from plugins.gocqWatchDog import GocqWatchDog
+from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
+from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
 ###### end not published plugins
 
 def sqlInit():
@@ -149,7 +150,9 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
-    PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode')
+    PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
+    PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
+    PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
