@@ -140,7 +140,8 @@ except NotPublishedException as e:
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
 
 from plugins.gocqWatchDog import GocqWatchDog
-
+from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
+from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
 ###### end not published plugins
 
 def sqlInit():
@@ -226,6 +227,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
+    PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
+    PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin')
     # PluginGroupManager([], 'arxiv'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
