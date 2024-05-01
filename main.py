@@ -38,7 +38,13 @@ from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
 from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
-from plugins.signIn import SignIn
+## tmp
+from plugins.signIn_v2 import SignIn
+try:
+    from resources.api.getMddTea24 import IcokeUserBind
+except:
+    IcokeUserBind = EmptyPlugin
+    
 from plugins.thanksLUB import ThanksLUB
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
@@ -138,7 +144,7 @@ try:
 except NotPublishedException as e:
     SjtuPlusGroupingVerify = EmptyAddGroupPlugin
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
-
+    
 from plugins.gocqWatchDog import GocqWatchDog
 from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
 from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
@@ -185,7 +191,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SignIn()], 'signin'),  # 签到
+    PluginGroupManager([SignIn(), IcokeUserBind()], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), 
                         PluginGroupManager([BilibiliLiveMonitor(25567444, '交大MC社', 'mclive'),
                                             BilibiliLiveMonitor(24716629, '基岩社', 'mclive'), ], 'mclive'),
@@ -228,7 +234,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
     PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
-    PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin')
+    PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin'),
     # PluginGroupManager([], 'arxiv'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件

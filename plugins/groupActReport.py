@@ -6,6 +6,8 @@ from PIL import Image, ImageDraw, ImageFont
 from utils.sqlUtils import newSqlSession, mysql
 from utils.responseImage_beta import *
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+import numpy as np
 import datetime
 from copy import deepcopy
 from io import BytesIO
@@ -120,7 +122,7 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
     messageDescript = ''
     messageMedal = []
     messageWithBotMedal = []
-    messageImgEmjMedal = []
+    # messageImgEmjMedal = []
     try:
         mydb, mycursor = newSqlSession()
         mycursor.execute("SELECT message_seq from `clearChatLog` where user_id = %d and group_id = %d"%(user_id, group_id))
@@ -139,7 +141,8 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
         time_meswithbot = {}
         time_meswithimgemoji = {} #图片类动画表情
         st:datetime.datetime = result[0][0]
-        et:datetime.datetime = result[-1][0]
+        et:datetime.datetime = datetime.datetime.now()
+        st1y:datetime.datetime = et - datetime.timedelta(days=364)
         for time, message in result:
             time: datetime.datetime
             message: str
@@ -153,10 +156,12 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
                 y += 1
                 time_meswithbot[t] = y
             # pattern= re.compile(r'^\[CQ\:image\,file.*subType\=1\,.*\]')
-            if ('[CQ:image,file' in message and 'subType=1' in message):
-                y = time_meswithimgemoji.get(t,0)
-                y += 1
-                time_meswithimgemoji[t] = y
+            
+            # 以下表情信息分辨方式已废弃
+            # if ('[CQ:image,file' in message and 'subType=1' in message):
+            #     y = time_meswithimgemoji.get(t,0)
+            #     y += 1
+            #     time_meswithimgemoji[t] = y
         ct:datetime.datetime = deepcopy(st)
         while (ct<et):
             ct += datetime.timedelta(days=1)
@@ -169,9 +174,9 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
             y = time_meswithbot.get(t,0)
             if y==0:
                 time_meswithbot[t] = 0
-            y = time_meswithimgemoji.get(t,0)
-            if y==0:
-                time_meswithimgemoji[t] = 0
+            # y = time_meswithimgemoji.get(t,0)
+            # if y==0:
+            #     time_meswithimgemoji[t] = 0
         # sorted(time_mes.keys())
         x_list = list(time_mes.keys())
         y_list = list(time_mes.values())
@@ -207,10 +212,58 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
         plt.margins(0.002, 0.1)
         plt.subplots_adjust(top=1,bottom=0,left=0,right=1,hspace=0,wspace=0) 
         plt.savefig(time_dis_path, dpi=200, bbox_inches='tight')
+        
+        # 绿墙图
+        date_list = [st1y + datetime.timedelta(days=d) for d in range(365)]
+        daily_message_counts = [time_mes.get(date.strftime('%Y-%m-%d'), 0) for date in date_list]
+        print(daily_message_counts)
+        max_messages = max(daily_message_counts) if daily_message_counts else 0
+
+        cmap = LinearSegmentedColormap.from_list("custom_green", [(0.773, 1, 0.804, 1), (0.129, 0.431, 0.224, 1)]) # PALETTE_LIGHEGREEN, PALETTE_SJTU_GREEN
+        weekdays_per_date = [(date.weekday() + 1) % 7 for date in date_list]  # 获取每天是周几
+        weeks_in_year = int(np.ceil(len(date_list) / 7))  # 计算所需列数
+        data_matrix = np.zeros((7, weeks_in_year))  # 创建矩阵
+
+        # 填充数据
+        for i, count in enumerate(daily_message_counts):
+            week_col = i // 7
+            day_row = weekdays_per_date[i]
+            data_matrix[day_row, week_col] = count
+
+        # 根据消息数调整颜色
+        colors_matrix = np.full(shape=data_matrix.shape + (4,), fill_value=(0.98, 0.98, 0.98, 1))
+
+        # 仅为非零数据计算颜色
+        for i in range(data_matrix.shape[0]):
+            for j in range(data_matrix.shape[1]):
+                if data_matrix[i, j] > 0:  # 非零消息数
+                    normalized_value = data_matrix[i, j] / max_messages
+                    colors_matrix[i, j] = cmap(normalized_value)
+        # colors = [cmap(count/max_messages) if max_messages > 0 else (0.9, 0.9, 0.9, 1) for count in daily_message_counts]
+        # print(colors)
+        plt.figure(figsize=(14, 2))
+        ax = plt.gca()
+        ax.imshow(colors_matrix, aspect='auto', cmap=cmap)
+        ax.set_yticks(range(7))
+        ax.set_yticklabels(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])
+
+        month_starts_indices = [i for i, date in enumerate(date_list) if date.day == 1]
+        month_starts_week_indices = [i // 7 for i in month_starts_indices]
+        month_labels = [date_list[i].strftime('%b') for i in month_starts_indices]
+        ax.set_xticks(month_starts_week_indices)
+        ax.set_xticklabels(month_labels, rotation=90)
+
+        plt.subplots_adjust(top=1, bottom=0, left=0, right=1, hspace=0, wspace=0)
+        plt.margins(0.002, 0.1)
+        contribution_chart_path = BytesIO()
+        plt.savefig(contribution_chart_path, dpi=200, bbox_inches='tight')
+        
         card_content1 = [
             ('subtitle','共发送信息 %d 条\n'%(messageNumber),PALETTE_SJTU_BLUE),
             ('separator',),
             ('illustration', time_dis_path),
+            ('body', ' '),
+            ('illustration', contribution_chart_path),
             ('body', messageDescript)
         ]
         if len(messageMedal) > 0:
@@ -248,30 +301,30 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
         if len(messageWithBotMedal) > 0:
             card_content2.append(('subtitle', '  '.join(messageWithBotMedal), PALETTE_SJTU_ORANGE))
         
-        # 图片信息-时间图
-        x_list = list(time_meswithimgemoji.keys())
-        y_list = list(time_meswithimgemoji.values())
-        x_list = [datetime.datetime.strptime(x,'%Y-%m-%d') for x in x_list]
-        messageImgEmojiNumber = sum(y_list)
-        if (messageImgEmojiNumber>=500):
-            messageImgEmjMedal.append('🎖️表情包之神')
-        plt.figure(figsize=(10, 3)) 
-        plt.bar(x_list, y_list, color='#7DC473')
-        ax = plt.gca()
-        ax.set_facecolor('#E5FBE2')
-        plt.xticks(rotation=25,size=9)
-        time_dis3_path = BytesIO()
-        plt.margins(0.002, 0.1)
-        plt.subplots_adjust(top=1,bottom=0,left=0,right=1,hspace=0,wspace=0) 
-        plt.savefig(time_dis3_path, dpi=200, bbox_inches='tight')
-        plt.close()
-        card_content3 = [
-            ('subtitle','共发送动画表情 %d 次\n'%(messageImgEmojiNumber),PALETTE_SJTU_GREEN),
-            ('separator',),
-            ('illustration', time_dis3_path)
-        ]
-        if len(messageImgEmjMedal) > 0:
-            card_content3.append(('subtitle', '  '.join(messageImgEmjMedal), PALETTE_SJTU_GREEN))
+        # 图片信息-时间图 (图片信息分辨方式废弃)
+        # x_list = list(time_meswithimgemoji.keys())
+        # y_list = list(time_meswithimgemoji.values())
+        # x_list = [datetime.datetime.strptime(x,'%Y-%m-%d') for x in x_list]
+        # messageImgEmojiNumber = sum(y_list)
+        # if (messageImgEmojiNumber>=500):
+        #     messageImgEmjMedal.append('🎖️表情包之神')
+        # plt.figure(figsize=(10, 3)) 
+        # plt.bar(x_list, y_list, color='#7DC473')
+        # ax = plt.gca()
+        # ax.set_facecolor('#E5FBE2')
+        # plt.xticks(rotation=25,size=9)
+        # time_dis3_path = BytesIO()
+        # plt.margins(0.002, 0.1)
+        # plt.subplots_adjust(top=1,bottom=0,left=0,right=1,hspace=0,wspace=0) 
+        # plt.savefig(time_dis3_path, dpi=200, bbox_inches='tight')
+        # plt.close()
+        # card_content3 = [
+        #     ('subtitle','共发送动画表情 %d 次\n'%(messageImgEmojiNumber),PALETTE_SJTU_GREEN),
+        #     ('separator',),
+        #     ('illustration', time_dis3_path)
+        # ]
+        # if len(messageImgEmjMedal) > 0:
+        #     card_content3.append(('subtitle', '  '.join(messageImgEmjMedal), PALETTE_SJTU_GREEN))
 
         img_avatar = Image.open(BytesIO(get_avatar_pic(user_id)))
         # 生成卡片图
@@ -298,9 +351,9 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
             ResponseImage.RichContentCard(
                 raw_content = card_content2
             ),
-            ResponseImage.RichContentCard(
-                raw_content = card_content3
-            )
+            # ResponseImage.RichContentCard(
+            #     raw_content = card_content3
+            # )
         ])
         save_path = (os.path.join(SAVE_TMP_PATH, f'{user_id}_{group_id}_actReport.png'))
         ActCards.generateImage(save_path)

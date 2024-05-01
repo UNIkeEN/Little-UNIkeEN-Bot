@@ -154,25 +154,35 @@ def getCanvas(qq_id) -> Tuple[bool, str]:
         gcal = Calendar.from_ical(data)
         event_list = []
         for component in gcal.walk():
+
             if component.name == "VEVENT":
+                
                 now = time.localtime()
-                ddl_time = component.get('dtend').dt
-                if not isinstance(ddl_time,datetime):
-                    tmp=datetime.strftime(ddl_time,"%Y-%m-%d")+" 23:59:59"
-                    ddl_time = datetime.strptime(tmp,"%Y-%m-%d %H:%M:%S")
+                ddl_time1 = component.get('dtend', None)
+                ddl_time2 = component.get('dtstart', None)
+                if ddl_time1 is None and ddl_time2 is None:
+                    ddl_time = '未知'
                 else:
-                    ddl_time+=timedelta(hours=8)
-                    tmp = datetime.strftime(ddl_time, "%Y-%m-%d %H:%M:%S")
-                if time.mktime(time.strptime(tmp, "%Y-%m-%d %H:%M:%S")) < time.mktime(now):
-                    continue
-                ddl_time = datetime.strftime(ddl_time,"%Y-%m-%d %H:%M")
+                    if ddl_time1 is not None:
+                        ddl_time = ddl_time1.dt
+                    else:
+                        ddl_time = ddl_time2.dt
+                    if not isinstance(ddl_time,datetime):
+                        tmp=datetime.strftime(ddl_time,"%Y-%m-%d")+" 23:59:59"
+                        ddl_time = datetime.strptime(tmp,"%Y-%m-%d %H:%M:%S")
+                    else:
+                        ddl_time+=timedelta(hours=8)
+                        tmp = datetime.strftime(ddl_time, "%Y-%m-%d %H:%M:%S")
+                    if time.mktime(time.strptime(tmp, "%Y-%m-%d %H:%M:%S")) < time.mktime(now):
+                        continue
+                    ddl_time = datetime.strftime(ddl_time,"%Y-%m-%d %H:%M")
                 event_list.append([component.get('summary'), component.get('description'), ddl_time])
         return True, DrawEventListPic(event_list, qq_id)
     except Exception as e:
         print(e)
         return False, "查询失败\n无法获取或解析日历文件"
 
-def DrawEventListPic(event_list, qq_id):
+def DrawEventListPic(event_list:List[Tuple[str, str, datetime]], qq_id:int):
     proceed_list = []
     width=880
     h_title, h_des = 0, 0
