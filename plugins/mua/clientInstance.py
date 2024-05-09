@@ -11,10 +11,13 @@ from utils.responseImage_beta import *
 try:
     from resources.api.muaID import BOT_MUA_ID, BOT_MUA_TOKEN, MUA_URL
 except ImportError as e:
-    raise NotPublishedException('BOT MUA ID缺失，无法使用mua插件')
+    BOT_MUA_ID, BOT_MUA_TOKEN, MUA_URL = None, None, None
+    # raise NotPublishedException('BOT MUA ID缺失，无法使用mua插件')
 muaClientInstance = Client(BOT_MUA_ID, BOT_MUA_TOKEN, MUA_URL)
 muaClientInstanceRunning = False
 
+def setMuaCredential(BOT_MUA_ID:str, BOT_MUA_TOKEN:str, MUA_URL:str):
+    muaClientInstance.reset_credential(BOT_MUA_ID, BOT_MUA_TOKEN, MUA_URL)
 
 def createMuaSessionIdSql():
     mydb, mycursor = newSqlSession()
@@ -87,11 +90,18 @@ def clientInstanceMainloop():
             time.sleep(3)
         print('!!!!MUA SESSIONLOST')
         time.sleep(1)
+
+__instanceStarted = False
 __muaClientInstanceMainloop = threading.Thread(target=clientInstanceMainloop)
 __muaClientInstanceMainloop.daemon = True
-__muaClientInstanceMainloop.start()
-
-
+def startMuaInstanceMainloop():
+    global __instanceStarted
+    if not __instanceStarted:
+        __instanceStarted = True
+        __muaClientInstanceMainloop.start()
+    else:
+        print("[WARNING]: mua mainloop instance already started")
+    
 def sendAnnouncement(announcement:Announcement, data:Any, annKey:str)->Tuple[bool, str]:
     """向MUA服务器发送announcement
     @announcement: 待发送的announcement
@@ -126,3 +136,7 @@ def queryAnnouncement(data:Any, abstract:bool=False)->Tuple[bool, str]:
         asyncio.run(muaClientInstance.send_payload(packet))
         return True, '查询指令发送成功，等待mua服务器反馈'
     return False, '查询指令发送失败，与mua服务器断开连接'
+
+if True:
+    if BOT_MUA_ID != None and BOT_MUA_TOKEN != None and MUA_URL != None:
+        startMuaInstanceMainloop()

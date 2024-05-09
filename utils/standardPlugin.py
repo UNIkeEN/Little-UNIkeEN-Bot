@@ -69,6 +69,9 @@ class StandardPlugin(ABC):
         return 'name' in infoDict.keys() and 'description' in infoDict.keys() \
             and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
 
+def emptyFunction(*args, **kwargs):
+    pass
+
 class EmptyPlugin(StandardPlugin):
     """空插件"""
     def __init__(self, *args, **kwargs) -> None:

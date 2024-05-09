@@ -32,6 +32,7 @@ def simplifyWxappUrl(url:str):
     query = '&amp;'.join('{}={}'.format(k, v) for k, v in query)
     url = '%s://%s%s?%s'%(up.scheme, up.netloc, up.path, query)
     return url
+
 def getBwcNotice()->Optional[List[Dict]]:
     """@return:
         if "OK": [{

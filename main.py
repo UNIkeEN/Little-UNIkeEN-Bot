@@ -2,7 +2,8 @@ import os
 import argparse
 import json
 from utils.basicConfigs import setConfigs
-config = None
+from typing import List, Tuple, Any, Dict, Optional
+config:Optional[Dict[str, Any]] = None
 if __name__ == '__main__':
     # 为了兼容之前的代码这么写的，太丑了，下次一定重构
     parser = argparse.ArgumentParser()
@@ -15,13 +16,12 @@ if __name__ == '__main__':
         
 import asyncio, json
 from enum import IntEnum
-from typing import List, Tuple, Any, Dict
 from utils.standardPlugin import NotPublishedException
 from utils.basicConfigs import APPLY_GROUP_ID, BACKEND, BACKEND_TYPE, BOT_SELF_QQ
 from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
 from utils.accountOperation import create_account_sql
 from utils.standardPlugin import (
-    StandardPlugin, PluginGroupManager, EmptyPlugin,
+    StandardPlugin, PluginGroupManager, EmptyPlugin, emptyFunction,
     PokeStandardPlugin, AddGroupStandardPlugin, 
     EmptyAddGroupPlugin,GuildStandardPlugin
 )
@@ -54,7 +54,8 @@ try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
         MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
         MuaTokenLister, MuaNotice, MuaQuery, MuaAbstract,
-        MuaGroupBindTarget, MuaGroupUnbindTarget, MuaGroupAnnFilter)
+        MuaGroupBindTarget, MuaGroupUnbindTarget, MuaGroupAnnFilter, 
+        startMuaInstanceMainloop, setMuaCredential)
 except NotPublishedException as e:
     print('mua plugins not imported: {}'.format(e))
     MuaAnnHelper, MuaAnnEditor = EmptyPlugin, EmptyPlugin
@@ -63,6 +64,7 @@ except NotPublishedException as e:
     MuaGroupBindTarget, MuaGroupUnbindTarget = EmptyPlugin, EmptyPlugin
     MuaGroupAnnFilter = EmptyPlugin
     MuaTokenLister = EmptyPlugin
+    startMuaInstanceMainloop, setMuaCredential = emptyFunction, emptyFunction
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -171,6 +173,18 @@ gocqWatchDog = GocqWatchDog(60)
 groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
 sjtuClassroomRecorder = SjtuClassroomRecorder()
 banImpl = BanImplement()
+
+# 根据config初始化
+if isinstance(config, dict):
+    pluginConfigs:Optional[Dict[str, Any]] = config.get('plugins', None)
+    if pluginConfigs != None:
+        # mua plugin
+        if 'mua' in pluginConfigs.keys():
+            muaConfig = pluginConfigs['mua']
+            setMuaCredential(muaConfig['BOT_MUA_ID'], muaConfig['BOT_MUA_TOKEN'], muaConfig['MUA_URL'])
+            startMuaInstanceMainloop()
+        # if 'xxx' in in pluginConfigs.keys():
+        
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
