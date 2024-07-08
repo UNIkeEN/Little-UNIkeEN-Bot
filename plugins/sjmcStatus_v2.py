@@ -82,45 +82,21 @@ def fetch_server_list(group)->Union[None, Dict[str, Any]]:
     except BaseException as e:
         warning("sjmc basic exception: {}".format(e))
 def aio_get_sjmc_info(group=""):
-    async def get_page(i, addr):
+    async def get_page(i, addr, tag):
         url=f"https://mc.sjtu.cn/custom/serverlist/?query={addr}"
         async with aiohttp.request('GET', url) as req:
             status = await req.json()
+            status['tag'] = tag  # tag 从 server list 传递过来，因为 query 不能添加更多字段（服务器查询 API 不经过 SJMC 官网数据库）
             return i, status
     server_list = fetch_server_list(group)
     loop = asyncio.new_event_loop()
-    tasks = [loop.create_task(get_page(i, server['ip'])) for i, server in enumerate(server_list)]
+    tasks = [loop.create_task(get_page(i, server['ip'], server['tag'])) for i, server in enumerate(server_list)]
     result = loop.run_until_complete(asyncio.wait(tasks))
     loop.close()
     result = [r.result() for r in result[0]]
     result = sorted(result, key=lambda x: x[0])
     result = [r[1] for r in result]
     return result
-def get_sjmc_info():
-    url="https://mc.sjtu.cn/wp-admin/admin-ajax.php"
-    dat = []
-    for t in range(8):
-        #try:
-        params={
-            "_ajax_nonce": "0e441f8c8a",
-            "action": "fetch_mcserver_status",
-            "i": str(t),
-        }
-        try:
-            res = requests.get(url, verify=False, params=params)
-            if res.status_code!= requests.codes.ok:
-                continue
-            res = res.json()
-            dat.append(res)
-        except requests.JSONDecodeError as e:
-            warning("sjmc json decode error: {}".format(e))
-        except requests.Timeout as e:
-            print("connection time out")
-        except KeyError as e:
-            warning("key error in sjmc: {}".format(e))
-        except BaseException as e:
-            warning("sjmc basic exception: {}".format(e))
-    return dat
 
 def draw_sjmc_info(dat, server_group):
     if server_group == '':
@@ -130,6 +106,7 @@ def draw_sjmc_info(dat, server_group):
     FONTS_PATH = 'resources/fonts'
     white, grey, green, red = (255,255,255,255),(128,128,128,255),(0,255,33,255),(255,85,85,255)
     font_mc_l = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 30)
+    font_mc_ml = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 23)
     font_mc_m = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 20)
     font_mc_s = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 16)
     font_mc_xl = ImageFont.truetype(os.path.join(FONTS_PATH, 'Minecraft AE.ttf'), 39)
@@ -163,7 +140,33 @@ def draw_sjmc_info(dat, server_group):
                 i += 1          
         if buffer_text:
             draw.text((x, y), buffer_text, fill=current_color, font=font)
-            
+
+    def draw_tag(draw, tag, position, font, default_bg_color = (160, 174, 192, 255), padding = 7):
+        """
+        绘制服务器标签，格式由 SJMC 统一规定为 标签文本#六位HEX颜色，留空为#
+        返回标签长度
+        """
+        if tag == "#":
+            return 0
+        x, y = position
+        tag_components = tag.split("#")
+        tag_text = tag.split("#")[0]
+        if len(tag_components) == 2:
+            raw_bg_color = tag.split("#")[1]
+            try:
+                bg_color = (
+                    int(raw_bg_color[0:2], 16),
+                    int(raw_bg_color[2:4], 16),
+                    int(raw_bg_color[4:6], 16),
+                    255
+                )
+            except:
+                bg_color = default_bg_color
+        size = draw.textsize(tag_text, font=font)
+        draw.rectangle((x, y, x + 2 * padding + size[0], y + 2 * padding + size[1]), fill=bg_color)
+        draw.text((x + padding, y + padding), tag_text, fill=(255, 255, 255, 255), font=font)
+        return 2 * padding + size[0]
+  
     for i, res in enumerate(dat):
         fy = 160 + i*140 + j1*31
         try:
@@ -176,7 +179,8 @@ def draw_sjmc_info(dat, server_group):
             title = title.replace('服务器已离线...', '')
         except:
             title = 'Unknown Server Name'
-        draw_colored_title(draw, title, (160, fy), font=font_mc_l)
+        tag_length = draw_tag(draw, res['tag'], (160, fy), font=font_mc_ml)
+        draw_colored_title(draw, title, (170 + tag_length, fy), font=font_mc_l)
 
         # 绘制图标
         try:
