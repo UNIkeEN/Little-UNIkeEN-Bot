@@ -2,7 +2,7 @@ import re
 import websocket
 import requests, requests.exceptions, json
 from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
-from utils.messageChain import MessageChain
+from utils.messageChain import MessageChain, getImgFromUrl
 from PIL import Image, ImageDraw, ImageFont
 from utils.basicConfigs import *
 from typing import Dict, List, Union, Tuple, Any, Optional
@@ -45,26 +45,6 @@ def sendPacketToLagrange(packet:Dict[str,Any]):
             lagrangeReturnsMaintainer.start()
     packetEncoded = json.dumps(packet, ensure_ascii=False)
     lagrangeClient.send(packetEncoded)
-
-def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
-    """从cq img url中下载图片
-    @cqImgUrl: 从gocqhttp获取的图片url
-    @return:
-        if 获取成功:
-            图像
-        else:
-            None
-    """
-    req = requests.get(url=cqImgUrl)
-    if req.status_code == requests.codes.ok:
-        try:
-            img = Image.open(BytesIO(req.content))
-            return img
-        except BaseException as e:
-            print('verify not ok: {}'.format(e))
-            return None
-    else:
-        return None
 
 def get_avatar_pic(id: int)->Union[None, bytes]:
     """获取QQ头像

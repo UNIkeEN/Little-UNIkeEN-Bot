@@ -1,6 +1,7 @@
 import mysql.connector
 from utils.responseImage import *
 from utils.basicEvent import send, warning
+from utils.basicConfigs import BOT_SELF_QQ, ROOT_PATH
 from typing import Union, Tuple, Any, List, Set
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
 from utils.configAPI import getPluginEnabledGroups
@@ -14,6 +15,9 @@ try:
     from resources.api.mddApi import mddUrl, mddHeaders
 except ImportError:
     raise NotPublishedException("mdd url and mdd headers are secret")
+
+MDD_FILE_PATH = os.path.join(ROOT_PATH, 'data', str(BOT_SELF_QQ),  'mdd.json')
+os.makedirs(os.path.join(ROOT_PATH, 'data', str(BOT_SELF_QQ), ), exist_ok=True)
 
 def createMddRecordSql():
     mydb, mycursor = newSqlSession()
@@ -99,6 +103,7 @@ class SubscribeMdd(StandardPlugin):
     @staticmethod
     def getMddSubscribers()->Set[int]:
         return SubscribeMdd.subscribers
+    
 class GetMddStatus(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg == '-mdd'
@@ -127,20 +132,19 @@ class GetMddStatus(StandardPlugin):
             'version': '1.0.3',
             'author': 'Teruteru',
         }
+        
 class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()
     @staticmethod
     def dumpMddStatus(status: bool):
-        exactPath = 'data/mdd.json'
-        with open(exactPath, 'w') as f:
+        with open(MDD_FILE_PATH, 'w') as f:
             f.write('1' if status else '0')
     @staticmethod
     def loadMddStatus()->bool:
-        exactPath = 'data/mdd.json'
-        with open(exactPath, 'r') as f:
+        with open(MDD_FILE_PATH, 'r') as f:
             return f.read().startswith('1')
     def __init__(self) -> None:
-        self.exactPath = 'data/mdd.json'
+        self.exactPath = MDD_FILE_PATH
         self.prevStatus = False # false: 暂停营业, true: 营业
         if MonitorMddStatus.monitorSemaphore.acquire(blocking=False):
             createMddRecordSql()
@@ -181,6 +185,7 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
             'version': '1.0.3',
             'author': 'Teruteru',
         }
+        
 def getMddStatus()->Union[None, bool]:
     req = requests.get(mddUrl, headers=mddHeaders)
     if req.status_code != requests.codes.ok or not req.json()['success']:
@@ -195,3 +200,4 @@ def getMddStatus()->Union[None, bool]:
         except BaseException as e:
             warning('mdd api failed!')
             return None
+        

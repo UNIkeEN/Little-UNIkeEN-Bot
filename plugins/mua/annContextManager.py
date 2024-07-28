@@ -1,5 +1,7 @@
 from typing import Dict, Union, Any, List, Tuple, Optional
+from utils.messageChain import MessageChain
 from utils.basicEvent import send, warning, parse_cqcode
+from utils.messageChain import MessageChain
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
 from utils.responseImage_beta import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
@@ -92,36 +94,19 @@ def makeContent(content:Optional[str])->List[Tuple[str, str]]:
     """将文字、图片CQ码混合的content转换为mua ann协议约定的content
     """
     if content == None: return []
-    cqcodePattern = re.compile(r'\[CQ\:[^\[\]\s]+\]')
-    cqcodes = cqcodePattern.findall(content)
-    words = cqcodePattern.split(content)
-    imgs = []
-    for cqcode in cqcodes:
-        cqtype, cqdict = parse_cqcode(cqcode)
-        if cqtype != 'image':
-            raise Exception('unsupported content type')
-        url = cqdict['url']
-        if requests.get(url=url).status_code == requests.codes.ok:
-            imgs.append(['imgurl', url])
+    msgChain = MessageChain.fromCqcode(content)
+    msgChain.convertImgPathToBase64()
+    result = []
+    for cqcode in msgChain.chain:
+        cqtype:str = cqcode['type'].lower()
+        if cqtype == 'image':
+            result.append(['imgbase64', cqcode['data']['file'][len('base64://'):]])
+        elif cqtype == 'text':
+            result.append(['text', cqcode['data']['text']])
         else:
-            b64img = imgUrlToImgBase64(url)
-            if b64img == None:
-                raise Exception('过期的图片')
-            imgs.append(['imgbase64', b64img])
-    content = []
-    imgsIdx, wordsIdx = 0, 0
-    while wordsIdx < len(words) and imgsIdx < len(imgs):
-        if len(words[wordsIdx]) > 0:
-            content.append(['text', words[wordsIdx]])
-        content.append(imgs[imgsIdx])
-        imgsIdx += 1
-        wordsIdx += 1
-    while wordsIdx < len(words):
-        if len(words[wordsIdx]) > 0:
-            content.append(['text', words[wordsIdx]])
-        wordsIdx += 1
-    return content
-                
+            raise Exception('unrecognized cqtype: {}'.format(cqtype))
+    return result
+
 def makeTag(tag:Optional[str])->Optional[List[str]]:
     if tag == None:
         return None
@@ -477,17 +462,23 @@ class MuaAnnEditor(StandardPlugin):
             return False, ('content删除失败，当前通知已发布，无法编辑，'
             '如需修改，请用-anncp命令将该通知复制到新通知，然后编辑发布')
         annKey:str = annKey[0]
+        msgChain = MessageChain.fromCqcode(content)
         dumpMsgToBed(content)
-        cqcodes = self.cqcodePattern.findall(content)
-        words = self.cqcodePattern.split(content)
-        for cqcode in cqcodes:
+        for cqcode in msgChain.chain:
             print(cqcode)
-            cqtype, cqdict = parse_cqcode(cqcode)
-            if cqtype != 'image':
+            cqtype:str = cqcode['type'].lower()
+            cqdict = cqcode['data']
+            if cqtype not in ['image', 'text']:
                 return False, 'content设置失败，检测到非图片CQ码，请确保title不含除图片外的at、QQ表情、语音等成分'
-            if 'url' not in cqdict.keys():
+            if cqtype == 'text':continue
+            if 'url' not in cqdict.keys() and 'file' not in cqdict.keys():
+                print('-----------------------------')
+                print(cqdict)
+                print('-----------------------------')
                 return False, '图片格式识别失败，请联系管理员'
-            url = cqdict['url']
+            url = cqdict.get('url', None)
+            if url == None:
+                url = cqdict.get('file')
 
         try:
             mydb, mycursor = newSqlSession()

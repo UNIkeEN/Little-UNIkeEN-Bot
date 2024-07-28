@@ -2,7 +2,8 @@ import os
 import argparse
 import json
 from utils.basicConfigs import setConfigs
-config = None
+from typing import List, Tuple, Any, Dict, Optional
+config:Optional[Dict[str, Any]] = None
 if __name__ == '__main__':
     # 为了兼容之前的代码这么写的，太丑了，下次一定重构
     parser = argparse.ArgumentParser()
@@ -15,13 +16,12 @@ if __name__ == '__main__':
         
 import asyncio, json
 from enum import IntEnum
-from typing import List, Tuple, Any, Dict
 from utils.standardPlugin import NotPublishedException
 from utils.basicConfigs import APPLY_GROUP_ID, BACKEND, BACKEND_TYPE, BOT_SELF_QQ
 from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
 from utils.accountOperation import create_account_sql
 from utils.standardPlugin import (
-    StandardPlugin, PluginGroupManager, EmptyPlugin,
+    StandardPlugin, PluginGroupManager, EmptyPlugin, emptyFunction,
     PokeStandardPlugin, AddGroupStandardPlugin, 
     EmptyAddGroupPlugin,GuildStandardPlugin
 )
@@ -29,6 +29,7 @@ from utils.sqlUtils import createBotDataDb
 from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
 from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
 from utils.messageChain import MessageChain
+from utils.imageBed import createImageBedSql
 
 from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ
@@ -46,7 +47,8 @@ try:
     from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
         MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
         MuaTokenLister, MuaNotice, MuaQuery, MuaAbstract,
-        MuaGroupBindTarget, MuaGroupUnbindTarget, MuaGroupAnnFilter)
+        MuaGroupBindTarget, MuaGroupUnbindTarget, MuaGroupAnnFilter, 
+        startMuaInstanceMainloop, setMuaCredential)
 except NotPublishedException as e:
     print('mua plugins not imported: {}'.format(e))
     MuaAnnHelper, MuaAnnEditor = EmptyPlugin, EmptyPlugin
@@ -55,6 +57,7 @@ except NotPublishedException as e:
     MuaGroupBindTarget, MuaGroupUnbindTarget = EmptyPlugin, EmptyPlugin
     MuaGroupAnnFilter = EmptyPlugin
     MuaTokenLister = EmptyPlugin
+    startMuaInstanceMainloop, setMuaCredential = emptyFunction, emptyFunction
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
 from plugins.show2cyPic import Show2cyPIC, ShowSePIC
@@ -92,7 +95,8 @@ def sqlInit():
     createApplyGroupsSql()
     createGlobalConfig()
     create_account_sql()
-
+    createImageBedSql()
+    
     loadApplyGroupId()
     # removeInvalidGroupConfigs() # it may danger, consider change it to add tag
 
@@ -110,6 +114,17 @@ getXjmcBilibili = GetBilibiliLive(30143840, '西交MC团队', '-xjmclive')
 getFdmcBilibili = GetBilibiliLive(24716629, '基岩社', '-fdmclive')
 banImpl = BanImplement()
 
+# 根据config初始化
+if isinstance(config, dict):
+    pluginConfigs:Optional[Dict[str, Any]] = config.get('plugins', None)
+    if pluginConfigs != None:
+        # mua plugin
+        if 'mua' in pluginConfigs.keys():
+            muaConfig = pluginConfigs['mua']
+            setMuaCredential(muaConfig['BOT_MUA_ID'], muaConfig['BOT_MUA_TOKEN'], muaConfig['MUA_URL'])
+            startMuaInstanceMainloop()
+        # if 'xxx' in in pluginConfigs.keys():
+        
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
@@ -151,7 +166,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
-    PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
+    # PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
     PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件

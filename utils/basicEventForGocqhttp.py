@@ -12,26 +12,7 @@ import traceback
 import aiohttp, asyncio
 from utils.bufferQueue import BufferQueue
 from io import BytesIO
-
-def getImgFromUrl(cqImgUrl:str)->Optional[Image.Image]:
-    """从cq img url中下载图片
-    @cqImgUrl: 从gocqhttp获取的图片url
-    @return:
-        if 获取成功:
-            图像
-        else:
-            None
-    """
-    req = requests.get(url=cqImgUrl)
-    if req.status_code == requests.codes.ok:
-        try:
-            img = Image.open(BytesIO(req.content))
-            return img
-        except BaseException as e:
-            print('verify not ok: {}'.format(e))
-            return None
-    else:
-        return None
+from utils.messageChain import MessageChain, getImgFromUrl
 
 def get_avatar_pic(id: int)->Union[None, bytes]:
     """获取QQ头像

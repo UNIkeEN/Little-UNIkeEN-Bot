@@ -3,9 +3,18 @@ import re, base64
 from PIL import Image
 from io import BytesIO
 import requests
+from utils.imageBed import uuidToImgPath, dumpUrlToBed, dumpImageToBed, getImgFromUrl
+
 def messagePieceQuote(text:str)->str:
+    if not isinstance(text, str):
+        return text
     return text.replace('&','&amp;').replace('[','&#91;').replace(']','&#93;').replace(',','&#44;')
 
+def messagePieceUnquote(text:str)->str:
+    if not isinstance(text, str):
+        return text
+    return text.replace('&amp;', '&').replace('&#91;', '[').replace('&#93;', ']').replace('&#44;',',')
+    
 def messagePieceToCqcode(messagePiece:Dict[str,Any]):
     if messagePiece['type'] == 'text':
         return messagePiece['data']['text']
@@ -29,7 +38,7 @@ def cqcodeToMessagePiece(cqcode:str)->Optional[Dict[str,Any]]:
         if len(r) != 2:
             return None
         cqkey, cqvalue = r
-        cqdict[cqkey] = cqvalue
+        cqdict[messagePieceUnquote(cqkey)] = messagePieceUnquote(cqvalue)
     return {
         'type': cqtype,
         'data': cqdict,
@@ -43,15 +52,20 @@ def imgToBase64(imgPath:str)->str:
     return b64img
 
 def urlImgToBase64(imgUrl:str)->Optional[str]:
-    req = requests.get(imgUrl)
-    if not req.ok:
-        return None
-    img = Image.open(BytesIO(req.content))
+    img = getImgFromUrl(imgUrl)
+    if img == None: return None
     imgData = BytesIO()
     img.save(imgData, format=img.format)
     b64img = base64.b64encode(imgData.getvalue()).decode('utf-8')
     return b64img
 
+def base64ToImg(b64:str)->Optional[Image.Image]:
+    try:
+        img = Image.open(BytesIO(base64.b64decode(base64_data)))
+        return img
+    except Exception:
+        return None
+    
 lagrangeImgUrlPattern = re.compile(r'^https?\:\/\/multimedia\.nt\.qq\.com\.cn\/offpic\_new\/(\d+)\/+(\S+)$')
 def fixLagrangeImgUrl(url:str)->str:
     result = lagrangeImgUrlPattern.findall(url)
@@ -71,7 +85,7 @@ class MessageChain():
         self.chain:List[Dict[str,Any]] = chain
 
     @classmethod
-    def fromCqcode(cls, cqcode:str):
+    def fromCqcode(cls, cqcode:str)->'MessageChain':
         pieces = cls.cqPattern.split(cqcode)
         result = []
         for idx, text in enumerate(pieces):
@@ -99,7 +113,7 @@ class MessageChain():
                 else:
                     new_chain.append(piece)
                     continue
-                path = fixLagrangeImgUrl(path)
+                # path = fixLagrangeImgUrl(path)
                 if path.startswith('http'):
                     piece['data']['url'] = path
                 else:
@@ -133,6 +147,7 @@ class MessageChain():
         self.chain = result
 
     def convertImgPathToBase64(self):
+        self.convertBedUuidToPath()
         result = []
         for piece in self.chain:
             if piece['type'].lower() == 'image':
@@ -153,6 +168,61 @@ class MessageChain():
                         b64 = urlImgToBase64(path)
                         if b64 != None:
                             piece['data']['file'] = 'base64://'+b64
+            result.append(piece)
+        self.chain = result
+        
+    def convertBedUuidToPath(self)->bool:
+        result = []
+        succFlag = True
+        for piece in self.chain:
+            if piece['type'].lower() == 'image':
+                if 'imgbeduuid' in piece['data'].keys():
+                    uuid:str = piece['data'].pop('imgbeduuid')
+                    imgPath = uuidToImgPath(uuid)
+                    if imgPath!=None:
+                        piece['data']['file'] = 'file:///'+imgPath
+                    else:
+                        piece['data']['imagebeduuid'] = uuid # convert fails
+                        succFlag = False
+            result.append(piece)
+        self.chain = result
+        return succFlag
+    
+    def dumpImageToBed(self):
+        result = []
+        for piece in self.chain:
+            if piece['type'].lower() == 'image':
+                if 'url' in piece['data'].keys():
+                    url:str = piece['data'].pop('url')
+                    img = getImgFromUrl(url)
+                    if img == None: 
+                        piece['data']['url'] = url
+                    else:
+                        uuid = dumpImageToBed(img)
+                        piece['data']['imgbeduuid'] = uuid
+                elif 'file' in piece['data'].keys():
+                    path:str = piece['data']['file']
+                    if path.startswith('file:///'):
+                        path = path[len('file:///'):]
+                        img = Image.open(path)
+                        uuid = dumpImageToBed(img)
+                        piece['data']['imgbeduuid'] = uuid
+                    elif path.startswith('http'):
+                        url:str = path
+                        img = getImgFromUrl(url)
+                        if img == None: 
+                            piece['data']['file'] = url
+                        else:
+                            uuid = dumpImageToBed(img)
+                            piece['data']['imgbeduuid'] = uuid
+                    elif path.startswith('base64://'):
+                        b64 = path[len('base64://'):]
+                        img = base64ToImg(b64)
+                        if img == None:
+                            piece['data']['file'] = path
+                        else:
+                            uuid = dumpImageToBed(img)
+                            piece['data']['imgbeduuid'] = uuid
             result.append(piece)
         self.chain = result
         

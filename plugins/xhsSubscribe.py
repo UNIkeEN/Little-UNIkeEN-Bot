@@ -145,7 +145,7 @@ def resizeDesciption(raw:str, height:int, width:int)->str:
 
 class XhsSubscribeHelper(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return msg in ["小红书订阅帮助", "xhs订阅帮助"] and data['message_type']=='group'
+        return msg in ['小红书帮助', "小红书订阅帮助", "xhs订阅帮助"] and data['message_type']=='group'
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         group_id = data['group_id']
         send(group_id,'订阅帮助: 小红书帮助 / xhs订阅帮助\n' 
