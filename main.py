@@ -29,6 +29,7 @@ from utils.sqlUtils import createBotDataDb
 from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
 from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
 from utils.messageChain import MessageChain
+from utils.imageBed import createImageBedSql
 
 from plugins.autoRepoke import AutoRepoke
 from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ
@@ -74,15 +75,15 @@ from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGr
 from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
 try:
     from plugins.chatWithNLP import ChatWithNLP
-except NotPublishedException as e:
+except Exception as e:
     ChatWithNLP = EmptyPlugin
     print('ChatWithNLP not imported: {}'.format(e))
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
 try:
-    from plugins.getDekt_v2 import SjtuDekt, SjtuDektMonitor
+    from plugins.sjtuActivity import SjtuActivity, SjtuDektMonitor
 except NotPublishedException as e:
-    SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
-    print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
+    SjtuActivity, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
+    print('SjtuActivity, SjtuDektMonitor not imported: {}'.format(e))
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
 from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
@@ -146,6 +147,18 @@ try:
 except NotPublishedException as e:
     SjtuPlusGroupingVerify = EmptyAddGroupPlugin
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
+
+try:
+    from plugins.notPublished.smpParkourRank import SMPParkourRank
+except NotPublishedException as e:
+    SMPParkourRank = EmptyAddGroupPlugin
+    print('SMPParkourRank not imported: {}'.format(e))
+
+try:
+    from plugins.sjtuElectromobileCharge import GetSjtuCharge
+except NotPublishedException as e:
+    GetSjtuCharge = EmptyAddGroupPlugin
+    print('GetSjtuCharge not imported: {}'.format(e))
     
 from plugins.gocqWatchDog import GocqWatchDog
 from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
@@ -157,7 +170,8 @@ def sqlInit():
     createApplyGroupsSql()
     createGlobalConfig()
     create_account_sql()
-
+    createImageBedSql()
+    
     loadApplyGroupId()
     # removeInvalidGroupConfigs() # it may danger, consider change it to add tag
 
@@ -201,12 +215,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(),
-                        SjtuClassroomRecommend(), GetMddStatus(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
-                        PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),],'sjtuinfo'), 
+                        SjtuClassroomRecommend(), GetMddStatus(), GetSjtuCharge(), SjtuActivity(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+                        PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),
+                        PluginGroupManager([SjtuDektMonitor()], 'dektmonitor'),], 'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn(), IcokeUserBind()], 'signin'),  # 签到
-    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), 
+    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), SMPParkourRank(),
                         PluginGroupManager([BilibiliLiveMonitor(25567444, '交大MC社', 'mclive'),
                                             BilibiliLiveMonitor(24716629, '基岩社', 'mclive'), ], 'mclive'),
                         # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
@@ -221,8 +236,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         PluginGroupManager([BilibiliLiveMonitor(30539032, 'MUA', 'mualive'),], 'mualive'),
                         ], 'mua'), #MC高校联盟服务
     PluginGroupManager([GetJwc(), SjtuBwc(), #SubscribeJwc() ,
-                        SjtuJwcMonitor(), GetSjtuNews(), SjtuDekt(),# jwc服务, jwc广播, 交大新闻, 第二课堂
-                        PluginGroupManager([SjtuDektMonitor()], 'dekt'),
+                        SjtuJwcMonitor(), GetSjtuNews(),# jwc服务, jwc广播, 交大新闻
                         PluginGroupManager([SjtuBwcMonitor()], 'bwcreport'),], 'jwc'), 
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
@@ -247,9 +261,10 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
-    PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
+    # PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
     PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin'),
     # PluginGroupManager([], 'arxiv'),
+    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -260,7 +275,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MorningGreet(), NightGreet(),
     SignIn(), 
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),SjtuDekt(),GetJwc(), SjtuBwc(), #SubscribeJwc(), 
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetJwc(), SjtuBwc(), GetSjtuCharge(), SjtuActivity(),#SubscribeJwc(), 
     MuaAbstract(), MuaQuery(), MuaAnnHelper(), MuaAnnEditor(), 
     MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
     GetSjtuNews(),

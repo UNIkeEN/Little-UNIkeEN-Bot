@@ -16,8 +16,8 @@ try:
 except ImportError as e:
     raise NotPublishedException(str(e))
 
-DEKT_SOURCE_DIR = os.path.join(ROOT_PATH, 'data/dektSource/')
-
+DEKT_SOURCE_DIR = os.path.join(ROOT_PATH, 'data', str(BOT_SELF_QQ), 'dektSource')
+os.makedirs(DEKT_SOURCE_DIR, exist_ok=True)
 
 class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()

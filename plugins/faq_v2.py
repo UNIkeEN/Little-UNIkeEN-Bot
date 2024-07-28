@@ -4,6 +4,7 @@ from utils.configAPI import getGroupAdmins
 from utils.standardPlugin import StandardPlugin
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, APPLY_GROUP_ID
 from utils.responseImage import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
+from utils.messageChain import MessageChain
 import re, os.path, os
 from pypinyin import lazy_pinyin
 import mysql.connector
@@ -96,7 +97,10 @@ def get_answer(group_id: int, key: str)->Tuple[bool, str, str]:
     if len(answer) == 0:
         return False, '', ''
     else:
-        return True, answer[0][0], answer[0][1]
+        chain = MessageChain.fromCqcode(answer[0][0])
+        chain.convertBedUuidToPath()
+        return True, chain.toCqcode(), answer[0][1]
+    
 def rollback_answer(group_id:int, question:str)->bool:
     """问题回滚
     @group_id: 群号
@@ -151,6 +155,9 @@ def update_answer(group_id:int, question:str, answer:str, data:Any, tag:str = ''
     mydb = mysql.connector.connect(charset='utf8mb4',**sqlConfig)
     mydb.autocommit = True
     mycursor = mydb.cursor()
+    chain = MessageChain.fromCqcode(answer)
+    chain.dumpImageToBed()
+    answer = chain.toCqcode()
     try:
         mycursor.execute("""
         update `BOT_FAQ_DATA`.`%d` 
@@ -218,19 +225,19 @@ class AskFAQ(StandardPlugin):
             questions = get_questions(group_id)
             fuzzy_ans = [fza[0] for fza in sorted(fuzzy_process.extract(question, questions, limit=5), key=lambda x:x[1], reverse=True) if fza[1]>30]
             if msg.startswith('q'):
-                ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表"%(data['message_id'])
+                ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表，输入faq help查看问答插件帮助"%(data['message_id'])
                 if len(fuzzy_ans)>0:
                     ans += "，猜你可能想问： {}".format('、'.join(fuzzy_ans))
             else:
                 if len(fuzzy_ans) == 0:
-                    ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表"%(data['message_id'])
+                    ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表，输入faq help查看问答插件帮助"%(data['message_id'])
                 else:
                     question = fuzzy_ans[0]
                     hasMsg, ans, tag = get_answer(group_id, question)
                     if hasMsg:
                         ans = "[CQ:reply,id=%d]%s\n【%s】"%(data['message_id'], ans, question)
                     else:
-                        ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表"%(data['message_id'])
+                        ans = "[CQ:reply,id=%d]未查询到信息，输入faq ls查看问题列表，输入faq help查看问答插件帮助"%(data['message_id'])
         send(group_id, ans)
 
     def getPluginInfo(self)->Any:
@@ -371,7 +378,7 @@ class MaintainFAQ(StandardPlugin):
             prevName, newName = qa[0]
             status, answer, tag = get_answer(groupId, prevName)
             if not status:
-                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在，请输入faq ls查看问题列表"%(data['message_id'], prevName))
+                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在，请输入faq ls查看问题列表，输入faq help查看问答插件帮助"%(data['message_id'], prevName))
             else:
                 status = update_answer(groupId, newName, answer, data, tag=tag)
                 if status:
@@ -390,7 +397,7 @@ class MaintainFAQ(StandardPlugin):
             print(question)
             status, _, tag = get_answer(groupId, question)
             if not status:
-                send(groupId, "[CQ:reply,id=%d]问题不存在，请输入faq ls查看问题列表"%(data['message_id']))
+                send(groupId, "[CQ:reply,id=%d]问题不存在，请输入faq ls查看问题列表，输入faq help查看问答插件帮助"%(data['message_id']))
             else:
                 status = update_answer(groupId, question, '', data, delete=True, tag=tag)
                 if status:
@@ -427,7 +434,7 @@ class MaintainFAQ(StandardPlugin):
             question, tag = qa[0]
             status, answer, _ = get_answer(groupId, question)
             if not status:
-                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在，请输入faq ls查看问题列表"%(data['message_id'], question))
+                send(groupId,"[CQ:reply,id=%d]【%s】问题不存在，请输入faq ls查看问题列表，输入faq help查看问答插件帮助"%(data['message_id'], question))
             else:
                 status = update_answer(groupId, question, answer, data, tag=tag)
                 if status:
@@ -450,7 +457,7 @@ class MaintainFAQ(StandardPlugin):
                 if status:
                     send(groupId, '[CQ:reply,id=%d]OK'%data['message_id'])
                 else:
-                    send(groupId, '[CQ:reply,id=%d]记录【%s】不存在，请输入faq ls查看问题列表'%(data['message_id'], question))
+                    send(groupId, '[CQ:reply,id=%d]记录【%s】不存在，请输入faq ls查看问题列表，输入faq help查看问答插件帮助'%(data['message_id'], question))
     @staticmethod
     def faqHistory(cmd: str, data):
         groupId = data['group_id']
