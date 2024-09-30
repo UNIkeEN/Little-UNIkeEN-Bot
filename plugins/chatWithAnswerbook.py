@@ -12,7 +12,7 @@ with open(book_path, "r", encoding='utf-8') as f:
 
 class ChatWithAnswerbook(StandardPlugin): # 答案之书
     def judgeTrigger(self, msg:str, data:Any) -> bool:
-        return startswith_in(msg, ['小🦄，','小🦄,'])
+        return startswith_in(msg, ['小🦄', '小马'])
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]: 
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         txt = random.choice(BOOK_DICT)

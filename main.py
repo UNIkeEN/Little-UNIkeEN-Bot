@@ -79,11 +79,11 @@ except Exception as e:
     ChatWithNLP = EmptyPlugin
     print('ChatWithNLP not imported: {}'.format(e))
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
-try:
-    from plugins.sjtuActivity import SjtuActivity, SjtuDektMonitor
-except NotPublishedException as e:
-    SjtuActivity, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
-    print('SjtuActivity, SjtuDektMonitor not imported: {}'.format(e))
+# try:
+#     from plugins.getDekt_v2 import SjtuDekt, SjtuDektMonitor
+# except NotPublishedException as e:
+#     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
+#     print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
 from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
@@ -99,8 +99,9 @@ from plugins.deprecated.sjmcLive import GetSjmcLive
 from plugins.groupActReport import ActReportPlugin, ActRankPlugin, YourActReportPlugin
 from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud, GenPersonWordCloud
 from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
-from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum
+from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum, SjtuJsQuery
 from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
+from plugins.sjtuActivity import SjtuActivity, SjtuDektMonitor
 from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
 from plugins.chess import ChessPlugin, ChessHelper
@@ -153,7 +154,6 @@ try:
 except NotPublishedException as e:
     SMPParkourRank = EmptyAddGroupPlugin
     print('SMPParkourRank not imported: {}'.format(e))
-
 try:
     from plugins.sjtuElectromobileCharge import GetSjtuCharge
 except NotPublishedException as e:
@@ -163,6 +163,15 @@ except NotPublishedException as e:
 from plugins.gocqWatchDog import GocqWatchDog
 from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
 from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
+
+from plugins.notPublished.sjtuSql import (
+    SearchSjtuSqlAllPrivate,
+    SearchSjtuSqlAll,
+    SearchSjtuSql,
+    SearchSjtuSqlPIC,
+)
+from plugins.notPublished.sjtuSqlGroupingVerication import SjtuSqlGroupingVerify
+from plugins.test import TestLagrange
 ###### end not published plugins
 
 def sqlInit():
@@ -214,7 +223,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         PluginGroupManager([UpdateNewsAndReport(), UpdateMoyuCalendar()], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
-                        DrawClassroomPeopleCount(), SjtuSchoolGate(),
+                        DrawClassroomPeopleCount(), SjtuSchoolGate(), SjtuJsQuery(),
                         SjtuClassroomRecommend(), GetMddStatus(), GetSjtuCharge(), SjtuActivity(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),
                         PluginGroupManager([SjtuDektMonitor()], 'dektmonitor'),], 'sjtuinfo'), 
@@ -288,6 +297,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     EmojiKitchen(),
     # ChooseSong(),
+    SjtuJsQuery(),
     SjtuClassroom(), SjtuClassroomPeopleNum(), SjtuClassroomRecommend(), DrawClassroomPeopleCount(), SjtuSchoolGate(),
 ]
 GuildPluginList:List[GuildStandardPlugin] = []

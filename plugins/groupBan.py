@@ -2,7 +2,7 @@ from utils.standardPlugin import StandardPlugin
 from typing import List, Any, Dict, Optional, Union, Set, Tuple
 from utils.basicEvent import set_group_ban, isGroupOwner, send, warning
 from utils.configAPI import getGroupAdmins
-from utils.basicConfigs import ROOT_ADMIN_ID, SAVE_TMP_PATH, ROOT_PATH
+from utils.basicConfigs import ROOT_ADMIN_ID, SAVE_TMP_PATH, ROOT_PATH, BOT_SELF_QQ
 from utils.sqlUtils import newSqlSession
 from utils.responseImage_beta import *
 from threading import Semaphore
@@ -119,6 +119,8 @@ class UserBan(StandardPlugin):
     @staticmethod
     def checkBanAuthentication(banTarget:int, enforcementPersonnel:int, groupId:int)->Tuple[bool, str]:
         groupAdmins = getGroupAdmins(groupId)
+        if banTarget == BOT_SELF_QQ:
+            return False, "BOT无法被ban"
         if enforcementPersonnel not in groupAdmins:
             return False, '非群BOT管理员无法使用该功能'
         if banTarget in ROOT_ADMIN_ID or isGroupOwner(group_id=groupId, user_id=banTarget):

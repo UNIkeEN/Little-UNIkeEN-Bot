@@ -1,5 +1,5 @@
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, GuildStandardPlugin
-from typing import Set, Union, Any, List
+from typing import Set, Union, Any, List, Dict
 import mysql.connector
 from utils.responseImage import *
 import requests
@@ -16,7 +16,7 @@ from urllib.parse import urljoin
 import qrcode
 import os, os.path
 
-def createJwcSql():
+def createJwcSql() -> None:
     mydb, mycursor = newSqlSession()
     mycursor.execute("""
     create table if not exists `sjtuJwc` (
@@ -26,13 +26,13 @@ def createJwcSql():
         primary key (`jwc_seq`)
     )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
 
-def appendJwcUrl(url:str):
+def appendJwcUrl(url:str) -> None:
     mydb, mycursor = newSqlSession()
     mycursor.execute("""
     insert into `sjtuJwc` (`url`, `update_time`) values (%s, %s)
     """, (url, datetime.now()))
 
-def getSjtuGk():
+def getSjtuGk() -> List[Dict[str, Any]]:
     """交大信息公开网"""
     pageUrl = 'https://gk.sjtu.edu.cn'
     req = requests.get(pageUrl)
@@ -68,7 +68,7 @@ def loadPrevUrls()->Set[str]:
         result.add(url)
     return result
 
-def getSjtuNews():
+def getSjtuNews() -> List[Dict[str, Any]]:
     """交大新闻网"""
     pageUrl = 'https://news.sjtu.edu.cn/jdyw/index.html'
     req = requests.get(pageUrl)
@@ -142,8 +142,7 @@ def drawSjtuNews()->str:
     a.generateImage(savePath)
     return savePath
 
-def getJwc()->list:
-    pageUrl = 'https://jwc.sjtu.edu.cn/xwtg/tztg.htm'
+def getJwcPage(pageUrl:str)->List[Dict[str, Any]]:
     req = requests.get(pageUrl)
     if req.status_code != requests.codes.ok:
         warning("jwc.sjtu.edu.cn API failed!")
@@ -179,6 +178,25 @@ def getJwc()->list:
         except BaseException as e:
             print("exception in getJwc: {}".format(e))
     return newsList
+
+def mergeJwcList(jwcDicts:List[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
+    result = []
+    pageUrls = set()
+    for d in jwcDicts:
+        for jwcPage in d:
+            link = jwcPage['link']
+            if link in pageUrls: continue
+            pageUrls.add(link)
+            result.append(jwcPage)
+    return result
+            
+def getJwc() -> List[Dict[str, Any]]:
+    jwcUrls = ['https://jwc.sjtu.edu.cn/xwtg/tztg.htm',
+               'https://jwc.sjtu.edu.cn/index/mxxsdtz.htm']
+    jwcDicts = []
+    for url in jwcUrls:
+        jwcDicts.append(getJwcPage(url))
+    return mergeJwcList(jwcDicts)
 
 class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()

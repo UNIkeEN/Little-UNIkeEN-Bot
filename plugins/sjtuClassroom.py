@@ -6,11 +6,12 @@ import re
 from typing import List, Tuple, Optional, Union, Dict, Any
 import requests
 import datetime
-from utils.responseImage_beta import ResponseImage
+from utils.responseImage_beta import ResponseImage, PALETTE_SJTU_RED, PALETTE_GREEN, PALETTE_GREY_BORDER, FONT_SYHT_M28, draw_rounded_rectangle
 from utils.hotSearchImage import HotSearchImage, Colors, Fonts
 import os.path
 from matplotlib import pyplot as plt
 from io import BytesIO
+from PIL import Image, ImageDraw
 
 headers = {
     "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -148,7 +149,7 @@ def standarlizingBuildingStr(buildingStr:str)->Optional[str]:
     return None
 
 
-def standarlizingBuildingTimeStr(Str:str)->Optional[str]:
+def standarlizingBuildingTimeStr(Str:str)->Optional[Tuple[str, int, int]]:
     """
     东上 3 5 => (东上院,3,5)
     东中 3 5 => (东中院,3,5)
@@ -156,14 +157,14 @@ def standarlizingBuildingTimeStr(Str:str)->Optional[str]:
     """
     pattern1 = re.compile(r'^(上|中|下|东上|东中|东下)院?\s*(\d+)\s+(\d+)$')
     if pattern1.match(Str) != None:
-        building,startSection,endSection = pattern1.findall(Str)[0]
+        building, startSection, endSection = pattern1.findall(Str)[0]
         building +='院'
-        return building,startSection,endSection
+        return building, int(startSection), int(endSection)
     pattern2 = re.compile(r'^(陈瑞球楼?|球楼?)\s*(\d+)\s+(\d+)$')
     if pattern2.match(Str) != None:
         building = '陈瑞球楼'
-        _,startSection,endSection = pattern2.findall(Str)[0]
-        return building,startSection,endSection
+        _, startSection, endSection = pattern2.findall(Str)[0]
+        return building, int(startSection), int(endSection)
     return None
 
 def getWeekDay(targetDate:datetime.date)->str:
@@ -428,7 +429,124 @@ def getRoomrecommend():
     rimg.generateImage(savePath)
     return savePath
 
+def processJsInfo(jsInfo: Dict[str, List[Dict[str, Any]]]) -> List[Tuple[str, List[bool]]]:
+    result:List[Tuple[str, List[bool]]] = []
+    for floor in jsInfo.get('floorList', []):
+        for room in floor.get('children', {}):
+            roomName:str = room.get('name', 'unknow')
+            roomSecs = [False] * 15 # 是否有课
+            for course in room.get('roomCourseList', []):
+                startSec:int = course.get('startSection', 0)
+                endSec:int = course.get('endSection', 0)
+                for sec in range(startSec, endSec + 1):
+                    roomSecs[sec] = True # TODO: IndexError
+            result.append((roomName, roomSecs))
+    return sorted(result, key=lambda x: x[0])
 
+def drawJs(jsInfo: List[Tuple[str, List[bool]]], targetBuilding: str, savePath: str) -> Optional[str]:
+    img = ResponseImage(
+        title=f'教室空闲时间',
+        titleColor=PALETTE_SJTU_RED,
+        primaryColor=PALETTE_SJTU_RED,
+    )
+
+    # sub img
+    cell_size = 50
+    padding = 10
+    width = (len(jsInfo[0][1]) - 2) * (cell_size + padding) + 100
+    height = (len(jsInfo) - 1) * (cell_size + padding)
+    sub_img = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(sub_img)
+
+    for i, (room_name, availability) in enumerate(jsInfo):
+        draw.text((0, i * cell_size + i * padding + 12), room_name.replace(targetBuilding, ""), fill="black", font = FONT_SYHT_M28)
+
+        for j, available in enumerate(availability[1:]):
+            color = PALETTE_GREY_BORDER if available else PALETTE_GREEN
+            draw_rounded_rectangle(
+                sub_img,
+                (
+                    j * cell_size + j * padding + 100,
+                    i * cell_size + i * padding,
+                    (j + 1) * cell_size + j * padding + 100,
+                    (i + 1) * cell_size + i * padding,
+                ),
+                fill=color
+            )
+
+    time_slots = [
+        "08:00-08:45",
+        "08:55-09:40",
+        "10:00-10:45",
+        "10:55-11:40",
+        "12:00-12:45",
+        "12:55-13:40",
+        "14:00-14:45",
+        "14:55-15:40",
+        "16:00-16:45",
+        "16:55-17:40",
+        "18:00-18:45",
+        "18:55-19:40",
+        "20:00-20:45",
+        "20:55-21:40"
+    ]
+
+    time_axis_img = Image.new("RGB", (200, width), "white")
+    draw = ImageDraw.Draw(time_axis_img)
+    for i, time in enumerate(time_slots):
+        bbox = FONT_SYHT_M28.getbbox(time)
+        left = 200 - bbox[2] + bbox[0]
+        draw.text((left, i * cell_size + i * padding + 112), time, fill="black", font = FONT_SYHT_M28)
+    time_axis_img = time_axis_img.rotate(90, expand=True)
+
+    img.addCard(
+        ResponseImage.RichContentCard(
+            raw_content=[
+                ('title', f"目标楼栋: {targetBuilding}"),
+                ('subtitle', f"{datetime.datetime.now().strftime('%Y-%m-%d')}，绿色为空闲"),
+                ('separator', ''),
+                ('illustration', sub_img),
+                ('illustration', time_axis_img),
+                ('text', '\n')
+            ]
+        )
+    )
+    
+
+    img.generateImage(savePath)
+    return savePath
+
+class SjtuJsQuery(StandardPlugin):
+    def __init__(self) -> None:
+        self.triggerPattern = re.compile(r'^-js\s+(.*)$')
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return self.triggerPattern.match(msg) != None
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        buildingStr = standarlizingBuildingStr(self.triggerPattern.findall(msg)[0])
+        if buildingStr == None:
+            send(target, '教学楼解析错误，请重新输入查询参数，例如：\n"-js 东上"、"-js 下院"、"-js 东中"', data['message_type'])
+            return "OK"
+        savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'js-%d-%s.png'%(target, buildingStr))
+        jsInfo = processJsInfo(getRoomCourse(buildingStr, datetime.date.today()))
+        courseImgPath = drawJs(jsInfo, buildingStr, savePath)
+        if courseImgPath == None:
+            send(target, f'[CQ:reply,id={data["message_id"]}]图片绘制失败', data['message_type'])
+        else:
+            send(target, '[CQ:image,file=file:///%s]'%courseImgPath, data['message_type'])
+        return "OK"
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'SjtuClassroom',
+            'description': '教学楼空闲查询',
+            'commandDescription': '-js [东上/东中/...]',
+            'usePlace': ['group', 'private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+        
 class SjtuClassroom(StandardPlugin):
     def __init__(self) -> None:
         self.triggerPattern = re.compile(r'^(教室|教室查询)\s+(.*)$')
@@ -473,9 +591,7 @@ class SjtuClassroomRecommend(StandardPlugin):
         if result == None:
             send(target, '教室推荐参数解析错误，请重新输入查询参数，例如：\n"教室推荐 东上 3 5"、"教室推荐 东下 5 8"', data['message_type'])
             return "OK"
-        building,startSection,endSection = result
-        startSection = int(startSection)
-        endSection = int(endSection)
+        building, startSection, endSection = result
         courseImgPath = getRoomRecommend(building,startSection,endSection)
         if courseImgPath == None:
             send(target, f'[CQ:reply,id={data["message_id"]}]未查询到教室信息，可能结果是：不存在空闲教室或命令格式错误', data['message_type'])

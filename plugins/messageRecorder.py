@@ -137,6 +137,13 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
                 card = data['sender']['card']
                 if card == None:
                     card = ''
+            backendTime:int = data['time'] # timestamp in second
+            '''
+            # FIX: backend time error
+            systemTime:int = int(time.time())
+            if abs(backendTime - systemTime) > 60:
+                backendTime = systemTime
+            '''
             mycursor.execute("""
                 insert ignore into `messageRecord`
                 (`message_id`, `message_seq`, `time`, `user_id`,
@@ -144,7 +151,7 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
                 values (%d, %d, from_unixtime(%d), %d, '%s', %d, '%s', '%s')"""%(
                     data['message_id'],
                     data['message_seq'],
-                    data['time'],
+                    backendTime,
                     data['user_id'],
                     escape_string(data['message']),
                     data['group_id'],

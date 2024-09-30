@@ -44,8 +44,10 @@ def text_to_emoji(text):
     return text_with_emoji
 
 class MakeAbstract(StandardPlugin):
+    def __init__(self):
+        self.pattern = re.compile('^(抽象|-abstract)\s+\S+')
     def judgeTrigger(self, msg: str, data: Any) -> bool:
-        return msg.startswith('-abstract') or msg.startswith('抽象')
+        return self.pattern.match(msg) != None
     def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         if msg.startswith('抽象'):

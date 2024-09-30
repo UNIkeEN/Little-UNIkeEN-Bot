@@ -543,6 +543,57 @@ def get_font_size(text:str,
     text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1] + 0.1 * font.size  # bbox不一定完全包含文字
     return (int(text_width), int(text_height))
 
+def draw_rounded_rectangle(img: Image.Image, 
+                           position: Tuple[int, int, int, int], 
+                           fill: Tuple[int, int, int, int], 
+                           r: int = 8, 
+                           border: bool = False, 
+                           borderColor: Tuple[int, int, int, int] = PALETTE_GREY_BORDER, 
+                           borderWidth: int = 1) -> Image.Image:
+    """
+    在给定的图像上绘制圆角矩形。
+    
+    参数：
+    img: PIL Image对象，要绘制圆角矩形的图像。
+    position: 矩形的位置，格式为(x1, y1, x2, y2)的坐标元组。
+    fill: 填充颜色，可以是颜色字符串或RGB元组。
+    r: 椭圆的半径，用于圆角的大小。
+    border: 是否绘制边框。
+    borderColor: 边框颜色。
+    borderWidth: 边框宽度。
+    
+    返回：
+    返回目标图像。
+    """
+    
+    draw = ImageDraw.Draw(img)
+    
+    x1, y1, x2, y2 = position
+
+    # 绘制四个圆角
+    draw.ellipse((x1, y1, x1 + 2 * r, y1 + 2 * r), fill=fill)
+    draw.ellipse((x2 - 2 * r, y1, x2, y1 + 2 * r), fill=fill)
+    draw.ellipse((x1, y2 - 2 * r, x1 + 2 * r, y2), fill=fill)
+    draw.ellipse((x2 - 2 * r, y2 - 2 * r, x2, y2), fill=fill)
+    
+    # 绘制矩形主体
+    draw.rectangle((x1 + r, y1, x2 - r, y2), fill=fill)
+    draw.rectangle((x1, y1 + r, x2, y2 - r), fill=fill)
+    
+    if border:
+        # 绘制圆角的边框
+        draw.arc((x1, y1, x1 + 2 * r, y1 + 2 * r), 180, 270, borderColor, borderWidth)
+        draw.arc((x2 - 2 * r, y1, x2, y1 + 2 * r), 270, 360, borderColor, borderWidth)
+        draw.arc((x1, y2 - 2 * r, x1 + 2 * r, y2), 90, 180, borderColor, borderWidth)
+        draw.arc((x2 - 2 * r, y2 - 2 * r, x2, y2), 0, 90, borderColor, borderWidth)
+        
+        # 绘制边框的直线部分
+        draw.line((x1, y1 + r, x1, y2 - r), borderColor, borderWidth)
+        draw.line((x2, y1 + r, x2, y2 - r), borderColor, borderWidth)
+        draw.line((x1 + r, y1, x2 - r, y1), borderColor, borderWidth)
+        draw.line((x1 + r, y2, x2 - r, y2), borderColor, borderWidth)
+    
+    return img
 
 def draw_gradient_rectangle(img:Image.Image, 
                             position:Tuple[int,int,int,int], 
