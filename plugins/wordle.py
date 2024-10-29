@@ -1,4 +1,4 @@
-from typing import Any, Union, Dict, List, Tuple, Optional
+from typing import Any, Set, Union, Dict, List, Tuple, Optional
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, FONTS_PATH
 from utils.basicEvent import send
 from utils.standardPlugin import StandardPlugin
@@ -7,6 +7,7 @@ from utils.responseImage_beta import ResponseImage, PALETTE_CYAN
 from utils.accountOperation import get_user_coins, update_user_coins
 import os, re, json
 from enum import Enum
+from functools import cache
 from PIL.ImageFont import FreeTypeFont
 from spellchecker import SpellChecker
 from PIL import ImageFont, Image, ImageDraw
@@ -271,7 +272,7 @@ class WordleGame:
         self.bg_color = (255, 255, 255)  # 背景颜色
         self.font_color = (255, 255, 255)  # 文字颜色
 
-        self.spellChecker = SpellChecker()
+        self.spellChecker = WordleGame._get_spell_checker()
         
     def legal_word(self, word:str) -> bool:
         return not self.spellChecker.unknown((word,))
@@ -373,3 +374,33 @@ class WordleGame:
             y = self.padding[1]
             board.paste(self.draw_block(color, letter), (x, y))
         board.save(savePath)
+
+    @staticmethod
+    def _get_spell_checker() -> SpellChecker:
+        """
+        Return a SpellChecker pre-loaded with words returned by `_get_words()`.
+        """
+        spell_checker = SpellChecker()
+        word_set = WordleGame._get_words()
+        spell_checker.word_frequency.load_words(word_set)
+        return spell_checker
+
+    @cache
+    @staticmethod
+    def _get_words() -> Set[str]:
+        """
+        Return a set of all words in the local wordle dictionaries.
+        """
+        wordleResourcePath = os.path.join(ROOT_PATH, WORDLE_RESOURCE_PATH)
+        word_set: Set[str] = set()
+        # add all keys of wordle dictionary to set
+        for wordleResourceName in os.listdir(wordleResourcePath):
+            _, suffix = os.path.splitext(wordleResourceName)
+            if suffix != '.json': continue
+            with open(
+                os.path.join(wordleResourcePath, wordleResourceName),
+                'r',
+                encoding='utf-8'
+            ) as f:
+                word_set |= json.load(f).keys()
+        return word_set
