@@ -4,7 +4,7 @@ from utils.basicEvent import send
 from utils.basicConfigs import *
 from utils.configAPI import getPluginEnabledGroups
 from utils.responseImage_beta import *
-from resources.api.dektAPI_v2 import getAllActivities
+from resources.api.dektAPI_v2 import getAllActivities, actIdToUrlParam
 from utils.sqlUtils import newSqlSession
 from datetime import datetime
 from threading import Semaphore
@@ -66,7 +66,7 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
             if record['id'] in self.act_ids: continue
             self.act_ids.append(record['id'])
             appendDektActId(record['id'])
-            url = BASE_URL + "/activity/detail/" + str(record["id"])
+            url = BASE_URL + "/activity/detail/" + actIdToUrlParam(record['id'])
             name = record['name']
             boardcastText += f"\n【{name}】{url}"
             updateFlag = True

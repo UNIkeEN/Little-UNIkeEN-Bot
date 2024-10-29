@@ -225,7 +225,9 @@ class MessageChain():
                             piece['data']['imgbeduuid'] = uuid
             result.append(piece)
         self.chain = result
-        
+    def __repr__(self) -> str:
+        return str(self.chain)
+
 if __name__ == '__main__':
     testCases = [
         '21[CQ:image,file=files://123]123123[CQ:reply,id=1]',

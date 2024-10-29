@@ -40,11 +40,7 @@ from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, 
 from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
 from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
 ## tmp
-from plugins.signIn_v2 import SignIn
-try:
-    from resources.api.getMddTea24 import IcokeUserBind
-except:
-    IcokeUserBind = EmptyPlugin
+from plugins.signIn import SignIn
     
 from plugins.thanksLUB import ThanksLUB
 from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
@@ -79,11 +75,6 @@ except Exception as e:
     ChatWithNLP = EmptyPlugin
     print('ChatWithNLP not imported: {}'.format(e))
 from plugins.chatWithAnswerbook import ChatWithAnswerbook
-# try:
-#     from plugins.getDekt_v2 import SjtuDekt, SjtuDektMonitor
-# except NotPublishedException as e:
-#     SjtuDekt, SjtuDektMonitor = EmptyPlugin, EmptyPlugin
-#     print('SjtuDekt, SjtuDektMonitor not imported: {}'.format(e))
 from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
 from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
@@ -224,12 +215,12 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(), SjtuJsQuery(),
-                        SjtuClassroomRecommend(), GetMddStatus(), GetSjtuCharge(), SjtuActivity(),#IcokeUserBind(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+                        SjtuClassroomRecommend(), GetMddStatus(), GetSjtuCharge(), SjtuActivity(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
                         PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),
                         PluginGroupManager([SjtuDektMonitor()], 'dektmonitor'),], 'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
-    PluginGroupManager([SignIn(), IcokeUserBind()], 'signin'),  # 签到
+    PluginGroupManager([SignIn(), ], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), SMPParkourRank(),
                         PluginGroupManager([BilibiliLiveMonitor(25567444, '交大MC社', 'mclive'),
                                             BilibiliLiveMonitor(24716629, '基岩社', 'mclive'), ], 'mclive'),

@@ -25,7 +25,7 @@ def createSjtuClassroomSql():
     )charset=utf8mb4, collate=utf8mb4_unicode_ci""")
 
 def aioGetAllBuildingCourse(targetDate:datetime.date)->List[Dict]:
-    payloads = [126, 128, 127, 122, 564, 124, 125]
+    payloads = [126, 128, 127, 122, 564, 124, 125, 663, 697]
     payloads = [targetDate.strftime(f'buildId={p}&courseDate=%Y-%m-%d') for p in payloads]
     url = 'https://ids.sjtu.edu.cn/build/findBuildRoomType'
     headers = {
@@ -114,15 +114,27 @@ def standarlizingRoomStr(roomStr:str)->Optional[Tuple[str, str]]:
     if pattern2.match(roomStr) != None:
         building = '东中院'
         _, roomCode = pattern2.findall(roomStr)[0]
-        return building, building+roomCode
+        return building, building + roomCode
     pattern3 = re.compile(r'^(陈瑞球楼?|球楼?)\s*(\d{3})$')
     if pattern3.match(roomStr) != None:
         building = '陈瑞球楼'
         _, roomCode = pattern3.findall(roomStr)[0]
         return building, building + roomCode
+    pattern4 = re.compile(r'^(工程?馆?)\s*(\d{3})$')
+    if pattern4.match(roomStr) != None:
+        building = '工程馆'
+        _, roomCode = pattern4.findall(roomStr)[0]
+        return building, building + roomCode
+    pattern5 = re.compile(r'^(新上院?)\s*(N|S|n|s)(\d{3})([A-Za-z]?)$')
+    if pattern5.match(roomStr) != None:
+        building = '新上院'
+        _, loc, roomCode, postfix = pattern5.findall(roomStr)[0]
+        return building, building + loc.upper() + roomCode + postfix.upper()
     return None
+
 def getWeekDay(targetDate:datetime.date)->str:
     return '星期' + ['一','二','三','四','五','六','日'][targetDate.weekday()]
+
 def drawClassroomPeopleCountFunc(roomName:str, target:int)->Tuple[bool, str]:
     mydb, mycursor = newSqlSession()
     now = datetime.datetime.now()

@@ -404,3 +404,4 @@ class WordleGame:
             ) as f:
                 word_set |= json.load(f).keys()
         return word_set
+    

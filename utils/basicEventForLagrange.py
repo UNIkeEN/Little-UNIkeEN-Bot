@@ -119,6 +119,8 @@ def send(id: int, message: str, type:str='group')->None:
     type: Union['group', 'private'], 默认 'group'
     """
     msgChain = MessageChain.fromCqcode(message)
+    typePrint = {'group':'群', 'private': '私'}.get(type, '??')
+    print(f'[{typePrint}: {id:>11d}]',msgChain)
     msgChain.removeUnsupportPiece()
     msgChain.fixLagrangeImgUrl()
     if True:
@@ -143,7 +145,6 @@ def send(id: int, message: str, type:str='group')->None:
             },
         }
         sendPacketToLagrange(packet)
-    print(packet)
 
 async def aioSend(id: int, message: str, type:str='group')->None:
     raise Exception("No longer Support")

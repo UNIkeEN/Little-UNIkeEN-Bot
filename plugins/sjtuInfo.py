@@ -6,6 +6,7 @@ from utils.basicEvent import *
 from utils.basicConfigs import *
 from utils.standardPlugin import StandardPlugin
 import os.path
+import datetime
 
 class SjtuCanteenInfo(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -27,6 +28,7 @@ class SjtuCanteenInfo(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+        
 class SjtuLibInfo(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-lib'
@@ -47,6 +49,7 @@ class SjtuLibInfo(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+        
 def get_lib_info():
     url = "https://zgrstj.lib.sjtu.edu.cn/cp"
     ret = httpx.get(url)
@@ -82,7 +85,7 @@ def get_lib_info():
         txt_size = draw.textsize(txt_per, font_hywh_85w_l) # 获取字符串在图片上长度的一种算法
         draw.text((nw_x+(rec_width-txt_size[0])/2,nw_y+90), txt_per, fill=FONT_CLR[clr], font=font_hywh_85w_l)
 
-        draw.text((30,height-48),'* API借鉴自chshzhe/GuGuBot', fill=(175,175,175,255), font=font_syht_m)
+        draw.text((30,height-48), datetime.datetime.now().strftime('* 更新于%y-%m-%d %H:%M'), fill=(175,175,175,255), font=font_syht_m)
 
     save_path=(f'{SAVE_TMP_PATH}/lib_info.png')
     img.save(save_path)
@@ -120,8 +123,7 @@ def get_canteen_info():
         txt_per = (str(percent)+"%") if clr!="h" else "关闭"
         txt_size = draw.textsize(txt_per, font_hywh_85w_l)
         draw.text((nw_x+(rec_width-txt_size[0])/2,nw_y+90), txt_per, fill=FONT_CLR[clr], font=font_hywh_85w_l)
-
-        draw.text((30,height-48),'* API借鉴自chshzhe/GuGuBot', fill=(175,175,175,255), font=font_syht_m)
+        draw.text((30,height-48), datetime.datetime.now().strftime('* 更新于%y-%m-%d %H:%M'), fill=(175,175,175,255), font=font_syht_m)
 
     save_path=(f'{SAVE_TMP_PATH}/st_info.png')
     img.save(save_path)

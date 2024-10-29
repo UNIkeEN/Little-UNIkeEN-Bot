@@ -202,7 +202,7 @@ class SjtuJwcMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()
     def __init__(self) -> None:
         if SjtuJwcMonitor.monitorSemaphore.acquire(blocking=False):
-            self.start(20, 180)
+            self.start(20, 30)
             createJwcSql()
         self.url_list = []
         if False:

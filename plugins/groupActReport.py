@@ -214,20 +214,22 @@ def getMyActivity(user_id:int, group_id:int)->Optional[str]:
         plt.savefig(time_dis_path, dpi=200, bbox_inches='tight')
         
         # 绿墙图
-        date_list = [st1y + datetime.timedelta(days=d) for d in range(365)]
+        date_list = [st1y + datetime.timedelta(days=d) for d in range(1, 365)]
         daily_message_counts = [time_mes.get(date.strftime('%Y-%m-%d'), 0) for date in date_list]
-        print(daily_message_counts)
+        # debug
+        # for date in date_list:
+        #     print(date.strftime('%Y-%m-%d'), time_mes.get(date.strftime('%Y-%m-%d'), 0), date.isoweekday())
         max_messages = max(daily_message_counts) if daily_message_counts else 0
 
         cmap = LinearSegmentedColormap.from_list("custom_green", [(0.773, 1, 0.804, 1), (0.129, 0.431, 0.224, 1)]) # PALETTE_LIGHEGREEN, PALETTE_SJTU_GREEN
-        weekdays_per_date = [(date.weekday() + 1) % 7 for date in date_list]  # 获取每天是周几
-        weeks_in_year = int(np.ceil(len(date_list) / 7))  # 计算所需列数
-        data_matrix = np.zeros((7, weeks_in_year))  # 创建矩阵
+        weekdays_per_date = [date.isoweekday() % 7 for date in date_list]  # 获取每天是周几
+        data_matrix = np.zeros((7, 52))  # 创建矩阵
+        begin_offset = 6 - et.isoweekday() % 7
 
         # 填充数据
-        for i, count in enumerate(daily_message_counts):
+        for i, count in enumerate(daily_message_counts[begin_offset:]):
             week_col = i // 7
-            day_row = weekdays_per_date[i]
+            day_row = weekdays_per_date[begin_offset + i]
             data_matrix[day_row, week_col] = count
 
         # 根据消息数调整颜色
