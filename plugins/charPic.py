@@ -34,7 +34,7 @@ class CharPic(StandardPlugin):
 
 def get_pic_text(qq_id:int, new_w: int = 700) -> str:
     """图片按灰度映射字符"""
-    str_map = "@@$$&B88QMMGW##EE93SPPDOOU**==()+^,\"--''.        "
+    str_map = "@@$$&B88QMMGW##EE93SPPDOOU**==()+^,\"--''.               "
     n = len(str_map)
     img_avatar = Image.open(BytesIO(get_avatar_pic(qq_id)))
     w, h = img_avatar.size
@@ -83,6 +83,6 @@ def charAvatar(qq_id:int)-> str:
 
 # do some unit test
 if __name__ == "__main__":
-    test = charAvatar(2399381712)
+    test = charAvatar(859274386)
     print(test)
 
