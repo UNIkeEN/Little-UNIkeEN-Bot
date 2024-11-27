@@ -1,33 +1,40 @@
-from typing import List, Any, Union
-from pathlib import Path
+from typing import List, Any, Union, Tuple
 from PIL import Image, ImageDraw, ImageFont
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import *
-from utils.basicEventForGocqhttp import *
+from utils.basicConfigs import FONTS_PATH, ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import send, get_avatar_pic
 import os
+from io import BytesIO
 
-
-
-default_font, font_size = Path(__file__).parent / "font" / "consola.ttf", 14
-default_font = str(default_font)
+default_font, font_size = os.path.join(FONTS_PATH, "Consolas.ttf"), 14
 util_draw = ImageDraw.Draw(Image.new("L", (1, 1)))
 
-class drawCharPic(StandardPlugin):
+class CharPic(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg in ['字符画', '字符头像']
-    
+
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         picPath = charAvatar(data['user_id'])
         picPath = picPath if os.path.isabs(picPath) else os.path.join(ROOT_PATH, picPath)
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         send(target, f'[CQ:image,file=files://{picPath}]',data['message_type'])
 
-
+    def getPluginInfo(self) -> dict:
+        return {
+            'name': 'DrawCharPic',
+            'description': '字符画',
+            'commandDescription': '字符画',
+            'usePlace': ['group',],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Pluto',
+        }
 
 
 def get_pic_text(qq_id:int, new_w: int = 700) -> str:
     """图片按灰度映射字符"""
-    str_map = "@@$$&B88QMMGW##EE93SPPDOOU**==()+^,\"--''.     "
+    str_map = "@@$$&B88QMMGW##EE93SPPDOOU**==()+^,\"--''.        "
     n = len(str_map)
     img_avatar = Image.open(BytesIO(get_avatar_pic(qq_id)))
     w, h = img_avatar.size
@@ -40,15 +47,16 @@ def get_pic_text(qq_id:int, new_w: int = 700) -> str:
     for x in range(img_avatar.height):
         for y in range(img_avatar.width):
             gray_v = img_avatar.getpixel((y, x))
+            gray_v = sum(gray_v) / len(gray_v)
             s += str_map[int(n * (gray_v / 256))]
         s += "\n"
 
     return s
 
 #大概是设置一些画图的参数吧
-async def text_wh(
+def text_wh(
     font_filename, default_font_size: int, text: str
-) -> tuple[ImageFont.FreeTypeFont, int, int]:
+) -> Tuple[ImageFont.FreeTypeFont, int, int]:
     ttfont = ImageFont.truetype(font_filename, default_font_size)
     try:
         w, h = ttfont.getsize_multiline(text.strip())
@@ -58,8 +66,8 @@ async def text_wh(
         return ttfont, bbox[2], bbox[3]
 
 #文字转图片，模仿signIn写了储存
-async def text2img(text: str, qq_id:int):
-    font, w, h = await text_wh(default_font, font_size, text)
+def text2img(text: str, qq_id:int) -> str:
+    font, w, h = text_wh(default_font, font_size, text)
     img = Image.new("L", (w, h), "#FFFFFF")
     draw = ImageDraw.Draw(img)
     draw.text((0,0), text, fill="#000000", font=font)
@@ -67,10 +75,14 @@ async def text2img(text: str, qq_id:int):
     img.save(save_path)
     return save_path
 
-def charAvatar(qq_id:int):
-    id= qq_id if isinstance(qq_id, int) else int(qq_id)
+def charAvatar(qq_id:int)-> str:
+    id = qq_id if isinstance(qq_id, int) else int(qq_id)
     s:str = get_pic_text(id)
     saved_path = text2img(s, id)
     return saved_path
 
+# do some unit test
+if __name__ == "__main__":
+    test = charAvatar(2399381712)
+    print(test)
 
