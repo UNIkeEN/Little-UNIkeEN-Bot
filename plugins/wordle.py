@@ -19,7 +19,7 @@ DIFFICULTY_LIST = []
 def drawHelpPic(savePath:str):
     helpWords = (
         "输入“猜单词”或者“-wordle”开始游戏：\n"
-         "可用“猜单词 n”“-wordle n”指定单词长度，长度应在3到8之间\n"
+        "可用“猜单词 n”“-wordle n”指定单词长度，长度应在3到8之间\n"
         "答案为指定长度单词，发送对应长度单词即可；\n"
         "绿色块代表此单词中有此字母且位置正确；\n"
         "黄色块代表此单词中有此字母，但该字母所处位置不对；\n"
@@ -105,7 +105,7 @@ class Wordle(StandardPlugin):
 
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return (
-            (msg in self.startWords) or 
+            (self.startWordsPattern.match(msg)!=None) or 
             (msg in self.hintWords) or
             (msg in self.stopWords) or
             (self.wordPattern.match(msg) != None) or 
@@ -116,7 +116,7 @@ class Wordle(StandardPlugin):
         groupId = data['group_id']
         userId = data['user_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wordle-%d.png'%groupId)
-        if self.startWordsPattern.match(msg):
+        if self.startWordsPattern.match(msg)!=None:
             game = self.games.get(groupId)
             if game != None:
                 game:WordleGame
