@@ -19,6 +19,7 @@ DIFFICULTY_LIST = []
 def drawHelpPic(savePath:str):
     helpWords = (
         "输入“猜单词”或者“-wordle”开始游戏：\n"
+        "可用“猜单词 n”“-wordle n”指定单词长度，长度应在3到8之间\n"
         "答案为指定长度单词，发送对应长度单词即可；\n"
         "绿色块代表此单词中有此字母且位置正确；\n"
         "黄色块代表此单词中有此字母，但该字母所处位置不对；\n"
@@ -51,7 +52,7 @@ class Wordle(StandardPlugin):
     def __init__(self) -> None:
         self.wordPattern = re.compile(r'^[a-zA-Z]{3,8}$')
         self.difficultyPattern = re.compile(r'^猜?单词难度\s*(\S*)$')
-        self.startWords = ['猜单词', '-wordle']
+        self.startWordsPattern = re.compile(r"^(?:猜单词|-wordle)\s*(\d*)$")
         self.hintWords = ['单词提示', '猜单词提示', '提示']
         self.stopWords = ['结束']
         
@@ -80,7 +81,7 @@ class Wordle(StandardPlugin):
                     lenDict[l].append((word, interpretation['中释']))
                 self.words[difficulty] = lenDict
 
-    def randomSelectWord(self, difficulty:str)->Optional[Tuple[str, str]]:
+    def randomSelectWord(self, difficulty:str,l:int=0)->Optional[Tuple[str, str]]:
         # 长度  概率    CDF
         # 3     5%     5%
         # 4     15%    20%
@@ -96,14 +97,15 @@ class Wordle(StandardPlugin):
             elif r < 80: return 6
             elif r < 95: return 7
             else: return 8
-        l = randomLen()
+        if l==0:
+            l = randomLen()
         wordList = self.words.get(difficulty,{}).get(l,[])
         if len(wordList) == 0: return None
         return random.choice(wordList)
 
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return (
-            (msg in self.startWords) or 
+            (self.startWordsPattern.match(msg)!=None) or 
             (msg in self.hintWords) or
             (msg in self.stopWords) or
             (self.wordPattern.match(msg) != None) or 
@@ -114,15 +116,23 @@ class Wordle(StandardPlugin):
         groupId = data['group_id']
         userId = data['user_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wordle-%d.png'%groupId)
-        if msg in self.startWords:
+        if self.startWordsPattern.match(msg)!=None:
             game = self.games.get(groupId)
             if game != None:
                 game:WordleGame
                 game.draw(savePath)
                 send(groupId, '当前有正在进行的猜单词游戏\n[CQ:image,file=file:///%s]'%savePath)
             else:
+                l=self.startWordsPattern.findall(msg)[0]
+                if(len(l)==0):
+                    l=0
+                else:
+                    l=int(l)#l用(\d*)获取，应该不会报错
+                    if (l<3 or l>8):
+                        send(groupId,"[CQ:reply,id={message_id}]单词长度应在3到8之间".format(message_id=data["message_id"]))
+                        return 'OK'
                 difficulty = self.difficulties.get(groupId, 'CET4')
-                wordResult = self.randomSelectWord(difficulty)
+                wordResult = self.randomSelectWord(difficulty,l)
                 if wordResult == None:
                     send(groupId, '[CQ:reply,id=%d]内部错误，请输入“猜单词难度 CET4”重置难度信息'%data['message_id'])
                 elif get_user_coins(userId, format=False) < 30*100:
