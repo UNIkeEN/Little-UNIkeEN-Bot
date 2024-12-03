@@ -10,9 +10,10 @@ class AutoRepoke(PokeStandardPlugin):
         self.bufferQueue.start()
 
     def judgeTrigger(self, data:Any)->bool:
-        return data['target_id'] == data['self_id'] and data['sender_id'] != data['self_id']
+        return data['target_id'] == data['self_id'] and data['user_id'] != data['self_id']
 
     def pokeMessage(self, data:Any)->Union[None, str]:
+        return # TODO
         if len(self.bufferQueue) < self.maxCapa:
-            self.bufferQueue.put(send, args=(data['group_id'], f"[CQ:poke,qq={data['sender_id']}]"))
+            self.bufferQueue.put(send, args=(data['group_id'], f"[CQ:poke,sub_type=poke,target_id={data['user_id']},qq={data['user_id']}]"))
         return "OK"

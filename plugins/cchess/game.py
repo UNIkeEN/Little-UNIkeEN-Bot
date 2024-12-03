@@ -1,16 +1,13 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 
 
 from .board import Board
 from .config import Config
-from .engine import UCCIEngine
+from .engine import Engine, UciEngine, UcciEngine, EngineError
 # from model import GameRecord
 from .move import Move
-
-cchess_config = ""
-
 
 class Player:
     def __init__(self, id: str, name: str):
@@ -25,19 +22,33 @@ class Player:
 
 
 class AiPlayer(Player):
-    def __init__(self, level: int = 4):
+    def __init__(self, id:int, engineType:str, level: int, engine_path: str, options:Dict[str, str] = {}):
         self.level = level
-        self.id = uuid.uuid4().hex
-        self.name = f"AI lv.{level}"
-        self.engine = UCCIEngine(cchess_config.cchess_engine_path)
-        time_list = [100, 400, 700, 1000, 1500, 2000, 3000, 5000]
-        self.time = time_list[level - 1]
-        depth_list = [5, 5, 5, 5, 8, 12, 17, 25]
-        self.depth = depth_list[level - 1]
+        name = f"小马 lv.{level}"
+        if engineType == 'uci':
+            self.engine = UciEngine(engine_path)
+        elif engineType == 'ucci':
+            self.engine = UcciEngine(engine_path)
+        else:
+            raise EngineError("unknown engine type: {}".format(engineType))
+        self.time = [100, 400, 700, 1000, 1500, 2500, 5000, 8000, 10000][level - 1]
+        self.skill = [1, 2, 3, 4, 6, 10, 12, 15, 20][level - 1]
+        self.depth = [2, 3, 3, 4, 5, 7, 10, 17, 25][level - 1]
+        self.options = options
+        self.options.update({
+            'Skill Level': str(self.skill)
+        })
+        self.engineType = engineType
+        super().__init__(id, name)
+        self.init_engine()
 
-    async def get_move(self, position: str) -> Move:
-        return await self.engine.bestmove(position, time=self.time, depth=self.depth)
+    def get_move(self, position: str) -> Move:
+        return self.engine.bestmove(position, time=self.time, depth=self.depth)
 
+    def init_engine(self):
+        self.engine.open()
+        self.engine.set_options(self.options)
+        self.engine.make_ready()
 
 class Game(Board):
     def __init__(self):

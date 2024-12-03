@@ -10,5 +10,21 @@
     "admins": [123, 456, 789],
     "warning-users": [123, 456],
     "frontend-ip": "little unicorn bot bind ip, like '127.0.0.1'",
-    "frontend-port": 5986
+    "frontend-port": 5986,
+    "plugins": {
+        "mua": {
+            "BOT_MUA_ID": "---------",
+            "BOT_MUA_TOKEN": "---------------",
+            "MUA_URL": "---------------"
+        },
+        "cchess": {
+            "engine_type": "uci",
+            "engine_path": "/root/pikafish/pikafish-bmi2",
+            "engine_options": {
+                "Threads": "2",
+                "Hash": "128"
+            },
+            "search_depth": "28"
+        }
+    }
 }

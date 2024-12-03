@@ -77,8 +77,11 @@ def fixLagrangeImgUrl(url:str)->str:
 
 class MessageChain():
     supportedCqcodes = [
-        'text', 'image', 'face', 
-        'forward', 'node'
+        'text', 'image', 'face', 'poke',
+        'forward', 'node', 'at', 'reply',
+        'record', 'video', 'rps', 'dice',
+        'location', 'music', 'forward', 'node',
+        'json'
     ]# for Lagrange.Core
     cqPattern = re.compile(r'(\[CQ\:[^\[]*\])')
     def __init__(self, chain:List[Dict[str,Any]]) -> None:

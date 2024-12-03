@@ -96,6 +96,7 @@ from plugins.sjtuActivity import SjtuActivity, SjtuDektMonitor
 from plugins.makeJoke import MakeJoke
 from plugins.uniAgenda import GetUniAgenda
 from plugins.chess import ChessPlugin, ChessHelper
+from plugins.charPic import CharPic
 from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
 # from plugins.song import ChooseSong # API坏了
 from plugins.zsmCorups import ZsmGoldSentence
@@ -103,11 +104,13 @@ from plugins.clearRecord import ClearRecord, RestoreRecord
 from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
 from plugins.wordle import Wordle, WordleHelper
 from plugins.handle import Handle, HandleHelper
+from plugins.mathler import Mathler, MathlerHelper
 from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
 from plugins.moyu import GetMoyuCalendar, UpdateMoyuCalendar
+from plugins.sendLike import SendLike
 try:
     from plugins.apexStatus import ApexStatusPlugin
 except NotPublishedException as e:
@@ -154,15 +157,6 @@ except NotPublishedException as e:
 from plugins.gocqWatchDog import GocqWatchDog
 from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
 from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
-
-from plugins.notPublished.sjtuSql import (
-    SearchSjtuSqlAllPrivate,
-    SearchSjtuSqlAll,
-    SearchSjtuSql,
-    SearchSjtuSqlPIC,
-)
-from plugins.notPublished.sjtuSqlGroupingVerication import SjtuSqlGroupingVerify
-from plugins.test import TestLagrange
 ###### end not published plugins
 
 def sqlInit():
@@ -189,6 +183,7 @@ sjtuClassroomRecorder = SjtuClassroomRecorder()
 banImpl = BanImplement()
 
 # 根据config初始化
+cchessConfig = {}
 if isinstance(config, dict):
     pluginConfigs:Optional[Dict[str, Any]] = config.get('plugins', None)
     if pluginConfigs != None:
@@ -197,6 +192,8 @@ if isinstance(config, dict):
             muaConfig = pluginConfigs['mua']
             setMuaCredential(muaConfig['BOT_MUA_ID'], muaConfig['BOT_MUA_TOKEN'], muaConfig['MUA_URL'])
             startMuaInstanceMainloop()
+        if "cchess" in pluginConfigs.keys():
+            cchessConfig = pluginConfigs['cchess']
         # if 'xxx' in in pluginConfigs.keys():
         
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
@@ -251,20 +248,22 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
     PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
-    PluginGroupManager([ChineseChessPlugin(), ChineseChessHelper()], 'cchess'),
+    PluginGroupManager([ChineseChessPlugin(cchessConfig.get('engine_type', 'uci'),
+                                           cchessConfig.get('engine_path', None),
+                                           cchessConfig.get('engine_options', {})), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ChessPlugin(), ChessHelper()], 'chess'),
     PluginGroupManager([ApexStatusPlugin()], 'apex'),
     # PluginGroupManager([ChooseSong()], 'song'),
-    PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper()], 'wordle'),
-    PluginGroupManager([GetNiuChaoYue(), NiuChaoYueMonitor(), GroupBan(),
+    PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper(), Mathler(), MathlerHelper()], 'wordle'),
+    PluginGroupManager([CharPic(), GroupBan(),
                         GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
     # PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
     PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin'),
+    PluginGroupManager([SendLike()], 'likes'),
     # PluginGroupManager([], 'arxiv'),
-    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -273,7 +272,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
     ShowNews(), YesterdayNews(),
     MorningGreet(), NightGreet(),
-    SignIn(), 
+    SignIn(), SendLike(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetJwc(), SjtuBwc(), GetSjtuCharge(), SjtuActivity(),#SubscribeJwc(), 
     MuaAbstract(), MuaQuery(), MuaAnnHelper(), MuaAnnEditor(), 

@@ -8,18 +8,48 @@ from utils.accountOperation import get_user_coins, update_user_coins
 import os, re, json
 from enum import Enum
 from functools import cache
-from PIL.ImageFont import FreeTypeFont
 from spellchecker import SpellChecker
 from PIL import ImageFont, Image, ImageDraw
-from dataclasses import dataclass
 import random
 WORDLE_RESOURCE_PATH = 'resources/wordle'
 DIFFICULTY_LIST = []
 
+def createDifficultySql():
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""create table if not exists `wordleDifficulty` (
+        `group_id` bigint unsigned not null,
+        `difficulty` char(20),
+        primary key (`group_id`)
+    );""")
+
+def loadDifficulty(group_id: int) -> Optional[str]:
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select `difficulty` from `wordleDifficulty`
+                     where `group_id` = %s
+                     """, (group_id, ))
+    result = list(mycursor)
+    if len(result) == 0:
+        return None
+    return result[0][0]
+
+def loadAllDifficulties() -> Dict[int, str]:
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""select `group_id`, `difficulty` from `wordleDifficulty`""")
+    result = {} 
+    for group_id, difficulty in list(mycursor):
+        result[group_id] = difficulty
+    return result
+
+def writeDifficulty(group_id: int, difficulty: str)->None:
+    mydb, mycursor = newSqlSession()
+    mycursor.execute("""replace into `wordleDifficulty` (`group_id`, `difficulty`)
+                     values (%s, %s)
+                     """, (group_id, difficulty))
+
 def drawHelpPic(savePath:str):
     helpWords = (
         "输入“猜单词”或者“-wordle”开始游戏：\n"
-        "可用“猜单词 n”“-wordle n”指定单词长度，长度应在3到8之间\n"
+         "可用“猜单词 n”“-wordle n”指定单词长度，长度应在3到12之间\n"
         "答案为指定长度单词，发送对应长度单词即可；\n"
         "绿色块代表此单词中有此字母且位置正确；\n"
         "黄色块代表此单词中有此字母，但该字母所处位置不对；\n"
@@ -50,14 +80,15 @@ def drawHelpPic(savePath:str):
 
 class Wordle(StandardPlugin):
     def __init__(self) -> None:
-        self.wordPattern = re.compile(r'^[a-zA-Z]{3,8}$')
+        createDifficultySql()
+        self.wordPattern = re.compile(r'^[a-zA-Z]{3,12}$')
         self.difficultyPattern = re.compile(r'^猜?单词难度\s*(\S*)$')
         self.startWordsPattern = re.compile(r"^(?:猜单词|-wordle)\s*(\d*)$")
         self.hintWords = ['单词提示', '猜单词提示', '提示']
         self.stopWords = ['结束']
         
         self.games:Dict[int,Optional[WordleGame]] = {}
-        self.difficulties:Dict[int,str] = {}
+        self.difficulties:Dict[int,str] = loadAllDifficulties()
         self.difficultyList = []
         # words[难度][单词长度] -> [单词, 解释]
         self.words:Dict[str,Dict[int,Tuple[str,str]]] = {}
@@ -74,13 +105,23 @@ class Wordle(StandardPlugin):
             if suffix != '.json': continue
             self.difficultyList.append(difficulty)
             with open(os.path.join(wordleResourcePath, wordleResourceName),'r', encoding='utf-8') as f:
-                lenDict = {l:[] for l in range(3, 9)}
+                lenDict = {l:[] for l in range(3, 13)}
                 for word, interpretation in json.load(f).items():
                     l = len(word)
-                    if l < 3 or l >= 9: continue
+                    if l < 3 or l >= 13: continue
                     lenDict[l].append((word, interpretation['中释']))
                 self.words[difficulty] = lenDict
-
+    
+    @staticmethod
+    def randomLen():
+        r = random.randint(0, 99)
+        if r < 5: return 3
+        elif r < 20: return 4
+        elif r < 60: return 5
+        elif r < 80: return 6
+        elif r < 95: return 7
+        else: return 8
+        
     def randomSelectWord(self, difficulty:str,l:int=0)->Optional[Tuple[str, str]]:
         # 长度  概率    CDF
         # 3     5%     5%
@@ -89,23 +130,15 @@ class Wordle(StandardPlugin):
         # 6     20%    80%
         # 7     15%    95%
         # 8     5%     100%
-        def randomLen()->int:
-            r = random.randint(0, 99)
-            if r < 5: return 3
-            elif r < 20: return 4
-            elif r < 60: return 5
-            elif r < 80: return 6
-            elif r < 95: return 7
-            else: return 8
         if l==0:
-            l = randomLen()
+            l = self.randomLen()
         wordList = self.words.get(difficulty,{}).get(l,[])
         if len(wordList) == 0: return None
         return random.choice(wordList)
 
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return (
-            (self.startWordsPattern.match(msg)!=None) or 
+            (self.startWordsPattern.match(msg) != None) or 
             (msg in self.hintWords) or
             (msg in self.stopWords) or
             (self.wordPattern.match(msg) != None) or 
@@ -116,7 +149,7 @@ class Wordle(StandardPlugin):
         groupId = data['group_id']
         userId = data['user_id']
         savePath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'wordle-%d.png'%groupId)
-        if self.startWordsPattern.match(msg)!=None:
+        if self.startWordsPattern.match(msg) != None:
             game = self.games.get(groupId)
             if game != None:
                 game:WordleGame
@@ -124,12 +157,12 @@ class Wordle(StandardPlugin):
                 send(groupId, '当前有正在进行的猜单词游戏\n[CQ:image,file=file:///%s]'%savePath)
             else:
                 l=self.startWordsPattern.findall(msg)[0]
-                if(len(l)==0):
+                if len(l)==0:
                     l=0
                 else:
                     l=int(l)#l用(\d*)获取，应该不会报错
-                    if (l<3 or l>8):
-                        send(groupId,"[CQ:reply,id={message_id}]单词长度应在3到8之间".format(message_id=data["message_id"]))
+                    if (l<3 or l>=13):
+                        send(groupId,"[CQ:reply,id={message_id}]单词长度应在3到12之间".format(message_id=data["message_id"]))
                         return 'OK'
                 difficulty = self.difficulties.get(groupId, 'CET4')
                 wordResult = self.randomSelectWord(difficulty,l)
@@ -208,12 +241,14 @@ class Wordle(StandardPlugin):
             else:
                 return None
         elif self.difficultyPattern.match(msg) != None:
-            difficulty = self.difficultyPattern.findall(msg)[0]
+            difficulty:str = self.difficultyPattern.findall(msg)[0]
+            difficulty = difficulty.upper()
             if len(difficulty) == 0:
                 difficulty = self.difficulties.get(groupId, 'CET4')
                 send(groupId, '[CQ:reply,id=%d]当前难度为“%s”'%(data['message_id'], difficulty))
             elif difficulty in self.difficultyList:
                 self.difficulties[groupId] = difficulty
+                writeDifficulty(groupId, difficulty)
                 send(groupId, '[CQ:reply,id=%d]设置成功，当前难度为%s'%(data['message_id'], difficulty))
             else:
                 send(groupId,'[CQ:reply,id=%d]设置失败，可用的难度有：\n%s'%(data['message_id'], '、'.join(self.difficultyList)))
@@ -259,13 +294,29 @@ class GuessResult(Enum):
 
 
 class WordleGame:
+    @staticmethod
+    def length_to_times(length: int)->int:
+        return {
+            3: 8,
+            4: 7,
+            5: 6,
+            6: 6,
+            7: 6,
+            8: 7,
+            9: 7,
+            10: 7,
+            11: 8,
+            12: 8,
+            13: 8,
+        }.get(length, 6)
+
     def __init__(self, word: str, meaning: str):
         self.word: str = word  # 单词
         self.meaning: str = meaning  # 单词释义
         self.result = f"【单词】：{self.word}\n【释义】：{self.meaning}"
         self.word_lower: str = self.word.lower()
         self.length: int = len(word)  # 单词长度
-        self.rows: int = self.length + 1  # 可猜次数
+        self.rows: int = self.length_to_times(self.length)  # 可猜次数
         self.guessed_words: List[str] = []  # 记录已猜单词
 
         self.block_size = (40, 40)  # 文字块尺寸

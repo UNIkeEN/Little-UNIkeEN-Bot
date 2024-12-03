@@ -217,7 +217,7 @@ class HandleGame:
             y = self.padding[1] + (self.block_size[1] + self.block_padding[1]) * row
             return x, y
 
-        for i in range(rows - 1):
+        for i in range(len(self.guessed_idiom)):
             idiom = self.guessed_idiom[i]
             pinyin = self.guessed_pinyin[i]
             char_states = get_states(list(idiom), list(self.idiom))
@@ -268,11 +268,12 @@ class HandleGame:
                     underline_color,
                 )
                 board.paste(block, block_pos(i, j))
-
-        i = rows - 1
-        for j in range(self.length):
-            block = self.draw_block(self.colors.block_color)
-            board.paste(block, block_pos(i, j))
+                
+        if len(self.guessed_idiom) < self.times:
+            i = rows - 1
+            for j in range(self.length):
+                block = self.draw_block(self.colors.block_color)
+                board.paste(block, block_pos(i, j))
         board.save(savePath)
 
     def draw_hint(self, savePath:str):

@@ -166,14 +166,40 @@ def get_group_list()->Optional[List[int]]:
         lagrangeClientReturnSignals.pop(echo)
         return None
 
+def get_login_info()->Optional[List[int]]:
+    echo = str(uuid.uuid4())
+    s = lagrangeClientReturnSignals[echo] = Semaphore(0)
+    packet = {
+        'action': 'get_login_info',
+        'params': {},
+        'echo': echo
+    }
+    sendPacketToLagrange(packet)
+    if s.acquire(blocking=True, timeout=10):
+        lagrangeClientReturnSignals.pop(echo)
+        result = lagrangeClientReturns.pop(echo)
+        return result['data']
+    else:
+        lagrangeClientReturnSignals.pop(echo)
+        return None
+    
 def get_group_msg_history(group_id: int, message_seq: Union[int, None]=None)->list:
     raise Exception("no longer support")
     
 def get_essence_msg_list(group_id: int)->list:
     raise Exception("no longer support")
     
-def set_friend_add_request(flag, approve=True)->None:
-    raise Exception("no longer support")
+def set_friend_add_request(flag:str, approve:bool=True, remark:str='')->None:
+    """处理加好友"""
+    packet = {
+        'action': 'set_friend_add_request',
+        'params': {
+            "flag": flag,
+            "approve": approve,
+            "remark": remark,
+        },
+    }
+    sendPacketToLagrange(packet)
     
 def get_group_file_system_info(group_id: int)->dict:
     raise Exception("no longer support")
@@ -215,7 +241,43 @@ def isGroupOwner(group_id:int, user_id:int)->bool:
     memberInfo = get_group_member_info(group_id, user_id)
     return memberInfo != None and memberInfo.get('role', '') == 'owner'
 
+def get_stranger_info(user_id:int, no_cache:bool=False)->dict:
+    echo = str(uuid.uuid4())
+    s = lagrangeClientReturnSignals[echo] = Semaphore(0)
+    packet = {
+        'action': 'get_stranger_info',
+        'params': {
+            "user_id": user_id,
+            "no_cache": no_cache,
+        },
+        'echo': echo,
+    }
+    sendPacketToLagrange(packet)
+    if s.acquire(blocking=True, timeout=10):
+        lagrangeClientReturnSignals.pop(echo)
+        result = lagrangeClientReturns.pop(echo)
+        return result['data']
+    else:
+        lagrangeClientReturnSignals.pop(echo)
+        return None
 
+def get_friend_list()->List[Dict[str, Any]]:
+    echo = str(uuid.uuid4())
+    s = lagrangeClientReturnSignals[echo] = Semaphore(0)
+    packet = {
+        'action': 'get_friend_list',
+        'params': {},
+        'echo': echo,
+    }
+    sendPacketToLagrange(packet)
+    if s.acquire(blocking=True, timeout=10):
+        lagrangeClientReturnSignals.pop(echo)
+        result = lagrangeClientReturns.pop(echo)
+        return result['data']
+    else:
+        lagrangeClientReturnSignals.pop(echo)
+        return None
+    
 def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
     echo = str(uuid.uuid4())
     s = lagrangeClientReturnSignals[echo] = Semaphore(0)
@@ -235,6 +297,16 @@ def get_group_member_list(group_id:int, no_cache:bool=False)->Union[None, dict]:
     else:
         lagrangeClientReturnSignals.pop(echo)
         return None
+
+def send_like(user_id:int, times:int=10)->None:
+    packet = {
+        'action': 'send_like',
+        'params': {
+            "user_id": user_id,
+            "times": times,
+        },
+    }
+    sendPacketToLagrange(packet)
 
 def get_group_file_url(group_id: int, file_id: str, busid: int)-> Union[str, None]:
     raise Exception("no longer support")
@@ -257,16 +329,56 @@ def set_group_ban(group_id:int, user_id:int, duration:int)->None:
             "duration": duration,
         }
     }
-    try:
-        sendPacketToLagrange(packet)
-    except BaseException as e:
-        warning("base exception in set_group_ban: {}".format(e))
+    sendPacketToLagrange(packet)
 
 def get_group_system_msg()->Optional[Dict[str, List[Dict[str, Any]]]]:
     raise Exception("no longer support")
 
 def set_group_add_request(flag: str, sub_type: str, approve: bool, reason: str="")->None:
-    raise Exception("no longer support")
+    """处理加群请求/处理加群邀请
+    @flag: 加群请求的 flag（需从上报的数据中获得）
+    @sub_type: 'add' 或 'invite', 需要和上报消息中的 sub_type 字段相符
+    @approve: 是否同意
+    @reason: 拒绝理由，仅approve == False时生效
+    参考链接： https://docs.go-cqhttp.org/api/#%E5%A4%84%E7%90%86%E5%8A%A0%E7%BE%A4%E8%AF%B7%E6%B1%82-%E9%82%80%E8%AF%B7
+    """
+    if sub_type not in ['add', 'invite']:
+        warning('sub_type should either `add` or `invite`, but: {}'.format(sub_type))
+        return
+    packet = {
+        'action': 'set_group_add_request',
+        'params': {
+            'flag': flag,
+            'sub_type': sub_type,
+            'approve': approve,
+            'reason': reason,
+        }
+    }
+    sendPacketToLagrange(packet)
+
+def set_group_leave(group_id:int, is_dismiss:bool=False)->None:
+    """退出群组
+    参考链接 https://github.com/botuniverse/onebot-11/blob/master/api/public.md#set_group_leave-%E9%80%80%E5%87%BA%E7%BE%A4%E7%BB%84
+    """
+    packet = {
+        'action': 'set_group_add_request',
+        'params': {
+            'group_id': group_id,
+            'is_dismiss': is_dismiss,
+        }
+    }
+    sendPacketToLagrange(packet)
+
+def set_group_admin(group_id:int, user_id:int, enable:bool)->None:
+    packet = {
+        'action': 'set_group_admin',
+        'params': {
+            'group_id': group_id,
+            'user_id': user_id,
+            'enable': enable,
+        }
+    }
+    sendPacketToLagrange(packet)
 
 warningBufferQueue = BufferQueue(3, 1)
 warningBufferQueue.start()

@@ -244,12 +244,13 @@ def get_essence_msg_list(group_id: int)->list:
     except BaseException as e:
         warning("error in get_essence_msg_list, error: {}".format(e))
     return []
-def set_friend_add_request(flag, approve=True)->None:
+def set_friend_add_request(flag:str, approve:bool=True, remark:str='')->None:
     """处理加好友"""
     url = HTTP_URL+"/set_friend_add_request"
     params = {
         "flag": flag,
-        "approve": approve
+        "approve": approve,
+        "remark": remark,
     }
     requests.get(url, params=params)
     
