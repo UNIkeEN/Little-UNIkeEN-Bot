@@ -68,7 +68,8 @@ from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan, UserBan, BanImplement, GetBanList
 from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
-from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
+# from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
+from plugins.BilibiliApiV3 import BilibiliSubscribe, BilibiliSubscribeHelper
 try:
     from plugins.chatWithNLP import ChatWithNLP
 except Exception as e:
@@ -184,6 +185,7 @@ banImpl = BanImplement()
 
 # 根据config初始化
 cchessConfig = {}
+bilibiliCredential = {}
 if isinstance(config, dict):
     pluginConfigs:Optional[Dict[str, Any]] = config.get('plugins', None)
     if pluginConfigs != None:
@@ -194,6 +196,8 @@ if isinstance(config, dict):
             startMuaInstanceMainloop()
         if "cchess" in pluginConfigs.keys():
             cchessConfig = pluginConfigs['cchess']
+        if "bilibili" in pluginConfigs.keys():
+            bilibiliCredential = pluginConfigs['bilibili']['credential']
         # if 'xxx' in in pluginConfigs.keys():
         
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
@@ -247,7 +251,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
-    PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe()], 'bilibili'),
+    PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe(bilibiliCredential)], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(cchessConfig.get('engine_type', 'uci'),
                                            cchessConfig.get('engine_path', None),
                                            cchessConfig.get('engine_options', {})), ChineseChessHelper()], 'cchess'),

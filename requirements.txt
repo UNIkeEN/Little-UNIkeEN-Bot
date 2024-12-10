@@ -38,3 +38,4 @@ imgkit # you need apt install wkhtmltox # for leetcode plugin
 pinyin # for abstract plugin
 feedparser # for arxiv plugin
 PyExecJS #for douyin plugin
+emoji # for BilibiliApiV3 plugin

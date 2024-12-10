@@ -25,6 +25,13 @@
                 "Hash": "128"
             },
             "search_depth": "28"
+        },
+        "bilibili": {
+            "credential": {
+                "sessdata": "------------", 
+                "bili_jct": "------------", 
+                "buvid3": "------------"
+            }
         }
     }
 }
