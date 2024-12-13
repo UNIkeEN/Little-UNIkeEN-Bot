@@ -2,7 +2,6 @@ from typing import List, Dict, Optional,Any
 import re, base64
 from PIL import Image
 from io import BytesIO
-import requests
 from utils.imageBed import uuidToImgPath, dumpUrlToBed, dumpImageToBed, getImgFromUrl
 
 def messagePieceQuote(text:str)->str:
@@ -61,19 +60,10 @@ def urlImgToBase64(imgUrl:str)->Optional[str]:
 
 def base64ToImg(b64:str)->Optional[Image.Image]:
     try:
-        img = Image.open(BytesIO(base64.b64decode(base64_data)))
+        img = Image.open(BytesIO(base64.b64decode(b64)))
         return img
     except Exception:
         return None
-    
-lagrangeImgUrlPattern = re.compile(r'^https?\:\/\/multimedia\.nt\.qq\.com\.cn\/offpic\_new\/(\d+)\/+(\S+)$')
-def fixLagrangeImgUrl(url:str)->str:
-    result = lagrangeImgUrlPattern.findall(url)
-    if len(result) == 0:
-        return url
-    group_id, res_url = result[0]
-    url = 'https://gchat.qpic.cn/gchatpic_new/%s/%s'%(group_id, res_url)
-    return url
 
 class MessageChain():
     supportedCqcodes = [
@@ -85,7 +75,15 @@ class MessageChain():
     ]# for Lagrange.Core
     cqPattern = re.compile(r'(\[CQ\:[^\[]*\])')
     def __init__(self, chain:List[Dict[str,Any]]) -> None:
-        self.chain:List[Dict[str,Any]] = chain
+        self.chain:List[Dict[str,Any]] = []
+        for c in chain:
+            if isinstance(c, str):
+                self.chain.append({
+                    'type': 'text',
+                    'data': {'text': c}
+                })
+            else:
+                self.chain.append(c)
 
     @classmethod
     def fromCqcode(cls, cqcode:str)->'MessageChain':
@@ -105,6 +103,7 @@ class MessageChain():
                 }
             result.append(piece)
         return cls(result)
+    
     def fixLagrangeImgUrl(self):
         new_chain = []
         for piece in self.chain:
@@ -116,7 +115,6 @@ class MessageChain():
                 else:
                     new_chain.append(piece)
                     continue
-                # path = fixLagrangeImgUrl(path)
                 if path.startswith('http'):
                     piece['data']['url'] = path
                 else:
@@ -228,6 +226,7 @@ class MessageChain():
                             piece['data']['imgbeduuid'] = uuid
             result.append(piece)
         self.chain = result
+
     def __repr__(self) -> str:
         return str(self.chain)
 
@@ -243,3 +242,4 @@ if __name__ == '__main__':
         print(chain.toCqcode() == testCase)
         print(testCase, chain.toCqcode())
         print(chain.chain)
+        

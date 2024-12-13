@@ -577,20 +577,3 @@ def init_image_template(title, width, height, clr):
     txt_size = draw.textsize('Powered By Little-UNIkeEN-Bot',font=font_syhtmed_18)
     draw.text((width/2-txt_size[0]/2, height-50), 'Powered By Little-UNIkeEN-Bot', fill=(115,115,115,255), font = font_syhtmed_18)
     return img, draw, txt_size[1]
-
-# 语音相关
-def send_genshin_voice(sentence):
-    timeNow = str(time.time()).replace('.', '-')
-    speaker = random.choice(['枫原万叶', '可莉', '钟离',  '雷电将军',  '甘雨', '八重神子', '宵宫',  '胡桃'])
-    num='1234567890'
-    zw_num = '一二三四五六七八九十'
-    for i in range(len(num)):
-        sentence = sentence.replace(num[i],zw_num[i])
-    response = requests.get(f"http://233366.proxy.nscc-gz.cn:8888/?text={sentence}&speaker={speaker}&length_factor=0.5&noise=0.4&format=mp3")
-    if response.status_code != requests.codes.ok:
-        raise RuntimeError("genshin voice api failed")
-    file_path = "data/voice/{}.mp3".format(timeNow)
-    with open(file_path, "wb") as code:
-        code.write(response.content)
-    return file_path
-

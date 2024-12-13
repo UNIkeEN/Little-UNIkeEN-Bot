@@ -64,11 +64,9 @@ except NotPublishedException as e:
     startMuaInstanceMainloop, setMuaCredential = emptyFunction, emptyFunction
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
-from plugins.show2cyPic import Show2cyPIC, ShowSePIC
 from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
 from plugins.groupBan import GroupBan, UserBan, BanImplement, GetBanList
 from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
-# from plugins.bilibiliSubscribe_v2 import BilibiliSubscribe, BilibiliSubscribeHelper
 from plugins.BilibiliApiV3 import BilibiliSubscribe, BilibiliSubscribeHelper
 try:
     from plugins.chatWithNLP import ChatWithNLP
@@ -110,12 +108,7 @@ from plugins.emojiKitchen import EmojiKitchen
 from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
-from plugins.moyu import GetMoyuCalendar, UpdateMoyuCalendar
 from plugins.sendLike import SendLike
-try:
-    from plugins.apexStatus import ApexStatusPlugin
-except NotPublishedException as e:
-    ApexStatusPlugin = EmptyPlugin
 try:
     from plugins.niuChaoYue import GetNiuChaoYue, NiuChaoYueMonitor
 except NotPublishedException as e:
@@ -211,8 +204,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([MorningGreet(), NightGreet()], 'greeting'), # 早安晚安
     PluginGroupManager([CheckCoins(), AddAssignedCoins(),CheckTransactions()],'money'), # 查询金币,查询记录,增加金币（管理员）
     PluginGroupManager([FireworksFace(), FirecrackersFace(), BasketballFace(), HotFace(), MakeJoke()], 'superemoji'), # 超级表情
-    PluginGroupManager([ShowNews(), YesterdayNews(), GetMoyuCalendar(),
-                        PluginGroupManager([UpdateNewsAndReport(), UpdateMoyuCalendar()], 'newsreport')],'news'),  # 新闻
+    PluginGroupManager([ShowNews(), YesterdayNews(), 
+                        PluginGroupManager([UpdateNewsAndReport(), ], 'newsreport')],'news'),  # 新闻
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(), SjtuJsQuery(),
@@ -242,7 +235,6 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
     # PluginGroupManager([GoBangPlugin()],'gobang'),
-    PluginGroupManager([Show2cyPIC()], 'anime'), #ShowSePIC(), # 来点图图，来点涩涩(关闭)
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
@@ -256,18 +248,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                                            cchessConfig.get('engine_path', None),
                                            cchessConfig.get('engine_options', {})), ChineseChessHelper()], 'cchess'),
     PluginGroupManager([ChessPlugin(), ChessHelper()], 'chess'),
-    PluginGroupManager([ApexStatusPlugin()], 'apex'),
-    # PluginGroupManager([ChooseSong()], 'song'),
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper(), Mathler(), MathlerHelper()], 'wordle'),
     PluginGroupManager([CharPic(), GroupBan(),
                         GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
                         BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
-    # PluginGroupManager([XhsSubscribeHelper(),XhsSubscribe()], 'xhs'),
-    PluginGroupManager([DouyinSubscribeHelper(),DouyinSubscribe()], 'douyin'),
     PluginGroupManager([SendLike()], 'likes'),
-    # PluginGroupManager([], 'arxiv'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(),
@@ -283,7 +270,6 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
     GetSjtuNews(),
     LotteryPlugin(),
-    Show2cyPIC(), #ShowSePIC(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(), GetUniAgenda(),
     ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),

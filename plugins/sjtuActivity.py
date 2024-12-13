@@ -11,13 +11,13 @@ from threading import Semaphore
 
 BASE_URL = "https://activity.sjtu.edu.cn"
 
-METHOD = [
-    "",
-    "线上报名（审核录取）",
-    "线下报名",
-    "线上报名（先到先得）",
-    "无需报名"
-]
+METHOD = {
+    0: "",
+    1: "线上报名（审核录取）",
+    2: "线下报名",
+    3: "线上报名（先到先得）",
+    4: "无需报名"
+}
 
 # 第二课堂建库，轮询监控最新活动
 def createDektSql():
@@ -136,7 +136,7 @@ def drawDektImg(data: List) -> Union[None, str]:
             ('title', record['name']),
             ('body', record['sponsor']),
             ('separator',),
-            ('body', f"{METHOD[record['method']]}" + (f" · {record['signed_up_num']} / {record['person_num']} 人" if record['person_num'] != None else ""), PALETTE_SJTU_ORANGE),
+            ('body', f"{METHOD.get(record['method'], '')}" + (f" · {record['signed_up_num']} / {record['person_num']} 人" if record['person_num'] != None else ""), PALETTE_SJTU_ORANGE),
             ('body', f"活动时间：{record['activity_time'][0]} ~ {record['activity_time'][1]}")
         ]
 
@@ -171,7 +171,7 @@ def drawJdzsImg(data: List) -> Union[None, str]:
             ('title', record['name']),
             ('body', record['sponsor']),
             ('separator',),
-            ('body', f"{METHOD[record['method']]}", PALETTE_SJTU_DARKBLUE),
+            ('body', f"{METHOD.get(record['method'], '')}", PALETTE_SJTU_DARKBLUE),
             ('body', f"{record['presenter']}"),
             ('body', f"{record['address']}"),
             ('body', f"{record['activity_time'][0]} ~ {record['activity_time'][1]}")

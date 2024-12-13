@@ -352,6 +352,7 @@ NLP_model = EvalModel()
 class ChatWithNLP(StandardPlugin): # NLP对话插件
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return startswith_in(msg, ['小马，','小马,'])
+    
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         msg_inp = msg[3:]
@@ -361,11 +362,8 @@ class ChatWithNLP(StandardPlugin): # NLP对话插件
             ret = "我好像不明白捏qwq"
         text = f'[CQ:reply,id='+str(data['message_id'])+']'+ret
         send(target, text, data['message_type'])
-        # sleep(0.3)
-        # if ret != "我好像不明白捏qwq":
-        #     voice = send_genshin_voice(ret+'。')
-        #     send(target, f'[CQ:record,file=file:///{ROOT_PATH}/{voice}]', data['message_type'])
         return "OK"
+    
     def getPluginInfo(self, )->Any:
         return {
             'name': 'ChatWithNLP',

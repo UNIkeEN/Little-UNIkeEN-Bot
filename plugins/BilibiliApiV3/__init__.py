@@ -24,12 +24,6 @@ from utils.standardPlugin import StandardPlugin, CronStandardPlugin, Job
 from utils.sqlUtils import newSqlSession
 from utils.basicEvent import send, warning, gocqQuote
 
-def bvToUrl(bvid:str):
-    return 'https://www.bilibili.com/video/' + bvid
-
-def dynamicIdToUrl(dynamicId:int):
-    return 'https://www.bilibili.com/opus/' + str(dynamicId)
-
 def get_bilibili_user_info(loop, uid:int, wbi_keys: Dict[str, str], w_webid: str)->Dict:
     user = User(uid, get_credential(), wbi_keys=wbi_keys, w_webid = w_webid)
     return loop.run_until_complete(loop.create_task(user.get_user_info_wbi()))
@@ -40,25 +34,15 @@ def get_bilibili_user_name(loop, uid:int, wbi_keys: Dict[str, str], w_webid: str
         name = info['name']
         return name
     except Exception as e:
-        warning('Exception in get_bilibili_user_name: '+str(e))
         return None
 
-def subscribe_bilibili_user(uid:int)->int:
-    user = User(uid, get_credential())
-    loop = asyncio.get_running_loop()
-    result = loop.run_until_complete(loop.create_task(user.modify_relation(RelationType.SUBSCRIBE)))
-    return result['code']
-
-async def subscribe_bilibili_users(uids:List[int]) -> None:
+async def subscribe_bilibili_users(uids:List[int], relationType: RelationType=RelationType.SUBSCRIBE) -> None:
     for uid in uids:
         user = User(uid, get_credential())
-        result = await user.modify_relation(RelationType.SUBSCRIBE)
+        result = await user.modify_relation(relationType)
         await asyncio.sleep(12)
-    
-def get_subscribed_users() -> List[int]:
-    user = User(0, get_credential())
 
-async def dynamic_update(event):
+def get_dynamic_desc(event)->Tuple[str, str]:
     """
     动态更新事件
     """
@@ -85,8 +69,9 @@ async def dynamic_update(event):
         256: f"https://www.bilibili.com/audio/au{rid}",
         2048: f"https://t.bilibili.com/{dynamic_id}"
     }
-    base64str = await DynamicPicGenerator.generate(event)
-    return base64str, action_map.get(dynamic_type, "发表了新动态")
+    action = action_map.get(dynamic_type, "发表了新动态")
+    url = url_map.get(dynamic_type, 'https://www.bilibili.com/opus/' + str(dynamic_id))
+    return action, url
 
 class BilibiliSubscribeHelper(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
@@ -150,7 +135,7 @@ def getCachedNick(uid: int)->Optional[str]:
     mycursor.execute("""select `nickname` from `bilibiliNickCache`
                      where `uid` = %s""", (uid, ))
     results = list(mycursor)
-    if len(results) == None:
+    if len(results) == 0:
         return None
     return results[0][0]
 
@@ -230,7 +215,19 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
             loop.run_until_complete(loop.create_task(subscribe_bilibili_users(uids)))
         else:
             asyncio.run_coroutine_threadsafe(subscribe_bilibili_users(uids), self.loop)
-                        
+        # 3. ubsubscribe   
+        uids = []
+        for uid in subscribed:
+            if uid in self.upToGroups.keys(): 
+                if len(self.upToGroups[uid]) != 0:
+                    continue
+            uids.append(uid)
+        if block:
+            loop = self.loop
+            loop.run_until_complete(loop.create_task(subscribe_bilibili_users(uids, RelationType.UNSUBSCRIBE)))
+        else:
+            asyncio.run_coroutine_threadsafe(subscribe_bilibili_users(uids, RelationType.UNSUBSCRIBE), self.loop)
+            
     def getSelfUid(self) -> int:
         if self._selfUid != None:
             return self._selfUid
@@ -271,8 +268,7 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return self.pattern1.match(msg) != None or\
                self.pattern2.match(msg) != None or\
-               self.pattern3.match(msg) != None or\
-                   msg in ['-mid']
+               self.pattern3.match(msg) != None 
 
     def subscribeBilibili(self, group_id:int, bilibili_uid:int)->None:
         if group_id not in self.groupToUps.keys():
@@ -281,8 +277,12 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
         if bilibili_uid not in self.upToGroups.keys():
             self.upToGroups[bilibili_uid] = set()
             loop = self.loop
-            loop.run_until_complete(loop.create_task(subscribe_bilibili_user(bilibili_uid)))
-            
+            if bilibili_uid not in self.upToGroups.keys():
+                try:
+                    user = User(bilibili_uid, get_credential())
+                    loop.run_until_complete(loop.create_task(user.modify_relation(RelationType.SUBSCRIBE)))
+                except:
+                    pass
         if bilibili_uid not in self.groupToUps[group_id]:
             self.groupToUps[group_id].add(bilibili_uid)
             self.upToGroups[bilibili_uid].add(group_id)
@@ -309,24 +309,32 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
         if self.pattern1.match(msg) != None:
             uid = self.pattern1.findall(msg)[0]
             uid = int(uid)
-            try:
+            if len(self.groupToUps.get(group_id, [])) >= 10:
+                send(group_id, f'[CQ:reply,id={data["message_id"]}]订阅失败，当前群内订阅UP主过多')
+            else:
                 userName = getCachedNick(uid)
                 if userName == None:
                     userName = get_bilibili_user_name(self.loop, uid, self.wbiKeys, self.w_webid)
                     if userName != None:
                         updateNickCache(uid, userName)
-                    else:
-                        userName = '【获取用户名失败】'
-                self.subscribeBilibili(group_id, uid)
-                name = gocqQuote(userName)
-                send(group_id, f'订阅成功！\nname: {name}\nuid: {uid}')
-            except KeyError as e:
-                warning('bilibili api get_user_info error: {}'.format(e))
+                if userName != None:
+                    self.subscribeBilibili(group_id, uid)
+                    name = gocqQuote(userName)
+                    send(group_id, f'[CQ:reply,id={data["message_id"]}]订阅成功！\nname: {name}\nuid: {uid}')
+                else:
+                    send(group_id, f'[CQ:reply,id={data["message_id"]}]订阅失败，用户名称查询出错')
         elif self.pattern2.match(msg) != None:
             uid = self.pattern2.findall(msg)[0]
             uid = int(uid)
-            self.unsubscribeBilibili(group_id, uid)
-            send(group_id, '[CQ:reply,id=%d]OK'%data['message_id'])
+            if uid in self.groupToUps.get(group_id, []):
+                self.unsubscribeBilibili(group_id, uid)
+                nick = getCachedNick(uid)
+                if nick == None:
+                    nick = '【未知昵称】'
+                send(group_id, '[CQ:reply,id=%d]已取消订阅 %s'%(data['message_id'], nick))
+            else:
+                send(group_id, '[CQ:reply,id=%d]未订阅该UP主'%data['message_id'])
+                
         elif self.pattern3.match(msg) != None:
             ups = self.groupToUps.get(group_id, set())
             if len(ups) == 0:
@@ -344,9 +352,8 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
                         nicks[i] = nick
                 metas = [f"name: {nick}\nuid: {uid}" for nick, uid in zip(nicks, ups)]
                 send(group_id,f'本群订阅的up有：\n\n'+'\n----------\n'.join(metas))
-        elif msg in ['-mid']:
-            # only for DEBUG, TODO: remove
-            send(group_id, str(self.getSelfUid()))
+        else:
+            pass
             
         return "OK"
     
@@ -374,7 +381,7 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
             dynamic_id:int = detail['desc']['dynamic_id']
             timestamp = detail['desc']['timestamp']
             prevMeta = self.getPrevMeta(uid)
-            if prevMeta != None and (prevMeta[0] > timestamp or prevMeta[1] == dynamic_id):
+            if prevMeta != None and (prevMeta[0] >= timestamp or prevMeta[1] == dynamic_id):
                 return False
             self.writeMeta(uid, timestamp, dynamic_id)
             return True
@@ -413,6 +420,7 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
         """, (uploadTime, dynamicId, uid))
     
     def tick(self):
+        print('[TICK] bilibili update')
         self.updateWbiKeys()
         async def check_bilibili():
             dynamic_url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?type_list=268435455"
@@ -424,13 +432,15 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
                 uname = detail['desc']['user_profile']['info']['uname']
                 updateNickCache(uid, uname)
                 if self.checkUpdate(detail):
-                    base64str, info = await dynamic_update(detail)
+                    base64str = await DynamicPicGenerator.generate(detail)
                     img = Image.open(BytesIO(base64.b64decode(base64str)))
                     imgPath = os.path.join(ROOT_PATH, SAVE_TMP_PATH, 'biliDynamic-%d.png'%dynamicId)
                     img.save(imgPath)
+                    action, url = get_dynamic_desc(detail)
                     for groupId in self.upToGroups.get(uid, []):
-                        send(groupId, f'本群订阅UP主 【{uname}】 更新动态啦！\n\n链接：{dynamicIdToUrl(dynamicId)}')
+                        send(groupId, f'本群订阅UP主 【{uname}】 {action}\n\n链接：{url}')
                         send(groupId, f'[CQ:image,file=file:///{imgPath}]')
         loop = self.loop
         loop.run_until_complete(loop.create_task(check_bilibili()))
 
+    

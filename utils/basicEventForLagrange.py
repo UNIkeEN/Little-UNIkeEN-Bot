@@ -425,7 +425,3 @@ def init_image_template(title, width, height, clr):
     txt_size = draw.textsize('Powered By Little-UNIkeEN-Bot',font=font_syhtmed_18)
     draw.text((width/2-txt_size[0]/2, height-50), 'Powered By Little-UNIkeEN-Bot', fill=(115,115,115,255), font = font_syhtmed_18)
     return img, draw, txt_size[1]
-
-# 语音相关
-def send_genshin_voice(sentence):
-    raise Exception("no longer support")
