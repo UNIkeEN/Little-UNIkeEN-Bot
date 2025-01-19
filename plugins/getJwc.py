@@ -270,7 +270,10 @@ class GetJwc(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-
+    def checkSelfStatus(self):
+        jwc = sorted(getJwc(), key=lambda x: '%s-%s-%s'%(x['year'], x['month'], x['day']), reverse=True)
+        return 1, 1, '正常'
+    
 class SubscribeJwc(StandardPlugin):
     initGuard = Semaphore()
     # https://docs.python.org/3/faq/library.html#what-kinds-of-global-value-mutation-are-thread-safe
@@ -366,9 +369,14 @@ class GetSjtuNews(StandardPlugin, CronStandardPlugin):
             'version': '1.0.0',
             'author': 'fangtiancheng',
         }
+        
     def tick(self, ):
         drawSjtuNews()
-
+        
+    def checkSelfStatus(self):
+        drawSjtuNews()
+        return 1, 1, '正常'
+    
 def DrawNoticePIC(notice)->str:
     width = 720
     txt_line=""

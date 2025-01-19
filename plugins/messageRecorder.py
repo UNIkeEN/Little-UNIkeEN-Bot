@@ -102,13 +102,14 @@ class GroupMessageRecorder(StandardPlugin, RecallMessageStandardPlugin):
             primary key (`group_id`, `message_seq`)
         )charset=utf8mb4, collate=utf8mb4_unicode_ci;""")
         # 多线程获取离线期间的聊天记录
-        try:
-            latestResultSeq = getLatestRecordSeq()
-            self._getGroupMessageThread = threading.Thread(target=getGroupMessageThread,args=(latestResultSeq,))
-            self._getGroupMessageThread.daemon = True
-            self._getGroupMessageThread.start()
-        except Exception as e:
-            pass
+        if False:
+            try:
+                latestResultSeq = getLatestRecordSeq()
+                self._getGroupMessageThread = threading.Thread(target=getGroupMessageThread,args=(latestResultSeq,))
+                self._getGroupMessageThread.daemon = True
+                self._getGroupMessageThread.start()
+            except Exception as e:
+                pass
     def recallMessage(self, data: Any):
         try:
             mydb, mycursor = newSqlSession()

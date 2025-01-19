@@ -1,15 +1,10 @@
-import re, datetime, time
+import datetime
 from typing import List, Dict, Any, Tuple, Optional, Union
 from utils.basicEvent import warning, send
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
-from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import StandardPlugin, NotPublishedException
 from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
-from utils.configAPI import getPluginEnabledGroups
 from utils.responseImage_beta import *
-try:
-    from resources.api.sjtuElectromobileAPI import getCharge
-except:
-    raise NotPublishedException('sjtu electrmobile api not published')
+from resources.api.sjtuElectromobileAPI import getCharge
 from io import BytesIO
 from PIL import Image
 import aiohttp, asyncio
@@ -78,12 +73,18 @@ def drawCharge(chargeInfo:List[Dict[str, Any]], savePath:str)->bool:
     return True
     
 class GetSjtuCharge(StandardPlugin):
+    def __init__(self, JAC_COOKIE:str, client_id:str, url:str):
+        self.JAC_COOKIE = JAC_COOKIE
+        self.client_id = client_id
+        self.url = url
+        
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg in ['-ddc']
+    
     def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         send(target, '正在获取电动车充电信息...', data['message_type'])
-        chargeInfo = getCharge()
+        chargeInfo = getCharge(self.JAC_COOKIE, self.client_id, self.url)
         if chargeInfo == None:
             send(target, '电动车充电信息获取失败，请联系bot管理员', data['message_type'])
         else:
@@ -94,6 +95,7 @@ class GetSjtuCharge(StandardPlugin):
             else:
                 send(target, '电动车充电信息解析失败', data['message_type'])
         return 'OK'
+    
     def getPluginInfo(self) -> dict:
         return {
             'name': 'GetSjtuCharge',
@@ -105,3 +107,10 @@ class GetSjtuCharge(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    
+    def checkSelfStatus(self):
+        chargeInfo = getCharge(self.JAC_COOKIE, self.client_id, self.url)
+        if chargeInfo == None:
+            return 1, 0, "获取电动车充电信息失败"
+        return 1, 1, "正常"
+    

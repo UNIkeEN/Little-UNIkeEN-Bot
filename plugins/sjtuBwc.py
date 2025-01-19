@@ -179,7 +179,11 @@ class SjtuBwcMonitor(StandardPlugin, CronStandardPlugin):
                 ))
                 time.sleep(1)
 
-
+    def checkSelfStatus(self):
+        if getBwcNotice() != None:
+            return 1, 1, '正常'
+        else:
+            return 1, 0, '获取bwc内容失败'
 
     def getPluginInfo(self) -> dict:
         return {

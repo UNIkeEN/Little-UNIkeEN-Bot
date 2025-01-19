@@ -115,6 +115,10 @@ class ShowLeetcode(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    def checkSelfStatus(self):
+        if getLeetcodeDailyQuestion() == None:
+            return 1, 0, "获取leetcode信息失败"
+        return 1, 1, '正常'
 
 class LeetcodeReport(StandardPlugin, ScheduleStandardPlugin):
     def __init__(self) -> None:

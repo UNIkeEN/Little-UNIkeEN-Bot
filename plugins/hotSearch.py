@@ -101,6 +101,12 @@ class WeiboHotSearch(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    def checkSelfStatus(self):
+        if getWeiboHotSearch() == None:
+            return 1, 0, "获取微博热搜失败"
+        else:
+            return 1, 1, "正常"
+    
 def getBaiduHotSearch()->Optional[List[Dict[str, Any]]]:
     try:
         req = requests.get('https://api.1314.cool/getbaiduhot/')
@@ -141,6 +147,11 @@ class BaiduHotSearch(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    def checkSelfStatus(self):
+        if getBaiduHotSearch() == None:
+            return 1, 0, "获取百度热搜失败"
+        return 1, 1, "正常"
+    
 def getZhihuHotSearch()->Optional[List[Dict[str, Any]]]:
     try:
         req = requests.get('https://api.zhihu.com/topstory/hot-list')
@@ -202,3 +213,8 @@ class ZhihuHotSearch(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    def checkSelfStatus(self):
+        if getZhihuHotSearch() == None:
+            return 1, 0, '获取知乎热搜失败'
+        return 1, 1, "正常"
+    

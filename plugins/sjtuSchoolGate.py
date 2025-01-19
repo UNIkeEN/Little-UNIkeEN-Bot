@@ -92,3 +92,8 @@ class SjtuSchoolGate(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    def checkSelfStatus(self):
+        if getSchoolGateStatus() == None:
+            return 1, 0, '获取交大校门信息失败'
+        return 1, 1, '正常'
+    

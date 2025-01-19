@@ -48,19 +48,24 @@ def loadPrevActivities()->Set[str]:
     
 class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
     monitorSemaphore = Semaphore()
-    def __init__(self) -> None:
+    def __init__(self, JAC_COOKIE:str, client_id:str) -> None:
+        self.JAC_COOKIE = JAC_COOKIE
+        self.client_id = client_id
         if SjtuDektMonitor.monitorSemaphore.acquire(blocking=False):
             self.start(20, 180)
             createDektSql()
         self.act_ids = []
         self.act_ids = list(loadPrevActivities())
+        
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return False
+    
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         return "OK"
+    
     def tick(self, ):
         updateFlag = False
-        activity_list = getAllActivities(2, 1, 6)
+        activity_list = getAllActivities(self.JAC_COOKIE, self.client_id, 2, 1, 6)
         boardcastText = "✨第二课堂活动已更新："
         for record in activity_list:
             if record['id'] in self.act_ids: continue
@@ -91,16 +96,20 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
 
 # 第二课堂与交大之声（讲座，API中活动类型为1），单次查询
 class SjtuActivity(StandardPlugin): 
+    def __init__(self, JAC_COOKIE:str, client_id:str):
+        self.JAC_COOKIE = JAC_COOKIE
+        self.client_id = client_id
+        
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg in ['-dekt', '-jdzs']
+    
     def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-
         if msg == '-dekt':
-            activity_list = getAllActivities(2, 1, 6)
+            activity_list = getAllActivities(self.JAC_COOKIE, self.client_id, 2, 1, 6)
             save_path = drawDektImg(activity_list)
         else:
-            speech_list = getAllActivities(1, 1, 6)
+            speech_list = getAllActivities(self.JAC_COOKIE, self.client_id, 1, 1, 6)
             save_path = drawJdzsImg(speech_list)
         if save_path == None:
             send(target, '[CQ:reply,id=%d]生成失败'%data['message_id'], data['message_type'])
@@ -108,6 +117,7 @@ class SjtuActivity(StandardPlugin):
             save_path = save_path if os.path.isabs(save_path) else os.path.join(ROOT_PATH, save_path)
             send(target, '[CQ:image,file=file:///%s]'%save_path, data['message_type'])
         return "OK"
+    
     def getPluginInfo(self, )->Dict[str, Any]:
         return {
             'name': 'SjtuDekt',
@@ -119,6 +129,12 @@ class SjtuActivity(StandardPlugin):
             'version': '2.0.0',
             'author': 'Unicorn',
         }
+    
+    def checkSelfStatus(self):
+        if getAllActivities(self.JAC_COOKIE, self.client_id, 1, 1, 6) == None or\
+           getAllActivities(self.JAC_COOKIE, self.client_id, 2, 1, 6) == None:
+            return 1, 0, "获取第二课堂信息失败"
+        return 1, 1, "正常"
         
 def drawDektImg(data: List) -> Union[None, str]:
     DektCards = ResponseImage(

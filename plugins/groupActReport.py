@@ -27,7 +27,7 @@ BOT_CMD = [ '-ddl','-canvas','-uag','签到','祈愿',
             '-myact', '-wc', '-actrank','-bwc',
             '-bwrs','-bdrs','-zhrs', '-actclear',
             '-lxq', '执黑下象棋', '问答帮助', '猜单词', '-wordle'
-            '猜成语','-handle',]
+            '猜成语','-handle', '赞下']
 
 class ActReportPlugin(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:

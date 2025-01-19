@@ -64,7 +64,7 @@ except NotPublishedException as e:
     startMuaInstanceMainloop, setMuaCredential = emptyFunction, emptyFunction
 from plugins.roulette import RoulettePlugin
 from plugins.lottery import LotteryPlugin
-from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor
+from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor, CheckStatus
 from plugins.groupBan import GroupBan, UserBan, BanImplement, GetBanList
 from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
 from plugins.BilibiliApiV3 import BilibiliSubscribe, BilibiliSubscribeHelper
@@ -109,22 +109,10 @@ from plugins.leetcode import ShowLeetcode, LeetcodeReport
 from plugins.abstract import MakeAbstract
 from plugins.eavesdrop import Eavesdrop
 from plugins.sendLike import SendLike
-try:
-    from plugins.niuChaoYue import GetNiuChaoYue, NiuChaoYueMonitor
-except NotPublishedException as e:
-    GetNiuChaoYue, NiuChaoYueMonitor = EmptyPlugin, EmptyPlugin
-try:
-    from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
-except NotPublishedException as e:
-    Chai_Jile = EmptyPlugin
-    Yuan_Jile = EmptyPlugin
-    print('Chai_Jile, Yuan_Jile not imported: {}'.format(e))
-try:
-    from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
-except NotPublishedException as e:
-    GetMddStatus, MonitorMddStatus = EmptyPlugin, EmptyPlugin
-    print('GetMddStatus, MonitorMddStatus not imported: {}'.format(e))
 
+from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
+from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
+from plugins.sjtuElectromobileCharge import GetSjtuCharge
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
 except NotPublishedException as e:
@@ -142,15 +130,8 @@ try:
 except NotPublishedException as e:
     SMPParkourRank = EmptyAddGroupPlugin
     print('SMPParkourRank not imported: {}'.format(e))
-try:
-    from plugins.sjtuElectromobileCharge import GetSjtuCharge
-except NotPublishedException as e:
-    GetSjtuCharge = EmptyAddGroupPlugin
-    print('GetSjtuCharge not imported: {}'.format(e))
     
 from plugins.gocqWatchDog import GocqWatchDog
-from plugins.xhsSubscribe import XhsSubscribe, XhsSubscribeHelper
-from plugins.douyinSubscribe import DouyinSubscribe, DouyinSubscribeHelper
 ###### end not published plugins
 
 def sqlInit():
@@ -168,31 +149,88 @@ sqlInit() # put this after import
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
 
-# 特殊插件需要复用的放在这里
-helper = ShowHelp() # 帮助插件
-helperForPrivateControl = HelpInGroup() # BOT管理员查看群聊功能开启情况插件
-gocqWatchDog = GocqWatchDog(60)
-groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
-sjtuClassroomRecorder = SjtuClassroomRecorder()
-banImpl = BanImplement()
-
 # 根据config初始化
 cchessConfig = {}
-bilibiliCredential = {}
+bilibiliSubscribe = EmptyPlugin()
+bilibiliSubscribeHelper = EmptyPlugin()
+watchdogMail = None
+chaiJile = EmptyPlugin()
+yuanJile = EmptyPlugin()
+getMddStatus = EmptyPlugin()
+monitorMddStatus = EmptyPlugin()
+sjtuActivity = EmptyPlugin()
+sjtuDektMonitor = EmptyPlugin()
+getSjtuCharge = EmptyPlugin()
+sjtuPlusGroups = []
+
 if isinstance(config, dict):
     pluginConfigs:Optional[Dict[str, Any]] = config.get('plugins', None)
     if pluginConfigs != None:
         # mua plugin
         if 'mua' in pluginConfigs.keys():
+            print('[INFO] 开启MUA插件组')
             muaConfig = pluginConfigs['mua']
             setMuaCredential(muaConfig['BOT_MUA_ID'], muaConfig['BOT_MUA_TOKEN'], muaConfig['MUA_URL'])
             startMuaInstanceMainloop()
+        else:
+            print('[WARNING] MUA插件组未开启')
         if "cchess" in pluginConfigs.keys():
+            print("[INFO] 开启cchess软件")
             cchessConfig = pluginConfigs['cchess']
+        else:
+            print("[WARNING] cchess软件未配置")
         if "bilibili" in pluginConfigs.keys():
-            bilibiliCredential = pluginConfigs['bilibili']['credential']
+            bilibiliSubscribe = BilibiliSubscribe(pluginConfigs['bilibili']['credential'])
+            bilibiliSubscribeHelper = BilibiliSubscribeHelper()
+            print("[INFO] 开启bilibili订阅插件")
+        else:
+            print("[WARNING] bilibili订阅插件未开启")
+        if "watchdog" in pluginConfigs.keys():
+            watchdogMail = pluginConfigs["watchdog"]
+        if "jile" in pluginConfigs.keys():
+            chaiJile = Chai_Jile(pluginConfigs["jile"]["chai_qq"])
+            yuanJile = Yuan_Jile(pluginConfigs["jile"]["yuan_qq"])
+            print("[INFO] 开启jile插件")
+        else:
+            print("[WARNING] jile插件未开启")
+        if "mdd" in pluginConfigs.keys():
+            getMddStatus = GetMddStatus(pluginConfigs["mdd"]["mdd_url"], pluginConfigs["mdd"]["mdd_headers"])
+            monitorMddStatus = MonitorMddStatus(pluginConfigs["mdd"]["mdd_url"], pluginConfigs["mdd"]["mdd_headers"])
+            print("[INFO] 开启mdd插件")
+        else:
+            print('[WARNING] mdd插件未开启')
+        if "sjtu_dekt_v2" in pluginConfigs.keys():
+            sjtuActivity = SjtuActivity(pluginConfigs["sjtu_dekt_v2"]["JAC_COOKIE"],pluginConfigs["sjtu_dekt_v2"]["client_id"])
+            sjtuDektMonitor = SjtuDektMonitor(pluginConfigs["sjtu_dekt_v2"]["JAC_COOKIE"],pluginConfigs["sjtu_dekt_v2"]["client_id"])
+            print("[INFO] 开启sjtu第二课堂插件")
+        else:
+            print("[WARNING] sjtu第二课堂插件未开启")
+        if "add_group_verify" in pluginConfigs.keys():
+            for cfg in pluginConfigs["add_group_verify"]["groups"]:
+                sjtuPlusGroups.append(SjtuPlusGroupingVerify(
+                    cfg['sjtu_plus_key'], cfg['api_name'], cfg['groups_qq']
+                ))
+        if "sjtu_electron_mobile" in pluginConfigs.keys():
+            cfg = pluginConfigs["sjtu_electron_mobile"]
+            getSjtuCharge = GetSjtuCharge(cfg["JAC_COOKIE"], cfg["client_id"], cfg["url"])
+            print("[INFO] 开启sjtu电动车充电信息插件")
+        else:
+            print("[WARNING] sjtu电动车充电信息插件未开启")
+            
         # if 'xxx' in in pluginConfigs.keys():
-        
+
+# 特殊插件需要复用的放在这里
+helper = ShowHelp() # 帮助插件
+helperForPrivateControl = HelpInGroup() # BOT管理员查看群聊功能开启情况插件
+if watchdogMail != None:
+    gocqWatchDog = GocqWatchDog(60, mail_user=watchdogMail['mail_user'], mail_pass=watchdogMail['mail_pass'])
+else:
+    gocqWatchDog = None
+groupMessageRecorder = GroupMessageRecorder() # 群聊消息记录插件
+sjtuClassroomRecorder = SjtuClassroomRecorder()
+banImpl = BanImplement()
+
+
 GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     groupMessageRecorder, banImpl, 
     helper,ShowStatus(),ServerMonitor(), # 帮助
@@ -209,11 +247,11 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([WeiboHotSearch(), BaiduHotSearch(), ZhihuHotSearch(),], 'hotsearch'),
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(), SjtuJsQuery(),
-                        SjtuClassroomRecommend(), GetMddStatus(), GetSjtuCharge(), SjtuActivity(), #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
-                        PluginGroupManager([MonitorMddStatus()], 'mddmonitor'),
-                        PluginGroupManager([SjtuDektMonitor()], 'dektmonitor'),], 'sjtuinfo'), 
+                        SjtuClassroomRecommend(), getMddStatus, getSjtuCharge, sjtuActivity, #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
+                        PluginGroupManager([monitorMddStatus], 'mddmonitor'),
+                        PluginGroupManager([sjtuDektMonitor], 'dektmonitor'),], 'sjtuinfo'), 
     # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
-    PluginGroupManager([Chai_Jile(), Yuan_Jile()],'jile'), # 柴/元神寄了
+    PluginGroupManager([chaiJile, yuanJile],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn(), ], 'signin'),  # 签到
     PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), SMPParkourRank(),
                         PluginGroupManager([BilibiliLiveMonitor(25567444, '交大MC社', 'mclive'),
@@ -243,7 +281,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
                         ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
     PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
-    PluginGroupManager([BilibiliSubscribeHelper(), BilibiliSubscribe(bilibiliCredential)], 'bilibili'),
+    PluginGroupManager([bilibiliSubscribeHelper, bilibiliSubscribe], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(cchessConfig.get('engine_type', 'uci'),
                                            cchessConfig.get('engine_path', None),
                                            cchessConfig.get('engine_options', {})), ChineseChessHelper()], 'cchess'),
@@ -251,13 +289,13 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper(), Mathler(), MathlerHelper()], 'wordle'),
     PluginGroupManager([CharPic(), GroupBan(),
                         GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
-                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test')], 'test'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test'),], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
     PluginGroupManager([SendLike()], 'likes'),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
-    helper, ThanksLUB(),
+    helper, ThanksLUB(), CheckStatus(GroupPluginList),
     ShowStatus(),ServerMonitor(),
     LsGroup(), GroupApply(), PrivateControl(), helperForPrivateControl,
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
@@ -265,7 +303,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     MorningGreet(), NightGreet(),
     SignIn(), SendLike(),
     QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
-    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetJwc(), SjtuBwc(), GetSjtuCharge(), SjtuActivity(),#SubscribeJwc(), 
+    SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetJwc(), SjtuBwc(), getSjtuCharge, sjtuActivity,#SubscribeJwc(), 
     MuaAbstract(), MuaQuery(), MuaAnnHelper(), MuaAnnEditor(), 
     MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
     GetSjtuNews(),
@@ -273,7 +311,8 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(), GetUniAgenda(),
     ShowEE0502Comments(), ZsmGoldSentence(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
-    GetMddStatus(), #SubscribeMdd(),
+    getMddStatus, #SubscribeMdd(),
+    SearchSjtuSqlAllPrivate(),
     RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
     EmojiKitchen(),
     # ChooseSong(),
@@ -286,8 +325,7 @@ GroupPokeList:List[PokeStandardPlugin] = [
 ]
 AddGroupVerifyPluginList:List[AddGroupStandardPlugin] = [
     AddGroupRecorder(), # place this plugin to the first place
-    SjtuPlusGroupingVerify('dytwzzb',[]),
-    SjtuPlusGroupingVerify('test',[]),
+    *sjtuPlusGroups,
 ]
 helper.updatePluginList(GroupPluginList, PrivatePluginList)
 helperForPrivateControl.setPluginList(GroupPluginList)
@@ -429,7 +467,8 @@ def onMessageReceive(message:str)->str:
     elif flag==NoticeType.AddGroupInvite:
         set_group_add_request(data['flag'], data['sub_type'], True)
     elif flag==NoticeType.GocqHeartBeat:
-        gocqWatchDog.feed()
+        if gocqWatchDog != None:
+            gocqWatchDog.feed()
     return "OK"
 
 def initCheck():
@@ -450,7 +489,8 @@ def initCheck():
         if 'private' not in infoDict['usePlace']:
             print("plugin [{}] can not be used in private talk!".format(infoDict['name']))
             exit(1)
-    gocqWatchDog.start()
+    if gocqWatchDog != None:
+        gocqWatchDog.start()
 
 if __name__ == '__main__':
     initCheck()

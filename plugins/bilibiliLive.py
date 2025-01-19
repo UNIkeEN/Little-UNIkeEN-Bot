@@ -126,7 +126,10 @@ class BilibiliLiveMonitor(StandardPlugin, CronStandardPlugin):
             'version': '1.0.3',
             'author': 'Unicorn',
         }
-
+    def checkSelfStatus(self):
+        roomInfo = self.liveRoom.get_room_info()['room_info']
+        return 1, 1, '正常'
+    
 def genLivePic(roomInfo, title, savePath, useCover=False)->str:
     """
     @roomInfo: Dict

@@ -2,19 +2,13 @@ import mysql.connector
 from utils.responseImage import *
 from utils.basicEvent import send, warning
 from utils.basicConfigs import BOT_SELF_QQ, ROOT_PATH
-from typing import Union, Tuple, Any, List, Set
+from typing import Union, Tuple, Any, Dict, Set
 from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
 from utils.configAPI import getPluginEnabledGroups
 from threading import Timer, Semaphore
 from datetime import datetime
-import time
 import os.path
-import asyncio
 from utils.sqlUtils import newSqlSession
-try:
-    from resources.api.mddApi import mddUrl, mddHeaders
-except ImportError:
-    raise NotPublishedException("mdd url and mdd headers are secret")
 
 MDD_FILE_PATH = os.path.join(ROOT_PATH, 'data', str(BOT_SELF_QQ),  'mdd.json')
 os.makedirs(os.path.join(ROOT_PATH, 'data', str(BOT_SELF_QQ), ), exist_ok=True)
@@ -105,11 +99,16 @@ class SubscribeMdd(StandardPlugin):
         return SubscribeMdd.subscribers
     
 class GetMddStatus(StandardPlugin):
+    def __init__(self, mddUrl: str, mddHeaders:Dict[str, str]) -> None:
+        self.mddUrl = mddUrl
+        self.mddHeaders = mddHeaders
+        
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg == '-mdd'
+    
     def executeEvent(self, msg: str, data: Any) -> Union[None, str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        req = getMddStatus()
+        req = getMddStatus(self.mddUrl, self.mddHeaders)
         if req == None:
             send(target, '获取交大闵行麦当劳状态失败！', data['message_type'])
             return "OK"
@@ -143,7 +142,9 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
     def loadMddStatus()->bool:
         with open(MDD_FILE_PATH, 'r') as f:
             return f.read().startswith('1')
-    def __init__(self) -> None:
+    def __init__(self, mddUrl: str, mddHeaders:Dict[str, str]) -> None:
+        self.mddUrl = mddUrl
+        self.mddHeaders = mddHeaders
         self.exactPath = MDD_FILE_PATH
         self.prevStatus = False # false: 暂停营业, true: 营业
         if MonitorMddStatus.monitorSemaphore.acquire(blocking=False):
@@ -155,7 +156,7 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
             self.start(10, 30)
 
     def tick(self):
-        req = getMddStatus()
+        req = getMddStatus(self.mddUrl, self.mddHeaders)
         if req == None: return
         else: currentStatus = req
         recordMddStatus(currentStatus, datetime.now())
@@ -186,7 +187,7 @@ class MonitorMddStatus(StandardPlugin, CronStandardPlugin):
             'author': 'Teruteru',
         }
         
-def getMddStatus()->Union[None, bool]:
+def getMddStatus(mddUrl: str, mddHeaders:Dict[str, str])->Union[None, bool]:
     req = requests.get(mddUrl, headers=mddHeaders)
     if req.status_code != requests.codes.ok or not req.json()['success']:
         warning('mdd api failed!')

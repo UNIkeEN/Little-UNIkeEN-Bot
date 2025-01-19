@@ -19,8 +19,11 @@ def parseJxbmc(jxbmc:str)->Optional[Tuple[int,int,int,str,int]]:
     fromYear, toYear, semester, courseName, classNo = jxbmcPattern.findall(jxbmc)[0]
     return int(fromYear), int(toYear), int(semester), courseName, int(classNo)
 
-def getNiuChaoYueCount()->Optional[int]:
-    courses = getCourses()
+def getNiuChaoYueCount( JAC_COOKIE:str, 
+                        client_id:str, 
+                        params:Dict[str, str],
+                        data:Dict[str, str])->Optional[int]:
+    courses = getCourses(JAC_COOKIE, client_id, params, data)
     if courses == None: return None
     for course in courses:
         jxbmc = parseJxbmc(course['jxbmc'])
@@ -68,11 +71,22 @@ def drawNiuChaoYue(courses:List[Dict[str, Any]], savePath:str)->bool:
     return True
 
 class GetNiuChaoYue(StandardPlugin):
+    def __init__(self,
+                 JAC_COOKIE:str, 
+                 client_id:str, 
+                 params:Dict[str, str],
+                 data:Dict[str, str]):
+        self.JAC_COOKIE = JAC_COOKIE
+        self.client_id = client_id
+        self.params = params
+        self.data = data
+        
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return msg in ['-ncy']
+    
     def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
-        courses = getCourses()
+        courses = getCourses(self.JAC_COOKIE, self.client_id, self.params, self.data)
         if courses == None:
             send(target, '课程信息更新失败', data['message_type'])
         else:
@@ -119,19 +133,28 @@ def getPrevCount()->Optional[int]:
 
 class NiuChaoYueMonitor(StandardPlugin,CronStandardPlugin):
     initGuard = True
-    def __init__(self) -> None:
+    def __init__(self,
+                 JAC_COOKIE:str, 
+                 client_id:str, 
+                 params:Dict[str, str],
+                 data:Dict[str, str]) -> None:
         self.failCount = 0
         self.job = None
         if self.initGuard:
             self.initGuard = False
             createNiuChaoYueSql()
             self.job = self.start(0, 60)
+        self.JAC_COOKIE = JAC_COOKIE
+        self.client_id = client_id
+        self.params = params
+        self.data = data
+        
     def judgeTrigger(self, msg: str, data: Any) -> bool:
         return False
     def executeEvent(self, msg: str, data: Any) -> Optional[str]:
         return None
     def tick(self) -> None:
-        ncyCount = getNiuChaoYueCount()
+        ncyCount = getNiuChaoYueCount(self.JAC_COOKIE, self.client_id, self.params, self.data)
         if ncyCount == None: 
             self.failCount += 1
             if self.failCount > 3:
@@ -157,3 +180,4 @@ class NiuChaoYueMonitor(StandardPlugin,CronStandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+        

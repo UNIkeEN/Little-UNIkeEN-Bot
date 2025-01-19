@@ -184,7 +184,7 @@ def standarlizingBuildingTimeStr(Str:str)->Optional[Tuple[str, int, int]]:
         _, startSection, endSection = pattern2.findall(Str)[0]
         return building, int(startSection), int(endSection)
     pattern4 = re.compile(r'^(工程?馆?)\s*(\d+)\s+(\d+)$')
-    if pattern4.match(buildingStr) != None:
+    if pattern4.match(Str) != None:
         building = '工程馆'
         _, startSection, endSection = pattern4.findall(Str)[0]
         return building, int(startSection), int(endSection)
@@ -476,6 +476,13 @@ class SjtuJsQuery(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+        
+    def checkSelfStatus(self):
+        if getRoomCourse('东中院', datetime.date.today()) != None:
+            return 1, 1, '正常'
+        else:
+            return 1, 0, "获取东中院信息失败"
+            
         
 class SjtuClassroom(StandardPlugin):
     def __init__(self) -> None:

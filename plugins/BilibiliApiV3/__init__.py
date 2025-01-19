@@ -237,8 +237,10 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
         return self._selfUid
     
     def updateWbiKeys(self) -> None:
-        if self.wbiKeyDate != None and datetime.date.today() == self.wbiKeyDate:
+        today = datetime.date.today()
+        if self.wbiKeyDate != None and today == self.wbiKeyDate:
             return
+        self.wbiKeyDate = today
         img_key, sub_key = getWbiKeys()
         self.wbiKeys = {
             'img_key': img_key,
@@ -281,8 +283,8 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
                 try:
                     user = User(bilibili_uid, get_credential())
                     loop.run_until_complete(loop.create_task(user.modify_relation(RelationType.SUBSCRIBE)))
-                except:
-                    pass
+                except Exception as e:
+                    warning('exception in subscribeBilibili: {}'.format(e))
         if bilibili_uid not in self.groupToUps[group_id]:
             self.groupToUps[group_id].add(bilibili_uid)
             self.upToGroups[bilibili_uid].add(group_id)
@@ -443,4 +445,7 @@ class BilibiliSubscribe(StandardPlugin, CronStandardPlugin):
         loop = self.loop
         loop.run_until_complete(loop.create_task(check_bilibili()))
 
+    def checkSelfStatus(self):
+        self.tick()
+        return 1, 1, '正常'
     

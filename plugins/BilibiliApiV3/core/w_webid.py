@@ -15,6 +15,7 @@ def get_w_webid(self_uid:int, )->str:
     dynamic_url = f"https://space.bilibili.com/{self_uid}/dynamic"
 
     text = requests.get(dynamic_url, headers=headers).text
+    # print(text)
     __RENDER_DATA__ = re.search(
         r"<script id=\"__RENDER_DATA__\" type=\"application/json\">(.*?)</script>",
         text,

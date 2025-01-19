@@ -35,6 +35,9 @@ class ShowNews(StandardPlugin):
             'version': '1.0.0',
             'author': '北极づ莜蓝',
         }
+    def checkSelfStatus(self):
+        today_exist, today_pic_str = get_news_pic_path(datetime.date.today())
+        return 1, 1, '正常'
 
 class YesterdayNews(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:

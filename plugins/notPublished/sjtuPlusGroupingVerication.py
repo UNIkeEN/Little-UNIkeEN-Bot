@@ -1,12 +1,8 @@
-from utils.standardPlugin import StandardPlugin, AddGroupStandardPlugin, NotPublishedException
+from utils.standardPlugin import StandardPlugin, AddGroupStandardPlugin
 from utils.basicEvent import send, warning, set_group_add_request
 from typing import Any, Union, List, Dict, Tuple, Optional
 import requests, requests.exceptions
 import re
-try:
-    from resources.api.sjtuPlusKey import SJTU_PLUS_GROUP_VERIFY_KEYS
-except ImportError:
-    raise NotPublishedException("sjtu plus key is secret")
     
 class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
     @staticmethod
@@ -14,10 +10,10 @@ class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
         code = comment.split('\n', maxsplit=1)[-1].split('：', maxsplit=1)[-1]
         return code
 
-    def __init__(self, apiKeyName:str, appliedGroups:List[int]) -> None:
+    def __init__(self, apiKey:str, apiKeyName:str, appliedGroups:List[int]) -> None:
         self.apiKeyName = apiKeyName
         self.appliedGroups = appliedGroups
-        self.apiKey = SJTU_PLUS_GROUP_VERIFY_KEYS[apiKeyName]
+        self.apiKey = apiKey
         self.triggerPattern = re.compile(r'^\s*([a-zA-Z0-9]{20,50})\s*')
         assert isinstance(self.apiKey, str)
         assert isinstance(self.appliedGroups, list) and all([isinstance(x, int) for x in self.appliedGroups])

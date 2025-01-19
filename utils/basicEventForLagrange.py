@@ -42,7 +42,7 @@ def sendPacketToLagrange(packet:Dict[str,Any]):
     if not lagrangeClient.connected:
         lagrangeClient.connect(HTTP_URL)
         if not lagrangeReturnsMaintainer.is_alive():
-            lagrangeReturnsMaintainer.start()
+            lagrangeReturnsMaintainer.start() # TODO: this line bugs
     packetEncoded = json.dumps(packet, ensure_ascii=False)
     lagrangeClient.send(packetEncoded)
 

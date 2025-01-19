@@ -12,6 +12,10 @@
     "frontend-ip": "little unicorn bot bind ip, like '127.0.0.1'",
     "frontend-port": 5986,
     "plugins": {
+        "watchdog": {
+            "mail_user": "xxx@qq.com",
+            "mail_pass": "abcdabcdabcdabcd"
+        },
         "mua": {
             "BOT_MUA_ID": "---------",
             "BOT_MUA_TOKEN": "---------------",
@@ -32,6 +36,30 @@
                 "bili_jct": "------------", 
                 "buvid3": "------------"
             }
+        },
+        "secret_qq": {
+            "chai_qq": [123123 ],
+            "yuan_qq": [456456 ]
+        },
+        "mdd": {
+            "mdd_url": "this is a secret plugin",
+            "mdd_headers": {}
+        },
+        "sjtu_dekt_v2": {
+            "JAC_COOKIE": "this is a secret plugin",
+            "client_id": ""
+        },
+        "sjtu_plus_key": {},
+        "sjtu_jwc_course": {
+            "JAC_COOKIE": "this is a secret plugin",
+            "client_id": "",
+            "params": {},
+            "data": {}
+        },
+        "sjtu_electron_mobile": {
+            "JAC_COOKIE": "this is a secret plugin",
+            "client_id": "",
+            "url": ""
         }
     }
 }

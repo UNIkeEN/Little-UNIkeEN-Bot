@@ -69,6 +69,14 @@ class StandardPlugin(ABC):
         return 'name' in infoDict.keys() and 'description' in infoDict.keys() \
             and 'commandDescription' in infoDict.keys() and 'usePlace' in infoDict.keys()
 
+    def checkSelfStatus(self)->Tuple[int, int, str]:
+        """@return[
+            0: total plugins,
+            1: ok plugins,
+            2: description
+        ]"""
+        return 1, 1, "正常（未继承）"
+    
 def emptyFunction(*args, **kwargs):
     pass
 
@@ -234,15 +242,16 @@ class PluginGroupManager(StandardPlugin):
     def __init__(self, plugins:List[StandardPlugin], groupName: str) -> None:
         self.plugins:List[StandardPlugin] = plugins
         self.groupName:str = groupName
-        self.readyPlugin = None
-        self.enabledDict = readGlobalConfig(None, groupName+'.enable')
-        self.defaultEnabled = False
-        self.groupInfo = {}
-        self.onPattern = re.compile(r'^\-grpcfg\s+enable\s+(%s|\*)$'%self.groupName)
-        self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
-        self.guard = Semaphore()
-        self.__makeGroupInfo()
-        PluginGroupManager.refreshPluginStatusHandles.append((groupName, self._refreshPluginStatus))
+        if groupName != '*':
+            self.readyPlugin = None
+            self.enabledDict = readGlobalConfig(None, groupName+'.enable')
+            self.defaultEnabled = False
+            self.groupInfo = {}
+            self.onPattern = re.compile(r'^\-grpcfg\s+enable\s+(%s|\*)$'%self.groupName)
+            self.offPattern = re.compile(r'^\-grpcfg\s+disable\s+(%s|\*)$'%self.groupName)
+            self.guard = Semaphore()
+            self.__makeGroupInfo()
+            PluginGroupManager.refreshPluginStatusHandles.append((groupName, self._refreshPluginStatus))
     @final
     def __makeGroupInfo(self):
         # check group name
@@ -323,8 +332,26 @@ class PluginGroupManager(StandardPlugin):
             except Exception as e:
                 warning("logic error in PluginGroupManager [{}]: {}".format(self.groupName, e))
                 return None
+            
     def getPluginInfo(self, )->dict:
         return self.groupInfo
+    
+    def checkSelfStatus(self):
+        totalPlugin, okPlugin = 0, 0
+        descs = []
+        for plugin in self.plugins:
+            try: 
+                totalCnt, okCnt, desc = plugin.checkSelfStatus()
+            except Exception as e:
+                totalCnt, okCnt = 1, 0
+                desc = str(e)
+            totalPlugin += totalCnt
+            okPlugin += okCnt
+            if okCnt < totalCnt:
+                pluginName = plugin.getPluginInfo()['name']
+                descs.append(pluginName+':'+desc)
+        return totalPlugin, okPlugin, '\n'.join(descs)
+    
     def queryEnabled(self, groupId: int)->bool:
         if groupId not in self.enabledDict.keys():
             writeGlobalConfig(groupId, self.groupName, {'name':self.groupName, 'enable': self.defaultEnabled})

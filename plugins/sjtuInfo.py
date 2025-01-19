@@ -28,6 +28,9 @@ class SjtuCanteenInfo(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+    def checkSelfStatus(self):
+        get_canteen_info()
+        return 1, 1, '正常'
         
 class SjtuLibInfo(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
@@ -49,7 +52,10 @@ class SjtuLibInfo(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
-        
+    def checkSelfStatus(self):
+        get_lib_info()
+        return 1, 1, '正常'
+    
 def get_lib_info():
     url = "https://zgrstj.lib.sjtu.edu.cn/cp"
     ret = httpx.get(url)

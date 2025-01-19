@@ -146,6 +146,29 @@ class ShowStatus(StandardPlugin):
             'author': 'Unicorn',
         }
 
+class CheckStatus(StandardPlugin): 
+    def __init__(self, pluginList:List[StandardPlugin]):
+        self.pluginList = pluginList
+    def judgeTrigger(self, msg:str, data:Any) -> bool:
+        return msg in ['自检']
+    def executeEvent(self, msg:str, data:Any) -> Union[None, str]:
+        target = data['group_id'] if data['message_type']=='group' else data['user_id']
+        send(target, '收到自检命令，启动自检',data['message_type'])
+        totalPlugin, okPlugin, desc = PluginGroupManager(self.pluginList, '*').checkSelfStatus()
+        send(target, "插件{}，正常{}，失效{}\n\n{}".format(totalPlugin, okPlugin, totalPlugin-okPlugin, desc),data['message_type'])
+        return "OK"
+    def getPluginInfo(self, )->Any:
+        return {
+            'name': 'CheckStatus',
+            'description': '检查插件有效性[🔒]',
+            'commandDescription': '自检',
+            'usePlace': ['private', ],
+            'showInHelp': True,
+            'pluginConfigTableNames': [],
+            'version': '1.0.0',
+            'author': 'Unicorn',
+        }
+
 class ServerMonitor(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-monitor' and data['user_id'] in ROOT_ADMIN_ID
@@ -182,3 +205,4 @@ class ServerMonitor(StandardPlugin):
             'version': '1.0.0',
             'author': 'Unicorn',
         }
+
