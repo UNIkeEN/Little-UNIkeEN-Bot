@@ -1,5 +1,10 @@
 #-*- coding:utf-8 -*-    --------------Ashare 股票行情数据双核心版( https://github.com/mpquant/Ashare ) 
-import json,requests,datetime;      import pandas as pd  #
+import datetime
+import json
+
+import pandas as pd
+import requests
+
 
 #腾讯日线
 def get_price_day_tx(code, end_date='', count=10, frequency='1d'):     #日线获取  

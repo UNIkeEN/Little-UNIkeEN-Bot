@@ -6,14 +6,16 @@
 import json
 import time
 from enum import Enum
-from typing import List, Dict
+from typing import Dict, List
+
 from deprecated import deprecated
-from .wbi import encWbi, getWbiKeys
+
+from utils.basicEvent import warning
+
 from ..starbot_utils.Credential import Credential
 from ..starbot_utils.network import request
 from ..starbot_utils.utils import get_api
-
-from utils.basicEvent import warning
+from .wbi import encWbi, getWbiKeys
 
 API = get_api("user")
 

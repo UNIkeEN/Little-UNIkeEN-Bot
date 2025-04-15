@@ -1,9 +1,13 @@
-from typing import Union, Any
-from utils.configAPI import delGroupAdmin, addGroupAdmin, setGroupAdmin, getGroupAdmins
-from utils.basicEvent import send, get_group_member_list, isGroupOwner
-from utils.basicConfigs import ROOT_ADMIN_ID
-from utils.standardPlugin import StandardPlugin
 import re
+from typing import Any, Union
+
+from utils.basicConfigs import ROOT_ADMIN_ID
+from utils.basicEvent import get_group_member_list, isGroupOwner, send
+from utils.configAPI import (addGroupAdmin, delGroupAdmin, getGroupAdmins,
+                             setGroupAdmin)
+from utils.standardPlugin import StandardPlugin
+
+
 class GetPermission(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '-sudo' and data['message_type']=='group'

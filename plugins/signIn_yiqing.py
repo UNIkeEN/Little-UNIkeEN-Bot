@@ -1,14 +1,16 @@
-from PIL import Image, ImageDraw, ImageFont
-import random
-import requests
 import datetime
+import random
 from io import BytesIO
-from utils.sqlUtils import newSqlSession
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
+from typing import Any, Union
+
+import requests
+from PIL import Image, ImageDraw, ImageFont
+
 from utils.accountOperation import get_user_coins, update_user_coins
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import StandardPlugin
 
 FORTUNE_TXT = [['r',"大吉"],['r',"中吉"],['r',"小吉"],['g',"中平"],['h',"小凶"],['h',"中凶"],['h',"大凶"],['r',"奆🐔"],['h','奆🐻']]
 

@@ -1,10 +1,14 @@
+import json
 import random
-from typing import Union, Any, List
-from utils.standardPlugin import StandardPlugin
-from utils.basicEvent import send
-import re, json
-from utils.responseImage_beta import *
+import re
+from typing import Any, List, Union
+
 from utils.basicConfigs import ROOT_PATH
+from utils.basicEvent import send
+from utils.responseImage_beta import *
+from utils.standardPlugin import StandardPlugin
+
+
 class ThreeKingdomsRandom(StandardPlugin):
     def __init__(self) -> None:
         # self.flowers = ['红桃', '黑桃', '梅花', '方片']

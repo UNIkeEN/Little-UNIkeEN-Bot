@@ -1,6 +1,7 @@
-from .annContextManager import MuaAnnHelper, MuaAnnEditor, MuaNotice
-from .muaTokenBind import MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,MuaTokenLister, MuaQuery, MuaAbstract
-from .muaTargets import MuaGroupBindTarget, MuaGroupUnbindTarget
+from .annContextManager import MuaAnnEditor, MuaAnnHelper, MuaNotice
 from .annFilter import MuaGroupAnnFilter
+from .clientInstance import setMuaCredential, startMuaInstanceMainloop
 from .handlePayload import *
-from .clientInstance import startMuaInstanceMainloop, setMuaCredential
+from .muaTargets import MuaGroupBindTarget, MuaGroupUnbindTarget
+from .muaTokenBind import (MuaAbstract, MuaQuery, MuaTokenBinder,
+                           MuaTokenEmpower, MuaTokenLister, MuaTokenUnbinder)

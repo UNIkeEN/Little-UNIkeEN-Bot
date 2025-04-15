@@ -7,14 +7,14 @@ import json
 import os
 import time
 from io import BytesIO
-from typing import Tuple, List, Dict, Sized, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Sized, Tuple, Union
 
 from PIL import Image, ImageDraw
 
+from ..exception import ResponseCodeException
 from . import config
 from .Credential import Credential
 from .network import get_session, request
-from ..exception import ResponseCodeException
 
 
 def get_api(field: str) -> Dict:

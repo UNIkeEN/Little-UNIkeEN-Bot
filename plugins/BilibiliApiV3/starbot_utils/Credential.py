@@ -3,7 +3,9 @@
 """
 from typing import Dict
 
-from ..exception import CredentialNoBiliJctException, CredentialNoBuvid3Exception, CredentialNoSessdataException
+from ..exception import (CredentialNoBiliJctException,
+                         CredentialNoBuvid3Exception,
+                         CredentialNoSessdataException)
 
 
 class Credential:

@@ -1,16 +1,21 @@
-from typing import Any, Set, Union, Dict, List, Tuple, Optional
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, FONTS_PATH
-from utils.basicEvent import send
-from utils.standardPlugin import StandardPlugin
-from utils.sqlUtils import newSqlSession
-from utils.responseImage_beta import ResponseImage, PALETTE_CYAN
-from utils.accountOperation import get_user_coins, update_user_coins
-import os, re, json
+import json
+import os
+import random
+import re
 from enum import Enum
 from functools import cache
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from PIL import Image, ImageDraw, ImageFont
 from spellchecker import SpellChecker
-from PIL import ImageFont, Image, ImageDraw
-import random
+
+from utils.accountOperation import get_user_coins, update_user_coins
+from utils.basicConfigs import FONTS_PATH, ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import send
+from utils.responseImage_beta import PALETTE_CYAN, ResponseImage
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import StandardPlugin
+
 WORDLE_RESOURCE_PATH = 'resources/wordle'
 DIFFICULTY_LIST = []
 

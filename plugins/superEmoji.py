@@ -1,6 +1,8 @@
-from typing import Union, Any
+from typing import Any, Union
+
 from utils.basicEvent import *
 from utils.standardPlugin import StandardPlugin
+
 
 class FireworksFace(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:

@@ -1,12 +1,14 @@
-import websockets
-import websockets.legacy.client
 import ssl
 from typing import Callable, Optional
 
+import websockets
+import websockets.legacy.client
+
+from utils.basicEvent import warning
 
 from .common.packets import *
 from .common.subprotocols import *
-from utils.basicEvent import warning
+
 
 class Client:
     def __init__(self, id:str, token:str, server:str):

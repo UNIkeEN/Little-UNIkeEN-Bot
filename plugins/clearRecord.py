@@ -1,11 +1,12 @@
-from utils.sqlUtils import newSqlSession
+import datetime
+import re
+from typing import Any, Dict, List, Optional, Union
 
-from utils.standardPlugin import StandardPlugin
-from typing import Optional, List, Dict, Any, Union
 from utils.basicConfigs import ROOT_ADMIN_ID
 from utils.basicEvent import send, warning
-import re
-import datetime
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import StandardPlugin
+
 
 class ClearRecord(StandardPlugin):
     def __init__(self):

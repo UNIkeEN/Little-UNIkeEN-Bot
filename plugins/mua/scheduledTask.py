@@ -1,6 +1,6 @@
 # import schedule
-import time
 import threading
+import time
 
 '''
 schedule.every(37).minutes.do(job) # 每10秒执行一次

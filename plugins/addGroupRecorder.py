@@ -1,10 +1,13 @@
-from utils.standardPlugin import AddGroupStandardPlugin, CronStandardPlugin
+import datetime
+from threading import Semaphore
+from typing import Any, Dict, List, Tuple, Union
+
+import mysql.connector
+
 from utils.basicEvent import get_group_system_msg, warning
 from utils.sqlUtils import newSqlSession
-from typing import Any, Union, List, Dict, Tuple
-import mysql.connector
-from threading import Semaphore
-import datetime
+from utils.standardPlugin import AddGroupStandardPlugin, CronStandardPlugin
+
 
 class AddGroupRecorder(AddGroupStandardPlugin, CronStandardPlugin):
     initOnceGuard = Semaphore()

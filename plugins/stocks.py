@@ -1,10 +1,13 @@
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import sqlConfig
+from typing import Any, Union
+
 import mysql.connector
 from pymysql.converters import escape_string
+
 from utils.ashareAPI import get_price
+from utils.basicConfigs import sqlConfig
+from utils.basicEvent import *
+from utils.standardPlugin import StandardPlugin
+
 
 def queryStocks(stock: str)->str:
     stock = escape_string(stock)

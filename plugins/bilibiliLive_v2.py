@@ -1,16 +1,22 @@
-from utils.basicConfigs import ROOT_PATH, APPLY_GROUP_ID
+import copy
+import os.path
+import random
+import time
+from datetime import datetime
+from threading import Semaphore, Timer
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from bilibili_api.exceptions import (ApiException, LiveException,
+                                     ResponseCodeException)
+
+from utils.basicConfigs import APPLY_GROUP_ID, ROOT_PATH
+from utils.basicEvent import gocqQuote, send, warning
+from utils.bilibili_api_fixed import LiveRoomFixed
+from utils.configAPI import getPluginEnabledGroups
 from utils.responseImage import *
 from utils.sqlUtils import newSqlSession
-from utils.basicEvent import send, warning, gocqQuote
-from typing import Union, Tuple, Any, List, Optional, Dict, Set
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, Job
-from utils.configAPI import getPluginEnabledGroups
-from threading import Timer, Semaphore
-from utils.bilibili_api_fixed import LiveRoomFixed
-from bilibili_api.exceptions import LiveException, ApiException, ResponseCodeException
-from datetime import datetime
-import os.path, random, copy, time
-from utils.bilibili_api_fixed import LiveRoomFixed
+from utils.standardPlugin import CronStandardPlugin, Job, StandardPlugin
+
 
 def createBilibiliLiveSql():
     mydb, mycursor = newSqlSession(autocommit=True)

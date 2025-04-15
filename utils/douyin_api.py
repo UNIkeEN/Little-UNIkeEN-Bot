@@ -1,9 +1,10 @@
 import time
+import urllib.parse
+
 import execjs
 import requests
-import urllib.parse
-from .xhs_api import UserNotFound
 
+from .xhs_api import UserNotFound
 
 HEADERS = {
     'authority': 'www.douyin.com',

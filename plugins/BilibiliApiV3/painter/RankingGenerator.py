@@ -1,9 +1,9 @@
-from typing import Optional, Union, Tuple, List
+from typing import List, Optional, Tuple, Union
 
 from PIL import Image, ImageDraw
 
-from .PicGenerator import Color, PicGenerator
 from ..starbot_utils.utils import mask_round
+from .PicGenerator import Color, PicGenerator
 
 
 class RankingGenerator:

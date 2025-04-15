@@ -1,13 +1,14 @@
-from typing import Union, Any, Dict, List, Set
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
-from utils.basicEvent import send
-from utils.basicConfigs import *
-from utils.configAPI import getPluginEnabledGroups
-from utils.responseImage_beta import *
-from resources.api.dektAPI_v2 import getAllActivities, actIdToUrlParam
-from utils.sqlUtils import newSqlSession
 from datetime import datetime
 from threading import Semaphore
+from typing import Any, Dict, List, Set, Union
+
+from resources.api.dektAPI_v2 import actIdToUrlParam, getAllActivities, getCustomValue
+from utils.basicConfigs import *
+from utils.basicEvent import send
+from utils.configAPI import getPluginEnabledGroups
+from utils.responseImage_beta import *
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import CronStandardPlugin, StandardPlugin
 
 BASE_URL = "https://activity.sjtu.edu.cn"
 
@@ -16,7 +17,10 @@ METHOD = {
     1: "线上报名（审核录取）",
     2: "线下报名",
     3: "线上报名（先到先得）",
-    4: "无需报名"
+    4: "无需报名",
+    5: "线上报名（随机录取）",
+    6: "跳转其他报名",
+    7: "不显示报名方式",
 }
 
 # 第二课堂建库，轮询监控最新活动
@@ -75,8 +79,9 @@ class SjtuDektMonitor(StandardPlugin, CronStandardPlugin):
             name = record['name']
             boardcastText += f"\n【{name}】{url}"
             updateFlag = True
-        if (updateFlag):
-            save_path = drawDektImg(activity_list)
+        if updateFlag:
+            customValues = [getCustomValue(self.JAC_COOKIE, self.client_id, a['id']) for a in activity_list]
+            save_path = drawDektImg(activity_list, customValues)
             if save_path != None:
                 for group_id in getPluginEnabledGroups('dektmonitor'):
                     send(group_id, boardcastText)
@@ -107,7 +112,8 @@ class SjtuActivity(StandardPlugin):
         target = data['group_id'] if data['message_type']=='group' else data['user_id']
         if msg == '-dekt':
             activity_list = getAllActivities(self.JAC_COOKIE, self.client_id, 2, 1, 6)
-            save_path = drawDektImg(activity_list)
+            customValues = [getCustomValue(self.JAC_COOKIE, self.client_id, a['id']) for a in activity_list]
+            save_path = drawDektImg(activity_list, customValues)
         else:
             speech_list = getAllActivities(self.JAC_COOKIE, self.client_id, 1, 1, 6)
             save_path = drawJdzsImg(speech_list)
@@ -136,7 +142,7 @@ class SjtuActivity(StandardPlugin):
             return 1, 0, "获取第二课堂信息失败"
         return 1, 1, "正常"
         
-def drawDektImg(data: List) -> Union[None, str]:
+def drawDektImg(data: List, customValues: List[Dict[str, str]]) -> Union[None, str]:
     DektCards = ResponseImage(
         titleColor=PALETTE_SJTU_ORANGE,
         title='第二课堂·最新活动',
@@ -147,7 +153,7 @@ def drawDektImg(data: List) -> Union[None, str]:
         cardBodyFont=ImageFont.truetype(os.path.join(FONTS_PATH, 'SourceHanSansCN-Medium.otf'), 22),
     )
     
-    for record in data:
+    for record, custom in zip(data, customValues):
         raw_content = [
             ('title', record['name']),
             ('body', record['sponsor']),
@@ -158,7 +164,10 @@ def drawDektImg(data: List) -> Union[None, str]:
 
         if record['registration_time'][0] and record['registration_time'][1]:
             raw_content.insert(-1, ('body', f"报名时间：{record['registration_time'][0]} ~ {record['registration_time'][1]}"))
-
+        
+        for k, v in custom.items():
+            raw_content.append(('body', f'{k}： {v}'))
+        
         DektCards.addCard(
             ResponseImage.RichContentCard(
                 icon=BASE_URL + record['img'],

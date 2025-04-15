@@ -1,6 +1,8 @@
-from typing import Union, Any, List
+from typing import Any, List, Union
+
 from utils.basicEvent import send
-from utils.standardPlugin import StandardPlugin, NotPublishedException
+from utils.standardPlugin import NotPublishedException, StandardPlugin
+
 
 class Chai_Jile(StandardPlugin):
     def __init__(self, chai_qq:List[int] = []):

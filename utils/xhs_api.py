@@ -1,9 +1,11 @@
-from datetime import datetime
 import re
 import time
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
 import requests
-from typing import List, Tuple, Optional, Union, Dict, Any, Set
 from bs4 import BeautifulSoup
+
 HEADERS = {
         "authority": "edith.xiaohongshu.com",
         "accept": "application/json, text/plain, */*",

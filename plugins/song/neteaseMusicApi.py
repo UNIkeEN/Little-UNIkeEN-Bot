@@ -9,11 +9,12 @@ import binascii
 import json
 import random
 import string
+from typing import Dict, List
 from urllib import parse
 
 import requests
 from Crypto.Cipher import AES
-from typing import List, Dict
+
 
 # 从a-z,A-Z,0-9中随机获取16位字符
 def get_random():

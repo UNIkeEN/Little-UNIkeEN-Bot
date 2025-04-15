@@ -1,13 +1,14 @@
 # 2023/12/24:ImageDraw.textsize，ImageFont.getsize 最新 Pillow 已弃用，已适配
 
-import os
-import requests
 import base64
+import os
 import re
 import uuid
 from io import BytesIO
+from typing import Any, Tuple, Union
+
+import requests
 from PIL import Image, ImageDraw, ImageFont
-from typing import Tuple, Union, Any
 
 # 资源/临时路径
 FONTS_PATH = 'resources/fonts'

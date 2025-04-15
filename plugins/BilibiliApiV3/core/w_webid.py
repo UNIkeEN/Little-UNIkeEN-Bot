@@ -1,9 +1,11 @@
 # https://github.com/SocialSisterYi/bilibili-API-collect/issues/1107
 
-import requests
-import re
 import json
+import re
 import urllib
+
+import requests
+
 
 def get_w_webid(self_uid:int, )->str:
     headers = {

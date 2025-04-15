@@ -1,16 +1,19 @@
-from typing import List, Tuple, Optional, Union, Any, Dict
-from PIL import Image, ImageDraw, ImageFont
-import os
 import ast
-from enum import IntEnum
-import random
 import itertools
-from utils.basicEvent import send, warning
-from utils.standardPlugin import StandardPlugin
-from utils.responseImage_beta import ResponseImage, PALETTE_CYAN
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, FONTS_PATH
-from utils.accountOperation import get_user_coins, update_user_coins
+import os
+import random
 import re
+from enum import IntEnum
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from PIL import Image, ImageDraw, ImageFont
+
+from utils.accountOperation import get_user_coins, update_user_coins
+from utils.basicConfigs import FONTS_PATH, ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import send, warning
+from utils.responseImage_beta import PALETTE_CYAN, ResponseImage
+from utils.standardPlugin import StandardPlugin
+
 
 def generate_expression(length, limit: int=10_000) -> Tuple[str, int]:
     if length < 3 :

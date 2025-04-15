@@ -1,16 +1,20 @@
+import json
 import re
-import websocket
-import requests, requests.exceptions, json
-from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
-from utils.messageChain import MessageChain, getImgFromUrl
-from PIL import Image, ImageDraw, ImageFont
-from utils.basicConfigs import *
-from typing import Dict, List, Union, Tuple, Any, Optional
 import traceback
-from utils.bufferQueue import BufferQueue
-from io import BytesIO
-from threading import Thread, Semaphore
 import uuid
+from io import BytesIO
+from threading import Semaphore, Thread
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import requests
+import requests.exceptions
+import websocket
+from PIL import Image, ImageDraw, ImageFont
+
+from utils.basicConfigs import *
+from utils.basicConfigs import APPLY_GROUP_ID, HTTP_URL
+from utils.bufferQueue import BufferQueue
+from utils.messageChain import MessageChain, getImgFromUrl
 
 lagrangeClient = websocket.WebSocket()
 lagrangeClientReturns:Dict[str, Dict[str, Any]] = {}

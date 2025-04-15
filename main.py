@@ -1,8 +1,10 @@
-import os
 import argparse
 import json
+import os
+from typing import Any, Dict, List, Optional, Tuple
+
 from utils.basicConfigs import setConfigs
-from typing import List, Tuple, Any, Dict, Optional
+
 config:Optional[Dict[str, Any]] = None
 if __name__ == '__main__':
     # 为了兼容之前的代码这么写的，太丑了，下次一定重构
@@ -14,45 +16,53 @@ if __name__ == '__main__':
             config = json.load(f)
         setConfigs(config)
         
-import asyncio, json
+import asyncio
+import json
 from enum import IntEnum
-from utils.standardPlugin import NotPublishedException
-from utils.basicConfigs import APPLY_GROUP_ID, BACKEND, BACKEND_TYPE, BOT_SELF_QQ
-from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
-from utils.accountOperation import create_account_sql
-from utils.standardPlugin import (
-    StandardPlugin, PluginGroupManager, EmptyPlugin, emptyFunction,
-    PokeStandardPlugin, AddGroupStandardPlugin, 
-    EmptyAddGroupPlugin,GuildStandardPlugin
-)
-from utils.sqlUtils import createBotDataDb
-from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
-from utils.basicEvent import get_group_list, warning, set_friend_add_request, set_group_add_request
-from utils.messageChain import MessageChain
-from utils.imageBed import createImageBedSql
 
 from plugins.autoRepoke import AutoRepoke
-from plugins.faq_v2 import MaintainFAQ, AskFAQ, HelpFAQ
-from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
+from plugins.checkCoins import AddAssignedCoins, CheckCoins, CheckTransactions
+from plugins.faq_v2 import AskFAQ, HelpFAQ, MaintainFAQ
 from plugins.greetings import MorningGreet, NightGreet
-from plugins.checkCoins import CheckCoins, AddAssignedCoins, CheckTransactions
-from plugins.superEmoji import FirecrackersFace, FireworksFace, BasketballFace, HotFace
-from plugins.news import ShowNews, YesterdayNews, UpdateNewsAndReport
-from plugins.hotSearch import WeiboHotSearch, BaiduHotSearch, ZhihuHotSearch
+from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
+from plugins.hotSearch import BaiduHotSearch, WeiboHotSearch, ZhihuHotSearch
+from plugins.news import ShowNews, UpdateNewsAndReport, YesterdayNews
 ## tmp
 from plugins.signIn import SignIn
-    
-from plugins.thanksLUB import ThanksLUB
-from plugins.stocks import QueryStocksHelper, QueryStocks, BuyStocksHelper, BuyStocks, QueryStocksPriceHelper, QueryStocksPrice
-from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
-from plugins.sjmcStatus_v4 import ShowMcStatus, McStatusAddServer, McStatusRemoveServer, McStatusSetFooter, McStatusRemoveFooter
+from plugins.sjmcStatus_v4 import (McStatusAddServer, McStatusRemoveFooter,
+                                   McStatusRemoveServer, McStatusSetFooter,
+                                   ShowMcStatus)
+from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
+from plugins.stocks import (BuyStocks, BuyStocksHelper, QueryStocks,
+                            QueryStocksHelper, QueryStocksPrice,
+                            QueryStocksPriceHelper)
+from plugins.superEmoji import (BasketballFace, FirecrackersFace,
+                                FireworksFace, HotFace)
+from plugins.thanksLUB import ThanksLUB
+from utils.accountOperation import create_account_sql
+from utils.basicConfigs import (APPLY_GROUP_ID, BACKEND, BACKEND_TYPE,
+                                BOT_SELF_QQ)
+from utils.basicEvent import (get_group_list, set_friend_add_request,
+                              set_group_add_request, warning)
+from utils.configAPI import createGlobalConfig, removeInvalidGroupConfigs
+from utils.configsLoader import createApplyGroupsSql, loadApplyGroupId
+from utils.imageBed import createImageBedSql
+from utils.messageChain import MessageChain
+from utils.sqlUtils import createBotDataDb
+from utils.standardPlugin import (AddGroupStandardPlugin, EmptyAddGroupPlugin,
+                                  EmptyPlugin, GuildStandardPlugin,
+                                  NotPublishedException, PluginGroupManager,
+                                  PokeStandardPlugin, StandardPlugin,
+                                  emptyFunction)
+
 try:
-    from plugins.mua import (MuaAnnHelper, MuaAnnEditor, 
-        MuaTokenBinder, MuaTokenUnbinder, MuaTokenEmpower,
-        MuaTokenLister, MuaNotice, MuaQuery, MuaAbstract,
-        MuaGroupBindTarget, MuaGroupUnbindTarget, MuaGroupAnnFilter, 
-        startMuaInstanceMainloop, setMuaCredential)
+    from plugins.mua import (MuaAbstract, MuaAnnEditor, MuaAnnHelper,
+                             MuaGroupAnnFilter, MuaGroupBindTarget,
+                             MuaGroupUnbindTarget, MuaNotice, MuaQuery,
+                             MuaTokenBinder, MuaTokenEmpower, MuaTokenLister,
+                             MuaTokenUnbinder, setMuaCredential,
+                             startMuaInstanceMainloop)
 except NotPublishedException as e:
     print('mua plugins not imported: {}'.format(e))
     MuaAnnHelper, MuaAnnEditor = EmptyPlugin, EmptyPlugin
@@ -62,57 +72,66 @@ except NotPublishedException as e:
     MuaGroupAnnFilter = EmptyPlugin
     MuaTokenLister = EmptyPlugin
     startMuaInstanceMainloop, setMuaCredential = emptyFunction, emptyFunction
-from plugins.roulette import RoulettePlugin
-from plugins.lottery import LotteryPlugin
-from plugins.help_v2 import ShowHelp, ShowStatus, ServerMonitor, CheckStatus
-from plugins.groupBan import GroupBan, UserBan, BanImplement, GetBanList
-from plugins.privateControl import PrivateControl, LsGroup, GroupApply, HelpInGroup
 from plugins.BilibiliApiV3 import BilibiliSubscribe, BilibiliSubscribeHelper
+from plugins.groupBan import BanImplement, GetBanList, GroupBan, UserBan
+from plugins.help_v2 import CheckStatus, ServerMonitor, ShowHelp, ShowStatus
+from plugins.lottery import LotteryPlugin
+from plugins.privateControl import (GroupApply, HelpInGroup, LsGroup,
+                                    PrivateControl)
+from plugins.roulette import RoulettePlugin
+
 try:
     from plugins.chatWithNLP import ChatWithNLP
 except Exception as e:
     ChatWithNLP = EmptyPlugin
     print('ChatWithNLP not imported: {}'.format(e))
-from plugins.chatWithAnswerbook import ChatWithAnswerbook
-from plugins.getJwc import GetSjtuNews, GetJwc, SjtuJwcMonitor#, SubscribeJwc
-from plugins.sjtuSchoolGate import SjtuSchoolGate
-from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
+from plugins.abstract import MakeAbstract
+from plugins.addGroupRecorder import AddGroupRecorder
+from plugins.bilibiliLive import BilibiliLiveMonitor, GetBilibiliLive
 from plugins.canvasSync import CanvasiCalBind, CanvasiCalUnbind, GetCanvas
-from plugins.getPermission import GetPermission, AddPermission, DelPermission, ShowPermission, AddGroupAdminToBotAdmin
+from plugins.cchess import ChineseChessHelper, ChineseChessPlugin
+from plugins.charPic import CharPic
+from plugins.chatWithAnswerbook import ChatWithAnswerbook
+from plugins.chess import ChessHelper, ChessPlugin
+from plugins.clearRecord import ClearRecord, RestoreRecord
+from plugins.deprecated.sjmcLive import GetSjmcLive
+from plugins.eavesdrop import Eavesdrop
+from plugins.emojiKitchen import EmojiKitchen
+from plugins.fileRecorder import GroupFileRecorder
+from plugins.getJwc import (GetJwc, GetSjtuNews,  # , SubscribeJwc
+                            SjtuJwcMonitor)
+from plugins.getPermission import (AddGroupAdminToBotAdmin, AddPermission,
+                                   DelPermission, GetPermission,
+                                   ShowPermission)
+# from plugins.advertisement import McAdManager
+from plugins.groupActReport import (ActRankPlugin, ActReportPlugin,
+                                    YourActReportPlugin)
+from plugins.groupWordCloud import (GenPersonWordCloud, GenWordCloud,
+                                    wordCloudPlugin)
+from plugins.handle import Handle, HandleHelper
+from plugins.leetcode import LeetcodeReport, ShowLeetcode
+from plugins.makeJoke import MakeJoke
+from plugins.mathler import Mathler, MathlerHelper
 # from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
-from plugins.addGroupRecorder import AddGroupRecorder
-from plugins.fileRecorder import GroupFileRecorder
-from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
-from plugins.deprecated.sjmcLive import GetSjmcLive
-# from plugins.advertisement import McAdManager
-from plugins.groupActReport import ActReportPlugin, ActRankPlugin, YourActReportPlugin
-from plugins.groupWordCloud import wordCloudPlugin, GenWordCloud, GenPersonWordCloud
-from plugins.randomNum import TarotRandom, RandomNum, ThreeKingdomsRandom
-from plugins.sjtuClassroom import SjtuClassroom, SjtuClassroomRecommend, SjtuClassroomPeopleNum, SjtuJsQuery
-from plugins.sjtuClassroomRecorder import SjtuClassroomRecorder, DrawClassroomPeopleCount
+from plugins.notPublished.getMddStatus import (GetMddStatus,  # , SubscribeMdd
+                                               MonitorMddStatus)
+from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
+from plugins.randomNum import RandomNum, TarotRandom, ThreeKingdomsRandom
+from plugins.sendLike import SendLike
 from plugins.sjtuActivity import SjtuActivity, SjtuDektMonitor
-from plugins.makeJoke import MakeJoke
+from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
+from plugins.sjtuClassroom import (SjtuClassroom, SjtuClassroomPeopleNum,
+                                   SjtuClassroomRecommend, SjtuJsQuery)
+from plugins.sjtuClassroomRecorder import (DrawClassroomPeopleCount,
+                                           SjtuClassroomRecorder)
+from plugins.sjtuElectromobileCharge import GetSjtuCharge
+from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.uniAgenda import GetUniAgenda
-from plugins.chess import ChessPlugin, ChessHelper
-from plugins.charPic import CharPic
-from plugins.cchess import ChineseChessPlugin, ChineseChessHelper
+from plugins.wordle import Wordle, WordleHelper
 # from plugins.song import ChooseSong # API坏了
 from plugins.zsmCorups import ZsmGoldSentence
-from plugins.clearRecord import ClearRecord, RestoreRecord
-from plugins.bilibiliLive import GetBilibiliLive, BilibiliLiveMonitor
-from plugins.wordle import Wordle, WordleHelper
-from plugins.handle import Handle, HandleHelper
-from plugins.mathler import Mathler, MathlerHelper
-from plugins.emojiKitchen import EmojiKitchen
-from plugins.leetcode import ShowLeetcode, LeetcodeReport
-from plugins.abstract import MakeAbstract
-from plugins.eavesdrop import Eavesdrop
-from plugins.sendLike import SendLike
 
-from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
-from plugins.notPublished.getMddStatus import GetMddStatus, MonitorMddStatus#, SubscribeMdd
-from plugins.sjtuElectromobileCharge import GetSjtuCharge
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
 except NotPublishedException as e:
@@ -120,7 +139,8 @@ except NotPublishedException as e:
     print('ShowEE0502Comments not imported: {}'.format(e))
 
 try:
-    from plugins.notPublished.sjtuPlusGroupingVerication import SjtuPlusGroupingVerify
+    from plugins.notPublished.sjtuPlusGroupingVerication import \
+        SjtuPlusGroupingVerify
 except NotPublishedException as e:
     SjtuPlusGroupingVerify = EmptyAddGroupPlugin
     print('SjtuPlusGroupingVerify not imported: {}'.format(e))
@@ -132,6 +152,13 @@ except NotPublishedException as e:
     print('SMPParkourRank not imported: {}'.format(e))
     
 from plugins.gocqWatchDog import GocqWatchDog
+from plugins.notPublished.sjtuSql import (SearchSjtuSql, SearchSjtuSqlAll,
+                                          SearchSjtuSqlAllPrivate,
+                                          SearchSjtuSqlPIC)
+from plugins.notPublished.sjtuSqlGroupingVerication import \
+    SjtuSqlGroupingVerify
+from plugins.test import TestLagrange
+
 ###### end not published plugins
 
 def sqlInit():
@@ -289,10 +316,12 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper(), Mathler(), MathlerHelper()], 'wordle'),
     PluginGroupManager([CharPic(), GroupBan(),
                         GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
-                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test'),], 'test'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test'),
+                        TestLagrange()], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
     PluginGroupManager([SendLike()], 'likes'),
+    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(), CheckStatus(GroupPluginList),

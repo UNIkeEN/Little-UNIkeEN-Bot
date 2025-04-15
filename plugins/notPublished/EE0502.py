@@ -1,13 +1,15 @@
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.responseImage import FONT_SYHT_M32
-from utils.standardPlugin import StandardPlugin, NotPublishedException
-from PIL import Image, ImageDraw, ImageFont
-import os.path
-from utils.responseImage import *
 import json
+import os.path
 import random
+from typing import Any, Union
+
+from PIL import Image, ImageDraw, ImageFont
+
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.responseImage import *
+from utils.responseImage import FONT_SYHT_M32
+from utils.standardPlugin import NotPublishedException, StandardPlugin
 
 EE0502_DATA_PATH = 'resources/corpus/izf.json'
 try:

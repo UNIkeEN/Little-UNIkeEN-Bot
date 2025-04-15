@@ -1,20 +1,23 @@
+import os
+import os.path
 import re
-import os, os.path
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Dict, Iterable, List, NoReturn, Union, Any, Optional
+from typing import Any, Dict, Iterable, List, NoReturn, Optional, Union
 
+from PIL import Image
+
+from utils.basicConfigs import BOT_SELF_QQ, ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 from utils.basicEvent import send, warning
-from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import BOT_SELF_QQ
+
 from .board import MoveResult
+from .chessdb import drawChessdb
 from .config import Config
 from .engine import EngineError
 from .game import AiPlayer, Game, Player
 from .move import Move
-from .chessdb import drawChessdb
-from PIL import Image
+
 
 class ChineseChessHelper(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any)->bool:

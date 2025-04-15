@@ -1,7 +1,7 @@
 import argparse
-import subprocess
-import json
 import datetime
+import json
+import subprocess
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("export bot sql to file")
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         UPDATE `BOT_DATA_%d`.`fileRecord` SET `file_bin` = NULL
         """%qq)
         print('  done')
-    print('exporting...', end='')  
+    print('exporting...', end='', flush=True)  
     with open(outFile, 'w') as f:
         popen = subprocess.Popen(cmd, stdout=f)
         out,err = popen.communicate()

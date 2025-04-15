@@ -1,14 +1,16 @@
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
-from PIL import Image, ImageDraw, ImageFont
-import requests
+import asyncio
 import base64
 import re
 from io import BytesIO
+from typing import Any, Union
 
-import aiohttp, asyncio
+import aiohttp
+import requests
+from PIL import Image, ImageDraw, ImageFont
+
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.standardPlugin import StandardPlugin
 
 MINECRAFT_COLOR_CODES = {
     '0': (0, 0, 0, 255),

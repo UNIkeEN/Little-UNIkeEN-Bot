@@ -1,9 +1,13 @@
-from typing import Union, Any
-import requests
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
 import urllib.parse
+from typing import Any, Union
+
+import requests
+
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.standardPlugin import StandardPlugin
+
+
 class Show2cyPIC(StandardPlugin): 
     def judgeTrigger(self, msg:str, data:Any) -> bool:
         return msg == '来点图图'

@@ -1,8 +1,10 @@
-from utils.configsLoader import loadApplyGroupId
-from utils.basicConfigs import SAVE_TMP_PATH, ROOT_PATH, APPLY_GROUP_ID
+import os
+
+from utils.basicConfigs import APPLY_GROUP_ID, ROOT_PATH, SAVE_TMP_PATH
 from utils.basicEvent import send
 from utils.configAPI import getPluginEnabledGroups
-import os
+from utils.configsLoader import loadApplyGroupId
+
 loadApplyGroupId()
 print(getPluginEnabledGroups('leetcode'))
 # biliGroups = getPluginEnabledGroups('muanotice')

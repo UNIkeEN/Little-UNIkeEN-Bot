@@ -1,8 +1,11 @@
-from urllib.parse import urlparse, parse_qs, ParseResult, urljoin
-from typing import Any, Tuple, Union
 from enum import IntEnum
+from typing import Any, Tuple, Union
+from urllib.parse import ParseResult, parse_qs, urljoin, urlparse
+
 from urlextract import URLExtract
+
 from utils.standardPlugin import StandardPlugin
+
 
 class URL_TYPE(IntEnum):
     UNKNOWN = 0

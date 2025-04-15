@@ -1,15 +1,19 @@
+import os
 import re
-from typing import Dict, Union, Any, Optional
+from io import BytesIO
+from typing import Any, Dict, Optional, Union
 
 import chess
-from chess import Termination, Move
-from .game import Game, Player
-from io import BytesIO
+from chess import Move, Termination
+from PIL import Image
+
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig
 from utils.basicEvent import send, warning
 from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import sqlConfig, ROOT_PATH, SAVE_TMP_PATH
-import os
-from PIL import Image
+
+from .game import Game, Player
+
+
 class ChessHelper(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any)->bool:
         return msg in ['象棋帮助']

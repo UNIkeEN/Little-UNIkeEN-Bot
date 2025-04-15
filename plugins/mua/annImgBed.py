@@ -1,13 +1,18 @@
-from typing import Dict, Union, Any, List, Tuple, Optional
-from utils.basicEvent import getImgFromUrl
-from utils.basicConfigs import ROOT_PATH
-from utils.sqlUtils import newSqlSession
-import re, os, time
+import base64
+import os
+import re
+import time
 import uuid
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import requests
 from PIL import Image
-from io import BytesIO
-import base64
+
+from utils.basicConfigs import ROOT_PATH
+from utils.basicEvent import getImgFromUrl
+from utils.sqlUtils import newSqlSession
+
 ANN_IMGBED_DIR = 'data/annImgBed'
 os.makedirs(os.path.join(ROOT_PATH, ANN_IMGBED_DIR), exist_ok=True)
 

@@ -1,17 +1,19 @@
 import asyncio
 import json
 import os
-from typing import Optional, Union, Tuple, List, Dict, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+from emoji import is_emoji
 from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import Resampling
-from emoji import is_emoji
 
-from .PicGenerator import Color, PicGenerator
 from ..starbot_utils import config
 from ..starbot_utils.network import request
-from ..starbot_utils.utils import open_url_image, timestamp_format, split_list, limit_str_length, \
-    mask_round, mask_rounded_rectangle, get_credential
+from ..starbot_utils.utils import (get_credential, limit_str_length,
+                                   mask_round, mask_rounded_rectangle,
+                                   open_url_image, split_list,
+                                   timestamp_format)
+from .PicGenerator import Color, PicGenerator
 
 
 class DynamicPicGenerator:

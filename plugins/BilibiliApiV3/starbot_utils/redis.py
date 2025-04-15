@@ -1,4 +1,4 @@
-from typing import Any, Union, Tuple, List, Set
+from typing import Any, List, Set, Tuple, Union
 
 from loguru import logger
 from redis import asyncio as aioredis

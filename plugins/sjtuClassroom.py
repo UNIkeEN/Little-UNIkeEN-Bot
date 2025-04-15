@@ -1,17 +1,20 @@
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
-import requests
-from utils.basicEvent import send, warning
-import re
-from typing import List, Tuple, Optional, Union, Dict, Any
-import requests
 import datetime
-from utils.responseImage_beta import ResponseImage, PALETTE_SJTU_RED, PALETTE_GREEN, PALETTE_GREY_BORDER, FONT_SYHT_M28, draw_rounded_rectangle
-from utils.hotSearchImage import HotSearchImage, Colors, Fonts
 import os.path
-from matplotlib import pyplot as plt
+import re
 from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import requests
+from matplotlib import pyplot as plt
 from PIL import Image, ImageDraw
+
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import send, warning
+from utils.hotSearchImage import Colors, Fonts, HotSearchImage
+from utils.responseImage_beta import (FONT_SYHT_M28, PALETTE_GREEN,
+                                      PALETTE_GREY_BORDER, PALETTE_SJTU_RED,
+                                      ResponseImage, draw_rounded_rectangle)
+from utils.standardPlugin import StandardPlugin
 
 headers = {
     "Accept": "application/json, text/javascript, */*; q=0.01",

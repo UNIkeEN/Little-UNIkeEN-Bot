@@ -1,11 +1,15 @@
-from utils.basicEvent import send, warning, startswith_in
-from utils.configAPI import readGlobalConfig, writeGlobalConfig
-from utils.standardPlugin import StandardPlugin, PluginGroupManager
-from utils.basicConfigs import ROOT_ADMIN_ID, APPLY_GROUP_ID
-from utils.configsLoader import addGroupToApplyId, delGroupFromApplyId, getApplyGroups
-from typing import Any, List, Union
 import re
+from typing import Any, List, Union
+
+from utils.basicConfigs import APPLY_GROUP_ID, ROOT_ADMIN_ID
+from utils.basicEvent import send, startswith_in, warning
+from utils.configAPI import readGlobalConfig, writeGlobalConfig
+from utils.configsLoader import (addGroupToApplyId, delGroupFromApplyId,
+                                 getApplyGroups)
+from utils.standardPlugin import PluginGroupManager, StandardPlugin
+
 from .help_v2 import drawHelpCard
+
 
 class LsGroup(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:

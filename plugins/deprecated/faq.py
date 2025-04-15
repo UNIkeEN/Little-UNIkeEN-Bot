@@ -1,11 +1,17 @@
 import json
-from typing import Union, Any, List, Tuple
-from utils.basicEvent import send, warning
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
-from utils.responseImage import ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
-import re, os.path, os
+import os
+import os.path
+import re
+from typing import Any, List, Tuple, Union
+
 from pypinyin import lazy_pinyin
+
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import send, warning
+from utils.responseImage import (FONTS_PATH, PALETTE_CYAN, ImageFont,
+                                 ResponseImage)
+from utils.standardPlugin import StandardPlugin
+
 FAQ_DATA_PATH="data"
 class HelpFAQ(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:

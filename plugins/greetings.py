@@ -1,5 +1,6 @@
-from typing import Union, Any
 import random
+from typing import Any, Union
+
 from utils.basicEvent import *
 from utils.standardPlugin import StandardPlugin
 

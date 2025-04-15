@@ -1,9 +1,15 @@
-from typing import Any, Union, Dict, List, Tuple, Optional
-from utils.standardPlugin import StandardPlugin
-from utils.basicEvent import send, warning
+import json
+import os
+import re
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import jieba
+import pinyin
+
 from utils.basicConfigs import ROOT_PATH
-import re, os, json
-import jieba, pinyin
+from utils.basicEvent import send, warning
+from utils.standardPlugin import StandardPlugin
+
 ABSTRACT_RESOURCE_PATH = 'resources/emoji'
 with open(os.path.join(ROOT_PATH, ABSTRACT_RESOURCE_PATH, 'character2emoji.json'), 'r', encoding='utf-8') as f:
     emoji = json.load(f)

@@ -5,22 +5,23 @@ import math
 import os
 from collections import Counter
 from io import BytesIO
-from typing import Union, Tuple, List, Dict, Any
+from typing import Any, Dict, List, Tuple, Union
 
 import jieba
 import numpy as np
-from PIL import Image
 from loguru import logger
 from matplotlib import pyplot as plt
 from mpl_toolkits import axisartist
+from PIL import Image
 from scipy.interpolate import make_interp_spline
 from wordcloud import WordCloud
 
-from .PicGenerator import Color, PicGenerator
-from .RankingGenerator import RankingGenerator
 from ..core.model import LiveReport
 from ..utils import config
-from ..utils.utils import split_list, limit_str_length, mask_round, timestamp_format
+from ..utils.utils import (limit_str_length, mask_round, split_list,
+                           timestamp_format)
+from .PicGenerator import Color, PicGenerator
+from .RankingGenerator import RankingGenerator
 
 jieba.setLogLevel(jieba.logging.INFO)
 

@@ -1,10 +1,11 @@
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
 import json
 import random
-from typing import List, Dict
+from typing import Any, Dict, List, Union
+
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.standardPlugin import StandardPlugin
+
 book_path = 'resources/corpus/answerbook.json'
 with open(book_path, "r", encoding='utf-8') as f:
     result:Dict[str, Dict[str, str]] = json.load(f)

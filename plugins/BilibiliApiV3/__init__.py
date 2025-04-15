@@ -1,28 +1,30 @@
 import asyncio
-import re
-from PIL import Image
-from io import BytesIO
 import base64
-from typing import List, Tuple, Optional, Union, Dict, Any, Set
-from threading import Thread, Semaphore
 import copy
-import random
-import os
-import time
 import datetime
+import os
+import random
+import re
+import time
+from io import BytesIO
+from threading import Semaphore, Thread
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from .starbot_utils.config import set_credential
-from .starbot_utils.utils import get_credential
-from .starbot_utils.network import request
-from .core.user import User, RelationType, get_self_info
-from .painter.DynamicPicGenerator import DynamicPicGenerator
-from .core.wbi import getWbiKeys
-from .core.w_webid import get_w_webid
+from PIL import Image
 
 from utils.basicConfigs import APPLY_GROUP_ID, ROOT_PATH, SAVE_TMP_PATH
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, Job
+from utils.basicEvent import gocqQuote, send, warning
 from utils.sqlUtils import newSqlSession
-from utils.basicEvent import send, warning, gocqQuote
+from utils.standardPlugin import CronStandardPlugin, Job, StandardPlugin
+
+from .core.user import RelationType, User, get_self_info
+from .core.w_webid import get_w_webid
+from .core.wbi import getWbiKeys
+from .painter.DynamicPicGenerator import DynamicPicGenerator
+from .starbot_utils.config import set_credential
+from .starbot_utils.network import request
+from .starbot_utils.utils import get_credential
+
 
 def get_bilibili_user_info(loop, uid:int, wbi_keys: Dict[str, str], w_webid: str)->Dict:
     user = User(uid, get_credential(), wbi_keys=wbi_keys, w_webid = w_webid)

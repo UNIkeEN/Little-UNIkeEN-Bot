@@ -1,10 +1,12 @@
-from typing import List, Any, Union, Tuple
-from PIL import Image, ImageDraw, ImageFont
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import FONTS_PATH, ROOT_PATH, SAVE_TMP_PATH
-from utils.basicEvent import send, get_avatar_pic
 import os
 from io import BytesIO
+from typing import Any, List, Tuple, Union
+
+from PIL import Image, ImageDraw, ImageFont
+
+from utils.basicConfigs import FONTS_PATH, ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import get_avatar_pic, send
+from utils.standardPlugin import StandardPlugin
 
 default_font, font_size = os.path.join(FONTS_PATH, "Consolas.ttf"), 14
 util_draw = ImageDraw.Draw(Image.new("L", (1, 1)))

@@ -1,20 +1,26 @@
-import os, os.path
 import json
+import os
+import os.path
 import time
 from datetime import datetime
-from typing import Union, Any
-from utils.basicEvent import send, warning, init_image_template, draw_rounded_rectangle
-from utils.basicConfigs import *
-import requests
-from utils.configAPI import getPluginEnabledGroups
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
-from PIL import Image
 from io import BytesIO
-from threading import Timer, Semaphore
+from threading import Semaphore, Timer
+from typing import Any, Union
+
+import requests
+from PIL import Image
+
+from utils.basicConfigs import *
+from utils.basicEvent import (draw_rounded_rectangle, init_image_template,
+                              send, warning)
+from utils.configAPI import getPluginEnabledGroups
+from utils.standardPlugin import (CronStandardPlugin, NotPublishedException,
+                                  StandardPlugin)
+
 try:
+    from browsermobproxy import Server
     from selenium import webdriver
     from selenium.webdriver import ChromeOptions
-    from browsermobproxy import Server
 except ImportError as e:
     raise NotPublishedException(str(e))
 

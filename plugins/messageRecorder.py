@@ -1,9 +1,14 @@
-from utils.standardPlugin import StandardPlugin, RecallMessageStandardPlugin, Union, Tuple, Any, List
-from utils.basicEvent import get_group_list, warning, get_group_list, get_group_msg_history
-from utils.sqlUtils import newSqlSession
-from pymysql.converters import escape_string
-import threading, time
+import threading
+import time
+
 import mysql.connector
+from pymysql.converters import escape_string
+
+from utils.basicEvent import get_group_list, get_group_msg_history, warning
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import (Any, List, RecallMessageStandardPlugin,
+                                  StandardPlugin, Tuple, Union)
+
 
 def getLatestRecordSeq():
     groupList = [group['group_id'] for group in get_group_list()]

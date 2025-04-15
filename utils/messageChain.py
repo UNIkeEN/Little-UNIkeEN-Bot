@@ -1,8 +1,13 @@
-from typing import List, Dict, Optional,Any
-import re, base64
-from PIL import Image
+import base64
+import re
 from io import BytesIO
-from utils.imageBed import uuidToImgPath, dumpUrlToBed, dumpImageToBed, getImgFromUrl
+from typing import Any, Dict, List, Optional
+
+from PIL import Image
+
+from utils.imageBed import (dumpImageToBed, dumpUrlToBed, getImgFromUrl,
+                            uuidToImgPath)
+
 
 def messagePieceQuote(text:str)->str:
     if not isinstance(text, str):

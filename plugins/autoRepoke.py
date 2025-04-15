@@ -1,7 +1,9 @@
+from typing import Any, Union
+
 from utils.basicEvent import send
-from utils.standardPlugin import PokeStandardPlugin
-from typing import Union, Any
 from utils.bufferQueue import BufferQueue
+from utils.standardPlugin import PokeStandardPlugin
+
 
 class AutoRepoke(PokeStandardPlugin):
     def __init__(self, maxCapa:int=5) -> None:

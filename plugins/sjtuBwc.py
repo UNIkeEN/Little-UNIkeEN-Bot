@@ -1,15 +1,18 @@
+import datetime
+import time
+from threading import Semaphore
+from typing import Any, Dict, List, Optional, Union
+from urllib.parse import urlparse
+
+import pyjsparser.parser as jsparser
 import requests
 from bs4 import BeautifulSoup as BS
-from typing import Optional, List, Dict, Any, Union
-import pyjsparser.parser as jsparser
+
 from utils.basicEvent import send, warning
 from utils.configAPI import getPluginEnabledGroups
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin
-import datetime
-from urllib.parse import urlparse
 from utils.sqlUtils import newSqlSession
-from threading import Semaphore
-import time
+from utils.standardPlugin import CronStandardPlugin, StandardPlugin
+
 
 def createBwcSql():
     mydb, mycursor = newSqlSession()

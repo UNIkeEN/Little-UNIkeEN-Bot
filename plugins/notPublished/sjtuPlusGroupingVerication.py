@@ -1,9 +1,13 @@
-from utils.standardPlugin import StandardPlugin, AddGroupStandardPlugin
-from utils.basicEvent import send, warning, set_group_add_request
-from typing import Any, Union, List, Dict, Tuple, Optional
-import requests, requests.exceptions
 import re
-    
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import requests
+import requests.exceptions
+
+from utils.basicEvent import send, set_group_add_request, warning
+from utils.standardPlugin import AddGroupStandardPlugin, StandardPlugin
+
+
 class SjtuPlusGroupingVerify(AddGroupStandardPlugin):
     @staticmethod
     def commentToCode(comment:str)->str:

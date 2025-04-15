@@ -1,10 +1,12 @@
 import argparse
 import asyncio
 import json
-import aiohttp
-import mysql.connector
 import os
 from typing import Optional
+
+import aiohttp
+import mysql.connector
+
 
 async def download_file(file_url: str, file_name: str, base_dir: str, verbose:bool=False) -> Optional[int]:
     out_file = os.path.join(base_dir, file_name)

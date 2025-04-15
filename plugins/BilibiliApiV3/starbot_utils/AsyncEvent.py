@@ -3,7 +3,7 @@
 """
 
 import asyncio
-from typing import Any, Coroutine, Optional, Dict
+from typing import Any, Coroutine, Dict, Optional
 
 
 class AsyncEvent:

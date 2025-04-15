@@ -1,12 +1,17 @@
-from utils.standardPlugin import StandardPlugin, Any, Union
-import requests
-from utils.basicEvent import send, warning, startswith_in, init_image_template, draw_rounded_rectangle
-from utils.basicConfigs import *
-from utils.sqlUtils import newSqlSession
-from icalendar import Calendar
+import re
+import time
 from datetime import datetime, timedelta
-import re, time
-from typing import Tuple, Any, List
+from typing import Any, List, Tuple
+
+import requests
+from icalendar import Calendar
+
+from utils.basicConfigs import *
+from utils.basicEvent import (draw_rounded_rectangle, init_image_template,
+                              send, startswith_in, warning)
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import Any, StandardPlugin, Union
+
 
 class CanvasiCalUnbind(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:

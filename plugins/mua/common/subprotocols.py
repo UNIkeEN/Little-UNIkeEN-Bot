@@ -1,7 +1,9 @@
-from .packets import PayloadPacket
-import time
 import json
-from typing import Union, Optional, List, Tuple, Set
+import time
+from typing import List, Optional, Set, Tuple, Union
+
+from .packets import PayloadPacket
+
 # --------------------
 #     ANNOUNCEMENT
 # --------------------

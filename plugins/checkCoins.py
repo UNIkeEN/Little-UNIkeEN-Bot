@@ -1,10 +1,15 @@
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
-from utils.accountOperation import get_user_coins, get_user_transactions, update_user_coins
+import os.path
+import re
+from typing import Any, Union
+
 from PIL import Image, ImageDraw, ImageFont
-import os.path, re
+
+from utils.accountOperation import (get_user_coins, get_user_transactions,
+                                    update_user_coins)
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.standardPlugin import StandardPlugin
+
 
 class CheckCoins(StandardPlugin): # 查询当前金币
     def judgeTrigger(self, msg:str, data:Any) -> bool:

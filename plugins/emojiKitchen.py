@@ -1,8 +1,12 @@
-from typing import Any, Union, Dict, List, Tuple, Optional
+import json
+import os
+import re
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
 from utils.basicEvent import send, warning
 from utils.standardPlugin import StandardPlugin
-import os, re, json
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
+
 EMOJIKITCHEN_SOURCE_PATH = 'resources/emoji/metadata.json'
 class EmojiKitchen(StandardPlugin):
     def __init__(self) -> None:

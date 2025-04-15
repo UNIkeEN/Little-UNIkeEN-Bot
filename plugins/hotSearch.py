@@ -1,11 +1,14 @@
-import requests
 from datetime import datetime
-from typing import Union, Any, Optional, Dict, List
-from utils.basicEvent import *
+from typing import Any, Dict, List, Optional, Union
+
+import requests
+
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
-from utils.hotSearchImage import HotSearchImage, Colors, Fonts
+from utils.basicEvent import *
+from utils.hotSearchImage import Colors, Fonts, HotSearchImage
 from utils.responseImage_beta import ResponseImage
+from utils.standardPlugin import StandardPlugin
+
 
 def plotHotSearch(meta:List[Dict[str, Any]], width:int, imgPath:str)->None:
     """

@@ -1,14 +1,18 @@
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, Job
-from utils.sqlUtils import newSqlSession
-from utils.basicEvent import send, warning, gocqQuote
-import re
-from typing import List, Tuple, Optional, Union, Dict, Any, Set
-from utils.bilibili_api_fixed import UserFixed
-from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
-import random
-from threading import Semaphore
 import copy
+import random
+import re
 import time
+from threading import Semaphore
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from bilibili_api.exceptions.ResponseCodeException import ResponseCodeException
+
+from utils.basicEvent import gocqQuote, send, warning
+from utils.bilibili_api_fixed import UserFixed
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import CronStandardPlugin, Job, StandardPlugin
+
+
 def bvToUrl(bvid:str):
     return 'https://www.bilibili.com/video/' + bvid
 

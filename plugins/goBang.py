@@ -1,13 +1,17 @@
-import re, os, os.path
-from typing import Tuple, Union, Any
-from threading import Timer
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
-from utils.accountOperation import get_user_coins, update_user_coins
-from utils.goBangGame import NCOLS, NROWS, GoBangGame, drawGoBangPIC
-from enum import IntEnum
+import os
+import os.path
+import re
 import traceback
+from enum import IntEnum
+from threading import Timer
+from typing import Any, Tuple, Union
+
+from utils.accountOperation import get_user_coins, update_user_coins
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.goBangGame import NCOLS, NROWS, GoBangGame, drawGoBangPIC
+from utils.standardPlugin import StandardPlugin
+
 GOBANG_SPEND_COINS = 0
 CMD_GOBANG = ['开始五子棋','取消五子棋','接受五子棋','认输']
 CMD_GOBANG_ONGOING = lambda txt: re.match('^([1-9]|0[1-9]|1[0-%d])([A-%s])$'%(NROWS%10,"_ABCDEFGHIJKLMNOPQRSTUVWXYZ"[NCOLS]), txt) != None

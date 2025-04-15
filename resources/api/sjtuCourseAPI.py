@@ -1,5 +1,7 @@
+from typing import Any, Dict, List, Optional
+
 import requests
-from typing import List, Dict, Any, Optional
+
 
 def parseCookie(cookieStr:str)->Dict[str, str]:
     cookieDict = {}

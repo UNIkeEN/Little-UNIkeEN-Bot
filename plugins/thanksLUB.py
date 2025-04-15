@@ -1,8 +1,11 @@
-from typing import Any, Union, List, Tuple, Optional
-from utils.standardPlugin import StandardPlugin
-from utils.basicEvent import send, warning, startswith_in
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
 import random
+from typing import Any, List, Optional, Tuple, Union
+
+from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH
+from utils.basicEvent import send, startswith_in, warning
+from utils.standardPlugin import StandardPlugin
+
+
 class ThanksLUB(StandardPlugin):
     def __init__(self) -> None:
         self.replyList = [

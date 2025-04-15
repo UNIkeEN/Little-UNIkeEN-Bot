@@ -1,16 +1,22 @@
-import os, os.path
 import json
+import os
+import os.path
 import time
 from datetime import datetime
-from typing import Union, Any, Dict, List
-from utils.basicEvent import send, warning, init_image_template, draw_rounded_rectangle
-from utils.basicConfigs import *
-import requests
-from utils.configAPI import getPluginEnabledGroups
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, NotPublishedException
-from PIL import Image
 from io import BytesIO
-from threading import Timer, Semaphore
+from threading import Semaphore, Timer
+from typing import Any, Dict, List, Union
+
+import requests
+from PIL import Image
+
+from utils.basicConfigs import *
+from utils.basicEvent import (draw_rounded_rectangle, init_image_template,
+                              send, warning)
+from utils.configAPI import getPluginEnabledGroups
+from utils.standardPlugin import (CronStandardPlugin, NotPublishedException,
+                                  StandardPlugin)
+
 try:
     from resources.api.dektAPI import getDekt
 except ImportError as e:

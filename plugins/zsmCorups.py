@@ -1,7 +1,9 @@
-from typing import Union, Any
+import random
+from typing import Any, Union
+
 from utils.basicEvent import send
 from utils.standardPlugin import StandardPlugin
-import random
+
 
 class ZsmGoldSentence(StandardPlugin):
     def __init__(self) -> None:

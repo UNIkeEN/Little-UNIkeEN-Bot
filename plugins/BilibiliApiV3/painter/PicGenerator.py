@@ -2,7 +2,7 @@ import base64
 import os
 from enum import Enum
 from io import BytesIO
-from typing import Optional, Union, Tuple, List
+from typing import List, Optional, Tuple, Union
 
 from PIL import Image, ImageDraw, ImageFont
 

@@ -1,20 +1,25 @@
-from utils.standardPlugin import StandardPlugin, CronStandardPlugin, GuildStandardPlugin
-from typing import Set, Union, Any, List, Dict
+import json
+import os
+import os.path
+from datetime import datetime
+from threading import Semaphore
+from typing import Any, Dict, List, Set, Union
+from urllib.parse import urljoin
+
 import mysql.connector
-from utils.responseImage import *
+import qrcode
 import requests
 from bs4 import BeautifulSoup as BS
-from utils.sqlUtils import newSqlSession
-from utils.basicEvent import send, warning, draw_rounded_rectangle, init_image_template
+
 from utils.basicConfigs import *
-from utils.sqlUtils import newSqlSession
+from utils.basicEvent import (draw_rounded_rectangle, init_image_template,
+                              send, warning)
 from utils.configAPI import getPluginEnabledGroups
-from threading import Semaphore
-import json
-from datetime import datetime
-from urllib.parse import urljoin
-import qrcode
-import os, os.path
+from utils.responseImage import *
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import (CronStandardPlugin, GuildStandardPlugin,
+                                  StandardPlugin)
+
 
 def createJwcSql() -> None:
     mydb, mycursor = newSqlSession()

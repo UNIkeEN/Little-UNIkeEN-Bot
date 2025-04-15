@@ -1,10 +1,12 @@
-from .sqlUtils import newSqlSession
+import json
+from typing import Any, Dict, List, Tuple, Union
+
 import mysql.connector
 from pymysql.converters import escape_string
-from .basicConfigs import sqlConfig, APPLY_GROUP_ID
-from typing import Any, Union, Dict, List, Tuple
+
+from .basicConfigs import APPLY_GROUP_ID, sqlConfig
 from .basicEvent import warning
-import json
+from .sqlUtils import newSqlSession
 
 # config 相关
 # see: https://dev.mysql.com/doc/refman/5.7/en/json-modification-functions.html

@@ -1,12 +1,15 @@
-from PIL import Image, ImageDraw, ImageFont
-import json
-import httpx
-from typing import Union, Any
-from utils.basicEvent import *
-from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin
-import os.path
 import datetime
+import json
+import os.path
+from typing import Any, Union
+
+import httpx
+from PIL import Image, ImageDraw, ImageFont
+
+from utils.basicConfigs import *
+from utils.basicEvent import *
+from utils.standardPlugin import StandardPlugin
+
 
 class SjtuCanteenInfo(StandardPlugin):
     def judgeTrigger(self, msg:str, data:Any) -> bool:

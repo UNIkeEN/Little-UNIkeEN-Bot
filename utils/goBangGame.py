@@ -1,6 +1,8 @@
-from typing import List, Tuple, Union, Any
 from enum import IntEnum
+from typing import Any, List, Tuple, Union
+
 from utils.basicEvent import *
+
 NROWS = NCOLS = 17
 class GoBangPiece(IntEnum):
     NOTHING = 0

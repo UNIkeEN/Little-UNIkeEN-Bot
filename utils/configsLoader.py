@@ -1,6 +1,8 @@
+from typing import List, Optional, Tuple
+
 from .basicConfigs import APPLY_GROUP_ID
 from .sqlUtils import newSqlSession
-from typing import Optional, List, Tuple
+
 
 def createApplyGroupsSql():
     mydb, mycursor = newSqlSession()

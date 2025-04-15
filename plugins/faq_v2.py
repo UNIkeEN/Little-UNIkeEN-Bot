@@ -1,18 +1,28 @@
-from typing import Dict, Union, Any, List, Tuple
-from utils.basicEvent import send, warning, upload_group_file, get_group_file_url, get_group_root_files
-from utils.configAPI import getGroupAdmins
-from utils.standardPlugin import StandardPlugin
-from utils.basicConfigs import ROOT_PATH, SAVE_TMP_PATH, sqlConfig, APPLY_GROUP_ID
-from utils.responseImage import PALETTE_RED, ResponseImage, PALETTE_CYAN, FONTS_PATH, ImageFont
-from utils.messageChain import MessageChain
-import re, os.path, os
-from pypinyin import lazy_pinyin
-import mysql.connector
-from pymysql.converters import escape_string
-from fuzzywuzzy import process as fuzzy_process
+import datetime
+import json
+import os
+import os.path
+import re
+import time
 from threading import Semaphore
-import json, datetime, time
+from typing import Any, Dict, List, Tuple, Union
+
+import mysql.connector
 import requests
+from fuzzywuzzy import process as fuzzy_process
+from pymysql.converters import escape_string
+from pypinyin import lazy_pinyin
+
+from utils.basicConfigs import (APPLY_GROUP_ID, ROOT_PATH, SAVE_TMP_PATH,
+                                sqlConfig)
+from utils.basicEvent import (get_group_file_url, get_group_root_files, send,
+                              upload_group_file, warning)
+from utils.configAPI import getGroupAdmins
+from utils.messageChain import MessageChain
+from utils.responseImage import (FONTS_PATH, PALETTE_CYAN, PALETTE_RED,
+                                 ImageFont, ResponseImage)
+from utils.standardPlugin import StandardPlugin
+
 
 def createFaqTable(tableName: str):
     # warning: tableName may danger

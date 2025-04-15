@@ -1,11 +1,15 @@
-from typing import Dict, Union, Any, List, Tuple, Optional
-from utils.basicEvent import send, warning
-from utils.standardPlugin import StandardPlugin
-from utils.sqlUtils import newSqlSession
-import re, os
+import os
+import re
 from threading import Semaphore
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from utils.basicEvent import send, warning
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import StandardPlugin
+
 from .clientInstance import queryAnnouncement
 from .muaAPI import verifyMuaToken
+
 
 def createMuaTokenSql():
     mydb, mycursor = newSqlSession()

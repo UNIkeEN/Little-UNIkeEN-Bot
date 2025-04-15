@@ -1,10 +1,13 @@
-import subprocess, io
-from abc import ABC, abstractmethod
-import re
-import os
-from typing import List, Dict, Optional
 import enum
+import io
+import os
+import re
+import subprocess
+from abc import ABC, abstractmethod
+from typing import Dict, List, Optional
+
 from .move import Move
+
 
 class EngineError(Exception):
     pass

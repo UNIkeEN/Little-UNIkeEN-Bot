@@ -1,10 +1,12 @@
-import os
-import requests
 import base64
+import os
 import re
 import uuid
 from io import BytesIO
+
+import requests
 from PIL import Image, ImageDraw, ImageFont
+
 from utils.basicConfigs import FONTS_PATH, SAVE_TMP_PATH
 
 # 字体预定义常量

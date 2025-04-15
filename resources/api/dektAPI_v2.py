@@ -1,7 +1,8 @@
-import requests
-from typing import List, Dict, Any, Optional
-from urllib import parse
 import base64
+from typing import Any, Dict, List, Optional
+from urllib import parse
+
+import requests
 
 HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -81,3 +82,34 @@ def actIdToUrlParam(activityId:int) -> str:
     idStr = str(activityId)
     idStr = idStr + ' ' * ((3 - len(idStr)%3) % 3)
     return base64.b64encode(idStr.encode('utf-8')).decode('utf-8')
+
+def getDetailedInfo(JAC_COOKIE:str, client_id: str, act_id: int)->Dict[str, Any]:
+    headers = getJaccountOIDCToken(JAC_COOKIE, client_id)
+    return requests.get(
+        url='https://activity.sjtu.edu.cn/api/v1/activity/{}'.format(act_id), 
+        params={'detail': '1'},
+        headers=headers
+    ).json()["data"]
+
+def getField11(JAC_COOKIE:str, client_id: str)->Dict[str, Any]:
+    headers = getJaccountOIDCToken(JAC_COOKIE, client_id)
+    return requests.get(
+        url='https://activity.sjtu.edu.cn/api/v1/system/activity_type/field/11', 
+        headers=headers
+    ).json()["data"]
+
+def getCustomValue(JAC_COOKIE:str, client_id: str, act_id: int)->Dict[str, str]:
+    detailedInfo = getDetailedInfo(JAC_COOKIE, client_id, act_id)
+    field11 = getField11(JAC_COOKIE, client_id)
+    customValue:Dict[str, str] = detailedInfo['custom_form_value']
+    result = dict()
+    for item in field11['custom_form_design']:
+        key = item['label']
+        defaultVal = item['default_value']
+        value = customValue.get(item['id'], defaultVal)
+        if item.get('dict', None) is not None:
+            for d in item['dict']:
+                if value == d['id']:
+                    value = d['name']
+        result[key] = value
+    return result

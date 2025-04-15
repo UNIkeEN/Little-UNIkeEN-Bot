@@ -1,9 +1,10 @@
 # https://socialsisteryi.github.io/bilibili-API-collect/docs/misc/sign/wbi.html#python
 
+import time
+import urllib.parse
 from functools import reduce
 from hashlib import md5
-import urllib.parse
-import time
+
 import requests
 
 mixinKeyEncTab = [

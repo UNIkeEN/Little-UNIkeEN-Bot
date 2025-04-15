@@ -1,8 +1,10 @@
 import datetime
-import re
-from utils.basicEvent import send, warning, gocqQuote
-from utils.standardPlugin import StandardPlugin
 import json
+import re
+
+from utils.basicEvent import gocqQuote, send, warning
+from utils.standardPlugin import StandardPlugin
+
 
 def makeResource(what:str):
     today = datetime.date.today()

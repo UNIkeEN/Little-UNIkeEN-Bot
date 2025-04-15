@@ -1,7 +1,10 @@
 import enum
+import os
+import os.path
+from typing import Any, Dict, List, Tuple, Union
+
 from PIL import Image, ImageDraw, ImageFont
-import os, os.path
-from typing import Tuple, List, Dict, Any, Union
+
 FONTS_PATH = 'resources/fonts'
 SAVE_TMP_PATH = 'data/tmp'
 

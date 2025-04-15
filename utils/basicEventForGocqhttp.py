@@ -1,18 +1,24 @@
-import re
-import mysql.connector
-import requests, requests.exceptions, json
-from utils.basicConfigs import HTTP_URL, APPLY_GROUP_ID
-from PIL import Image, ImageDraw, ImageFont
-from utils.basicConfigs import *
-import time
+import asyncio
+import json
 import random
-from typing import Dict, List, Union, Tuple, Any, Optional
-from pymysql.converters import escape_string
+import re
+import time
 import traceback
-import aiohttp, asyncio
-from utils.bufferQueue import BufferQueue
 from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import aiohttp
+import mysql.connector
+import requests
+import requests.exceptions
+from PIL import Image, ImageDraw, ImageFont
+from pymysql.converters import escape_string
+
+from utils.basicConfigs import *
+from utils.basicConfigs import APPLY_GROUP_ID, HTTP_URL
+from utils.bufferQueue import BufferQueue
 from utils.messageChain import MessageChain, getImgFromUrl
+
 
 def get_avatar_pic(id: int)->Union[None, bytes]:
     """获取QQ头像

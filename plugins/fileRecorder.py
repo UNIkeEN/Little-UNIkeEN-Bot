@@ -1,10 +1,14 @@
-import requests
-from utils.standardPlugin import GroupUploadStandardPlugin, Union, Tuple, Any, List
-from utils.basicEvent import get_group_list, warning
-from utils.basicEvent import get_group_file_system_info, get_group_files_by_folder, get_group_root_files, get_group_file_url
-from utils.basicConfigs import sqlConfig
-from utils.sqlUtils import newSqlSession
 import mysql.connector
+import requests
+
+from utils.basicConfigs import sqlConfig
+from utils.basicEvent import (get_group_file_system_info, get_group_file_url,
+                              get_group_files_by_folder, get_group_list,
+                              get_group_root_files, warning)
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import (Any, GroupUploadStandardPlugin, List, Tuple,
+                                  Union)
+
 """
 # 筛选file_id:
 select group_id, file_id, file_name, busid, file_size, (file_bin is not null) from BOT_DATA_%d.fileRecord where ...;

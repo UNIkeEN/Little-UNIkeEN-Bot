@@ -1,17 +1,20 @@
 import itertools
-from torch.utils import data as dataimport
+import logging
 import re
 from time import sleep
+from typing import Any, Union
+
 import jieba
 import torch
-import logging
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils as utils
-from typing import Union, Any
-from utils.basicEvent import *
+from torch.utils import data as dataimport
+
 from utils.basicConfigs import *
-from utils.standardPlugin import StandardPlugin, NotPublishedException
+from utils.basicEvent import *
+from utils.standardPlugin import NotPublishedException, StandardPlugin
+
 jieba.setLogLevel(logging.INFO) #关闭jieba输出信息
 
 class NLP_Config:

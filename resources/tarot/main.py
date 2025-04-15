@@ -1,8 +1,12 @@
+import json
+import os
+from io import BytesIO
+
 import requests
 from bs4 import BeautifulSoup as BS
 from PIL import Image
-import os, json
-from io import BytesIO
+
+
 def get_tarot_img(idx):
     idx = 150
     os.mkdir(str(idx))

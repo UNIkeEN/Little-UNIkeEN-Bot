@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime
-from typing import Optional, Dict
-
+from typing import Dict, Optional
 
 from .board import Board
 from .config import Config
-from .engine import Engine, UciEngine, UcciEngine, EngineError
+from .engine import Engine, EngineError, UcciEngine, UciEngine
 # from model import GameRecord
 from .move import Move
+
 
 class Player:
     def __init__(self, id: str, name: str):

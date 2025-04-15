@@ -1,9 +1,13 @@
-from .basicConfigs import sqlConfig, BOT_SELF_QQ
-import mysql.connector
-from mysql.connector.cursor import MySQLCursor
-from mysql.connector.connection import MySQLConnection
-from mysql.connector.pooling import PooledMySQLConnection
 from typing import Tuple, Union
+
+import mysql.connector
+from mysql.connector.connection import MySQLConnection
+from mysql.connector.cursor import MySQLCursor
+from mysql.connector.pooling import PooledMySQLConnection
+
+from .basicConfigs import BOT_SELF_QQ, sqlConfig
+
+
 def createBotDataDb():
     mydb = mysql.connector.connect(**sqlConfig)
     mycursor = mydb.cursor()

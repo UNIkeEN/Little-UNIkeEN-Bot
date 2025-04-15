@@ -1,15 +1,20 @@
-from typing import Dict, Union, Any, List, Tuple, Optional
-from utils.basicConfigs import ROOT_PATH, BOT_SELF_QQ
-from utils.sqlUtils import newSqlSession
-import re, os, time
-import uuid
-import requests
-from PIL import Image
-from io import BytesIO
 import base64
-import hashlib, uuid
+import hashlib
+import os
+import re
+import time
 import urllib
 import urllib.parse
+import uuid
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import requests
+from PIL import Image
+
+from utils.basicConfigs import BOT_SELF_QQ, ROOT_PATH
+from utils.sqlUtils import newSqlSession
+
 IMGBED_DIR = os.path.join(ROOT_PATH,'data', str(BOT_SELF_QQ), 'imageBed')
 os.makedirs(IMGBED_DIR, exist_ok=True)
 

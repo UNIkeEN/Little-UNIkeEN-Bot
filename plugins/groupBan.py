@@ -1,12 +1,16 @@
-from utils.standardPlugin import StandardPlugin
-from typing import List, Any, Dict, Optional, Union, Set, Tuple
-from utils.basicEvent import set_group_ban, isGroupOwner, send, warning
-from utils.configAPI import getGroupAdmins
-from utils.basicConfigs import ROOT_ADMIN_ID, SAVE_TMP_PATH, ROOT_PATH, BOT_SELF_QQ
-from utils.sqlUtils import newSqlSession
-from utils.responseImage_beta import *
+import datetime
+import re
 from threading import Semaphore
-import re, datetime
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from utils.basicConfigs import (BOT_SELF_QQ, ROOT_ADMIN_ID, ROOT_PATH,
+                                SAVE_TMP_PATH)
+from utils.basicEvent import isGroupOwner, send, set_group_ban, warning
+from utils.configAPI import getGroupAdmins
+from utils.responseImage_beta import *
+from utils.sqlUtils import newSqlSession
+from utils.standardPlugin import StandardPlugin
+
 
 class GroupBan(StandardPlugin):
     def judgeTrigger(self, msg: str, data: Any) -> bool:

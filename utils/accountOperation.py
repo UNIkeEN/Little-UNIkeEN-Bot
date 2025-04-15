@@ -1,9 +1,12 @@
-from utils.basicEvent import warning
 from datetime import datetime
-from utils.sqlUtils import newSqlSession
+from typing import Union
+
 import mysql.connector
 from pymysql.converters import escape_string
-from typing import Union
+
+from utils.basicEvent import warning
+from utils.sqlUtils import newSqlSession
+
 '''
 accounts 账户
 +----------+------------------+------+-----+---------+-------+

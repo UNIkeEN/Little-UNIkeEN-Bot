@@ -1,5 +1,7 @@
+from typing import Dict, Optional, Tuple
+
 import requests
-from typing import Tuple, Optional, Dict
+
 
 def verifyMuaToken(token:str)->Tuple[bool, str]:
     """校验MUA token是否合法

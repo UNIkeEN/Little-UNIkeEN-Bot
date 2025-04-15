@@ -2,11 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
+import cairosvg
 import chess
 import chess.engine
 import chess.svg
 from chess import Board, Move
-import cairosvg
+
 # from .model import GameRecord
 
 

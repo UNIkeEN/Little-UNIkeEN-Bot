@@ -1,8 +1,11 @@
-from utils.standardPlugin import StandardPlugin, Any, Union, NotPublishedException
 import requests
-from utils.basicEvent import *
+
 from utils.basicConfigs import *
+from utils.basicEvent import *
 from utils.responseImage_beta import ResponseImage
+from utils.standardPlugin import (Any, NotPublishedException, StandardPlugin,
+                                  Union)
+
 try:
     from resources.api.apexAPI import APEX_AUTHKEY
 except:

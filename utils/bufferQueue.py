@@ -1,7 +1,8 @@
-from threading import Timer, Semaphore, Lock, Thread
-from queue import Queue
 import time
-from typing import Callable, Tuple, Any, Dict
+from queue import Queue
+from threading import Lock, Semaphore, Thread, Timer
+from typing import Any, Callable, Dict, Tuple
+
 
 class BufferQueue():
     def __init__(self, feedInterval:float, maxCapa:int) -> None:

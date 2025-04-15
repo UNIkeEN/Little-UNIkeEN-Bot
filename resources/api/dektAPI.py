@@ -1,7 +1,9 @@
-import requests
 import time
-from urllib.parse import urlparse, parse_qs
-from typing import Dict, Optional, Any, List
+from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs, urlparse
+
+import requests
+
 
 def parseCookie(cookieStr:str)->Dict[str, str]:
     cookieDict = {}
