@@ -131,6 +131,7 @@ from plugins.uniAgenda import GetUniAgenda
 from plugins.wordle import Wordle, WordleHelper
 # from plugins.song import ChooseSong # API坏了
 from plugins.zsmCorups import ZsmGoldSentence
+from plugins.bzCorpus import BzGoldSentence
 
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
@@ -303,7 +304,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
-    PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence(), MakeAbstract()], 'izf'), # 张峰
+    PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence(), MakeAbstract(), BzGoldSentence()], 'izf'), # 张峰
     PluginGroupManager([ActReportPlugin(), YourActReportPlugin(), ActRankPlugin(), wordCloudPlugin(),
                         ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
@@ -338,7 +339,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjtuNews(),
     LotteryPlugin(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(), GetUniAgenda(),
-    ShowEE0502Comments(), ZsmGoldSentence(),
+    ShowEE0502Comments(), ZsmGoldSentence(), BzGoldSentence(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     getMddStatus, #SubscribeMdd(),
     SearchSjtuSqlAllPrivate(),
