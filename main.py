@@ -117,7 +117,7 @@ from plugins.messageRecorder import GroupMessageRecorder
 from plugins.notPublished.getMddStatus import (GetMddStatus,  # , SubscribeMdd
                                                MonitorMddStatus)
 from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
-from plugins.randomNum import RandomNum, TarotRandom, ThreeKingdomsRandom
+from plugins.randomNum import RandomNum, ThreeKingdomsRandom
 from plugins.sendLike import SendLike
 from plugins.sjtuActivity import SjtuActivity, SjtuDektMonitor
 from plugins.sjtuBwc import SjtuBwc, SjtuBwcMonitor
@@ -132,6 +132,7 @@ from plugins.wordle import Wordle, WordleHelper
 # from plugins.song import ChooseSong # API坏了
 from plugins.zsmCorups import ZsmGoldSentence
 from plugins.bzCorpus import BzGoldSentence
+from plugins.tarotCards import TarotCards
 
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
@@ -308,7 +309,8 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([ActReportPlugin(), YourActReportPlugin(), ActRankPlugin(), wordCloudPlugin(),
                         ClearRecord(), RestoreRecord(), GenPersonWordCloud(),
                         PluginGroupManager([GenWordCloud()], 'wcdaily')], 'actreport'), #水群报告
-    PluginGroupManager([RandomNum(), ThreeKingdomsRandom(), TarotRandom()], 'random'),
+    PluginGroupManager([RandomNum(), ThreeKingdomsRandom()], 'random'),
+    PluginGroupManager([TarotCards()], 'tarot'), # 塔罗牌
     PluginGroupManager([bilibiliSubscribeHelper, bilibiliSubscribe], 'bilibili'),
     PluginGroupManager([ChineseChessPlugin(cchessConfig.get('engine_type', 'uci'),
                                            cchessConfig.get('engine_path', None),
@@ -343,7 +345,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     getMddStatus, #SubscribeMdd(),
     SearchSjtuSqlAllPrivate(),
-    RandomNum(), ThreeKingdomsRandom(), TarotRandom(),
+    RandomNum(), ThreeKingdomsRandom(), TarotCards(),
     EmojiKitchen(),
     # ChooseSong(),
     SjtuJsQuery(),
