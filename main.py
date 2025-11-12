@@ -131,9 +131,9 @@ from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.uniAgenda import GetUniAgenda
 from plugins.wordle import Wordle, WordleHelper
 # from plugins.song import ChooseSong # API坏了
-from plugins.zsmCorups import ZsmGoldSentence
-from plugins.bzCorups import BzGoldSentence
-from plugins.todayEatWhat import todayEatWhat, todayDrinkWhat
+from plugins.zsmCorpus import ZsmGoldSentence
+from plugins.bzCorpus import BzGoldSentence
+from plugins.todayEatWhat import TodayEatWhat, TodayDrinkWhat
 
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
@@ -303,7 +303,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
     # PluginGroupManager([GoBangPlugin()],'gobang'),
-    PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP(), todayEatWhat(), todayDrinkWhat()
+    PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP(), TodayEatWhat(), TodayDrinkWhat()
                         ], 'chat'), # 答案之书， NLP聊天, 今天吃什么喝什么
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
@@ -346,7 +346,7 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     getMddStatus, #SubscribeMdd(),
     SearchSjtuSqlAllPrivate(),
-    RandomNum(), ThreeKingdomsRandom(), TarotCards(), todayEatWhat(), todayDrinkWhat(),
+    RandomNum(), ThreeKingdomsRandom(), TarotCards(), TodayEatWhat(), TodayDrinkWhat(),
     EmojiKitchen(),
     # ChooseSong(),
     SjtuJsQuery(),
