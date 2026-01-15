@@ -277,13 +277,15 @@ class FourElementsSpread(TarotSpreads):
 class TarotCards(StandardPlugin):
     def __init__(self) -> None:
         self.userCooldown = {}  # 用户冷却时间
-        self.pattern = re.compile(r"^\-(塔罗牌|占卜)\s+(.*)$")  # '-塔罗牌 [牌阵]' 或 '-占卜 [牌阵]'
+        self.pattern = re.compile(r"^(塔罗牌?|占卜|-tarot)\s*(.*)$")  # '塔罗牌 [牌阵]' 或 '占卜 [牌阵]'
 
     def judgeTrigger(self, msg: str, data) -> bool:
         match = self.pattern.match(msg)
-        if not match:
+        if match is None:
             return False
-        if match.group(2) in TAROT_SPREAD:  # 匹配塔罗牌抽卡
+        elif match.group(2) in TAROT_SPREAD.keys():  # 匹配塔罗牌抽卡
+            return True
+        elif len(match.group(2)) == 0:
             return True
         else:  # 匹配塔罗牌抽卡，但牌阵不正确
             target_id = data["group_id"] if data["message_type"] == "group" else data["user_id"]
@@ -310,11 +312,13 @@ class TarotCards(StandardPlugin):
                 target_id, f"[CQ:reply,id={data['message_id']}]金币不足，塔罗牌占卜需要30金币哦~", data["message_type"]
             )
             return "OK"
-        update_user_coins(user_id, -30)  # 扣除30金币
+        update_user_coins(user_id, -30*100, '抽塔罗牌', format=False)  # 扣除30金币
         self.userCooldown[user_id] = current_time  # 更新冷却时间并开始占卜
 
         # Begin tarot divine!
         spread = self.pattern.match(msg).group(2)  # 获取牌阵种类
+        if len(spread) == 0:
+            spread = random.choice(list(TAROT_SPREAD.keys()))
         tarot_spread: TarotSpreads = TAROT_SPREAD[spread]()  # 实例化牌阵类
         tarot_spread.draw_cards()  # 抽取塔罗牌
         tarot_img = tarot_spread.get_image()  # 获取结果图片
@@ -324,7 +328,7 @@ class TarotCards(StandardPlugin):
         result_img = ResponseImage(
             theme="unicorn",
             title="塔罗牌占卜结果",
-            titleColor=(165, 255, 255, 255),
+            titleColor=PALETTE_SJTU_BLUE,
         )
         result_img.addCard(  # 添加结果卡片
             ResponseImage.NoticeCard(

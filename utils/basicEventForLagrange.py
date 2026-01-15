@@ -12,7 +12,7 @@ import websocket
 from PIL import Image, ImageDraw, ImageFont
 
 from utils.basicConfigs import *
-from utils.basicConfigs import APPLY_GROUP_ID, HTTP_URL
+from utils.basicConfigs import APPLY_GROUP_ID, HTTP_URL, BACKEND_TOKEN
 from utils.bufferQueue import BufferQueue
 from utils.messageChain import MessageChain, getImgFromUrl
 
@@ -44,7 +44,7 @@ lagrangeReturnsMaintainer.daemon = True
 def sendPacketToLagrange(packet:Dict[str,Any]):
     global lagrangeClient, lagrangeClientReturns, lagrangeReturnsMaintainer
     if not lagrangeClient.connected:
-        lagrangeClient.connect(HTTP_URL)
+        lagrangeClient.connect(HTTP_URL, header=["Authorization: Bearer " + BACKEND_TOKEN])
         if not lagrangeReturnsMaintainer.is_alive():
             lagrangeReturnsMaintainer.start() # TODO: this line bugs
     packetEncoded = json.dumps(packet, ensure_ascii=False)

@@ -27,16 +27,15 @@ from plugins.greetings import MorningGreet, NightGreet
 from plugins.groupCalendar import GroupCalendarHelper, GroupCalendarManager
 from plugins.hotSearch import BaiduHotSearch, WeiboHotSearch, ZhihuHotSearch
 from plugins.news import ShowNews, UpdateNewsAndReport, YesterdayNews
+from plugins.todayEatWhat import TodayEatWhat, TodayDrinkWhat
 ## tmp
 from plugins.signIn import SignIn
+from plugins.sjmcl import GetSjmclRelease, SjmclMonitor
 from plugins.sjmcStatus_v2 import ShowSjmcStatus
 from plugins.sjmcStatus_v4 import (McStatusAddServer, McStatusRemoveFooter,
                                    McStatusRemoveServer, McStatusSetFooter,
                                    ShowMcStatus)
 from plugins.sjtuInfo import SjtuCanteenInfo, SjtuLibInfo
-from plugins.stocks import (BuyStocks, BuyStocksHelper, QueryStocks,
-                            QueryStocksHelper, QueryStocksPrice,
-                            QueryStocksPriceHelper)
 from plugins.superEmoji import (BasketballFace, FirecrackersFace,
                                 FireworksFace, HotFace)
 from plugins.thanksLUB import ThanksLUB
@@ -114,8 +113,8 @@ from plugins.makeJoke import MakeJoke
 from plugins.mathler import Mathler, MathlerHelper
 # from plugins.goBang import GoBangPlugin
 from plugins.messageRecorder import GroupMessageRecorder
-from plugins.notPublished.getMddStatus import (GetMddStatus,  # , SubscribeMdd
-                                               MonitorMddStatus)
+# from plugins.notPublished.getMddStatus import (GetMddStatus,  # , SubscribeMdd
+#                                                MonitorMddStatus)
 from plugins.notPublished.jile import Chai_Jile, Yuan_Jile
 from plugins.randomNum import RandomNum, ThreeKingdomsRandom
 from plugins.tarotCards import TarotCards
@@ -131,9 +130,8 @@ from plugins.sjtuSchoolGate import SjtuSchoolGate
 from plugins.uniAgenda import GetUniAgenda
 from plugins.wordle import Wordle, WordleHelper
 # from plugins.song import ChooseSong # API坏了
-from plugins.zsmCorpus import ZsmGoldSentence
-from plugins.bzCorpus import BzGoldSentence
-from plugins.todayEatWhat import TodayEatWhat, TodayDrinkWhat
+from plugins.zsmCorups import ZsmGoldSentence
+from plugins.bzCorups import BzGoldSentence
 
 try:
     from plugins.notPublished.EE0502 import ShowEE0502Comments
@@ -155,12 +153,6 @@ except NotPublishedException as e:
     print('SMPParkourRank not imported: {}'.format(e))
     
 from plugins.gocqWatchDog import GocqWatchDog
-from plugins.notPublished.sjtuSql import (SearchSjtuSql, SearchSjtuSqlAll,
-                                          SearchSjtuSqlAllPrivate,
-                                          SearchSjtuSqlPIC)
-from plugins.notPublished.sjtuSqlGroupingVerication import \
-    SjtuSqlGroupingVerify
-from plugins.test import TestLagrange
 
 ###### end not published plugins
 
@@ -223,12 +215,12 @@ if isinstance(config, dict):
             print("[INFO] 开启jile插件")
         else:
             print("[WARNING] jile插件未开启")
-        if "mdd" in pluginConfigs.keys():
-            getMddStatus = GetMddStatus(pluginConfigs["mdd"]["mdd_url"], pluginConfigs["mdd"]["mdd_headers"])
-            monitorMddStatus = MonitorMddStatus(pluginConfigs["mdd"]["mdd_url"], pluginConfigs["mdd"]["mdd_headers"])
-            print("[INFO] 开启mdd插件")
-        else:
-            print('[WARNING] mdd插件未开启')
+        # if "mdd" in pluginConfigs.keys():
+        #     getMddStatus = GetMddStatus(pluginConfigs["mdd"]["mdd_url"], pluginConfigs["mdd"]["mdd_headers"])
+        #     monitorMddStatus = MonitorMddStatus(pluginConfigs["mdd"]["mdd_url"], pluginConfigs["mdd"]["mdd_headers"])
+        #     print("[INFO] 开启mdd插件")
+        # else:
+        #     print('[WARNING] mdd插件未开启')
         if "sjtu_dekt_v2" in pluginConfigs.keys():
             sjtuActivity = SjtuActivity(pluginConfigs["sjtu_dekt_v2"]["JAC_COOKIE"],pluginConfigs["sjtu_dekt_v2"]["client_id"])
             sjtuDektMonitor = SjtuDektMonitor(pluginConfigs["sjtu_dekt_v2"]["JAC_COOKIE"],pluginConfigs["sjtu_dekt_v2"]["client_id"])
@@ -278,12 +270,12 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([SjtuCanteenInfo(),SjtuLibInfo(), SjtuClassroom(), SjtuClassroomPeopleNum(),
                         DrawClassroomPeopleCount(), SjtuSchoolGate(), SjtuJsQuery(),
                         SjtuClassroomRecommend(), getMddStatus, getSjtuCharge, sjtuActivity, #SubscribeMdd(), # 交大餐厅, 图书馆, 核酸点, 麦当劳
-                        PluginGroupManager([monitorMddStatus], 'mddmonitor'),
+                        # PluginGroupManager([monitorMddStatus], 'mddmonitor'),
                         PluginGroupManager([sjtuDektMonitor], 'dektmonitor'),], 'sjtuinfo'), 
-    # PluginGroupManager([QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice()],'stocks'), # 股票
     PluginGroupManager([chaiJile, yuanJile],'jile'), # 柴/元神寄了
     PluginGroupManager([SignIn(), ], 'signin'),  # 签到
-    PluginGroupManager([ShowSjmcStatus(), GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), SMPParkourRank(),
+    PluginGroupManager([ShowSjmcStatus(), GetSjmclRelease(), SjmclMonitor(),
+                        GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'), SMPParkourRank(),
                         PluginGroupManager([BilibiliLiveMonitor(25567444, '交大MC社', 'mclive'),
                                             BilibiliLiveMonitor(24716629, '基岩社', 'mclive'), ], 'mclive'),
                         # PluginGroupManager([McAdManager()], 'mcad')# 新生群mc广告播报
@@ -303,8 +295,7 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([RoulettePlugin()],'roulette'), # 轮盘赌
     PluginGroupManager([LotteryPlugin()],'lottery'), # 彩票 TODO
     # PluginGroupManager([GoBangPlugin()],'gobang'),
-    PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP(), TodayEatWhat(), TodayDrinkWhat()
-                        ], 'chat'), # 答案之书， NLP聊天, 今天吃什么喝什么
+    PluginGroupManager([ChatWithAnswerbook(), ChatWithNLP(), TodayEatWhat(), TodayDrinkWhat()], 'chat'), # 答案之书/NLP
     PluginGroupManager([GetCanvas(), GetUniAgenda(), CanvasiCalBind(), CanvasiCalUnbind()], 'canvas'), # 日历馈送
     # PluginGroupManager([DropOut()], 'dropout'), # 一键退学
     PluginGroupManager([ShowEE0502Comments(), ZsmGoldSentence(), BzGoldSentence(), MakeAbstract()], 'izf'), # 张峰
@@ -320,22 +311,20 @@ GroupPluginList:List[StandardPlugin]=[ # 指定群启用插件
     PluginGroupManager([Wordle(), WordleHelper(), Handle(), HandleHelper(), Mathler(), MathlerHelper()], 'wordle'),
     PluginGroupManager([CharPic(), GroupBan(),
                         GetBilibiliLive(22797301, 'SJTU计算机系', '-sjcs'),
-                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test'),
-                        TestLagrange()], 'test'),
+                        BilibiliLiveMonitor(22797301,'SJTU计算机系', 'test'),], 'test'),
     PluginGroupManager([EmojiKitchen()], 'emoji'),
     PluginGroupManager([ShowLeetcode(), LeetcodeReport()], 'leetcode'),
     PluginGroupManager([SendLike()], 'likes'),
-    SearchSjtuSql(), SearchSjtuSqlAll(), SearchSjtuSqlPIC(),
 ]
 PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     helper, ThanksLUB(), CheckStatus(GroupPluginList),
     ShowStatus(),ServerMonitor(),
     LsGroup(), GroupApply(), PrivateControl(), helperForPrivateControl,
     CheckCoins(),AddAssignedCoins(),CheckTransactions(),
+    ChatWithAnswerbook(), ChatWithNLP(), TodayEatWhat(), TodayDrinkWhat(),
     ShowNews(), YesterdayNews(),
     MorningGreet(), NightGreet(),
     SignIn(), SendLike(),
-    QueryStocksHelper(), QueryStocks(), BuyStocksHelper(), BuyStocks(), QueryStocksPriceHelper(), QueryStocksPrice(),
     SjtuCanteenInfo(),SjtuLibInfo(),ShowSjmcStatus(),GetJwc(), SjtuBwc(), getSjtuCharge, sjtuActivity,#SubscribeJwc(), 
     MuaAbstract(), MuaQuery(), MuaAnnHelper(), MuaAnnEditor(), 
     MuaTokenBinder(), MuaTokenUnbinder(), MuaTokenEmpower(), MuaTokenLister(),
@@ -343,10 +332,10 @@ PrivatePluginList:List[StandardPlugin]=[ # 私聊启用插件
     LotteryPlugin(),
     GetCanvas(), CanvasiCalBind(), CanvasiCalUnbind(), GetUniAgenda(),
     ShowEE0502Comments(), ZsmGoldSentence(), BzGoldSentence(),
+    GetSjmclRelease(),
     GetSjmcLive(), GetBilibiliLive(24716629, '基岩社', '-fdmclive'),
     getMddStatus, #SubscribeMdd(),
-    SearchSjtuSqlAllPrivate(),
-    RandomNum(), ThreeKingdomsRandom(), TarotCards(), TodayEatWhat(), TodayDrinkWhat(),
+    RandomNum(), ThreeKingdomsRandom(), TarotCards(),
     EmojiKitchen(),
     # ChooseSong(),
     SjtuJsQuery(),

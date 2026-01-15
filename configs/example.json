@@ -1,5 +1,6 @@
 {
     "qq": 0,
+    "token": "Your napcat token",
     "backend-type": "'gocqhttp' or 'lagrange', choose one",
     "backend-url": "if lagrange, use 'ws://ip:port/(path-prefix)', elif gocqhttp, use 'http(s)://ip:port/(path-prefix)'",
     "sql": {
